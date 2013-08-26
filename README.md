@@ -205,7 +205,7 @@ var particleEmitter = new ShaderParticleEmitter({
 Adds an instance of ```ShaderParticleEmitter``` to the particle group.
 
 **Arguments**
-```emitter``` - instanceof ShaderParticleEmitter
+- ```emitter``` - instanceof ShaderParticleEmitter
 
 
 
@@ -213,7 +213,7 @@ Adds an instance of ```ShaderParticleEmitter``` to the particle group.
 Call this function once per frame. If no ```dt``` argument is given, the ```ShaderParticleGroup``` instance will use its ```.fixedTimeStep``` value as ```dt```.
 
 **Arguments**
-```dt``` - Number. Delta time. How many seconds have elapsed since the last frame was drawn?
+- ```dt``` - Number. Delta time. How many seconds have elapsed since the last frame was drawn?
 
 
 
