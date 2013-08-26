@@ -230,4 +230,4 @@ decoupled from the emitter's maximum age.
 
 Thanks
 ======
-Huge thanks are extended to [Stemkoski](http://stemkoski.github.io/Three.js/) for his initial particle engine, and to Mr Doob (@mrdoob) / AlteredQualia (@alteredqualia) / et. al for their awesome work on [THREE.js](http://threejs.org/).
+Huge thanks are extended to [Stemkoski](http://stemkoski.github.io/Three.js/) for his initial particle engine, and to [Mr Doob, AlteredQualia, et. al](https://github.com/mrdoob/three.js/graphs/contributors) for their awesome work on [THREE.js](http://threejs.org/).
