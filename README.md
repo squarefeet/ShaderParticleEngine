@@ -6,7 +6,7 @@ A GLSL-based particle engine for THREE.js. Heavily based on [Stemkoski's great p
 
 About
 =====
-After experimenting with Stemkoski's particle engine, I was having trouble getting high numbers of particles to render at ~60fps. After digging into the code and doing some benchmarks, it was clear that the bottleneck was coming from applying each particle's movement parameters (```velocity += acceleration```, and ```position += velocity```). Moving these calculations to the shaders the performance was drastically increased.
+After experimenting with Stemkoski's particle engine, I was having trouble getting high numbers of particles to render at ~60fps. After digging into the code and doing some benchmarks, it was clear that the bottleneck was coming from applying each particle's movement parameters (```velocity += acceleration```, and ```position += velocity```). After moving these calculations to the shaders the performance was drastically increased.
 
 Another optimisation I wanted was to be able to 'group' lots of emitters into one ```THREE.ParticleSystem```, so that if I had (for example) 20 particle emitters sharing the same texture, I could send all 20 of those emitters to the GPU at the same time via sharing the same geometry. This is where the basis for the ```ShaderParticleGroup``` comes from.
 
