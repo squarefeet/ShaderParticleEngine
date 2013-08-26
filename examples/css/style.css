@@ -1,0 +1,12 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+.numParticles {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	color: white;
+	text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+}
