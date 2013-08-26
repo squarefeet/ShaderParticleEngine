@@ -62,7 +62,9 @@ particleGroup.tick( dt );
 
 API
 ===
-```ShaderParticleGroup``` settings:
+
+####```ShaderParticleGroup``` settings:####
+
 ```javascript
 // All possible parameters for the ShaderParticleGroup constructor.
 // - Default values for each key are as given below if the key is [OPTIONAL].
@@ -109,7 +111,8 @@ var particleGroup = new ShaderParticleGroup({
 ```
 
 
-```ShaderParticleEmitter``` settings:
+####```ShaderParticleEmitter``` settings:
+
 ```javascript
 // All possible parameters for the ShaderParticleEmitter constructor
 // - Default values for each key are as given below if the key is [OPTIONAL]
@@ -196,7 +199,8 @@ var particleEmitter = new ShaderParticleEmitter({
 });
 ```
 
-####"Public" Methods for ```ShaderParticleGroup```:####
+####"Public" Methods for ```ShaderParticleGroup```:
+
 **```.addEmitter( emitter )```**
 Adds an instance of ```ShaderParticleEmitter``` to the particle group.
 
