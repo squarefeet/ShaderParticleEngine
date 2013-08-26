@@ -199,9 +199,9 @@ var particleEmitter = new ShaderParticleEmitter({
 });
 ```
 
-####"Public" Methods for ```ShaderParticleGroup```:
+####"Public" Methods for ```ShaderParticleGroup```:####
 
-**```.addEmitter( emitter )```**
+**- ```.addEmitter( emitter )```**
 Adds an instance of ```ShaderParticleEmitter``` to the particle group.
 
 **Arguments**
@@ -209,7 +209,7 @@ Adds an instance of ```ShaderParticleEmitter``` to the particle group.
 
 
 
-**```.tick( dt )```**
+**- ```.tick( dt )```**
 Call this function once per frame. If no ```dt``` argument is given, the ```ShaderParticleGroup``` instance will use its ```.fixedTimeStep``` value as ```dt```.
 
 **Arguments**
