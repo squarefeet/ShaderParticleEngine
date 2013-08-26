@@ -27,7 +27,7 @@ See the ```./examples/``` folder for some simple demos.
 
 Assuming you have a basic scene set up using THREE.js and have added the JS to your page, adding a particle emitter is as simple as the following code:
 
-```
+```javascript
 // Create a particle group to add the emitter to
 var particleGroup = new ShaderParticleGroup({
 	// Give the particles in this group a texture
@@ -59,7 +59,7 @@ particleGroup.tick( dt ); // Where dt is the time delta (the time it took to ren
 API
 ===
 ```ShaderParticleGroup``` settings:
-```
+```javascript
 // All possible parameters for the ShaderParticleGroup.
 // - Default values for each key are as given below if the key is [OPTIONAL]
 var particleGroup = ShaderParticleGroup({
