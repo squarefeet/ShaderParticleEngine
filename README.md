@@ -198,17 +198,18 @@ var particleEmitter = new ShaderParticleEmitter({
 
 ####"Public" Methods for ```ShaderParticleGroup```:####
 **```.addEmitter( emitter )```**
-* Adds an instance of ```ShaderParticleEmitter``` to the particle group.
+Adds an instance of ```ShaderParticleEmitter``` to the particle group.
 
-**arguments**
-* ```emitter``` - instanceof ShaderParticleEmitter
+**Arguments**
+```emitter``` - instanceof ShaderParticleEmitter
+
 
 
 **```.tick( dt )```**
-* Call this function once per frame. If no ```dt``` argument is given, the ```ShaderParticleGroup``` instance will use its ```.fixedTimeStep``` value as ```dt```.
+Call this function once per frame. If no ```dt``` argument is given, the ```ShaderParticleGroup``` instance will use its ```.fixedTimeStep``` value as ```dt```.
 
-**arguments**
-* ```dt``` - Number. Delta time. How many seconds have elapsed since the last frame was drawn?
+**Arguments**
+```dt``` - Number. Delta time. How many seconds have elapsed since the last frame was drawn?
 
 
 
