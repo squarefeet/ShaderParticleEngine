@@ -10,6 +10,7 @@ After experimenting with Stemkoski's particle engine, I was having trouble getti
 
 Another optimisation I wanted was to be able to 'group' lots of emitters into one ```THREE.ParticleSystem```, so that if I had (for example) 20 particle emitters sharing the same texture, I could send all 20 of those emitters to the GPU at the same time via sharing the same geometry. This is where the basis for the ```ShaderParticleGroup``` comes from.
 
+This project requires THREE.js revision 58/59/60.
 
 
 Usage
