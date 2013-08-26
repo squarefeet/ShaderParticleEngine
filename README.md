@@ -53,7 +53,9 @@ scene.add( particleGroup.mesh ); // Where `scene` is an instance of `THREE.Scene
 // ...
 
 // In your frame render function:
-particleGroup.tick( dt ); // Where dt is the time delta (the time it took to render the last frame.)
+// 	Where dt is the time delta 
+// 	(the time it took to render the last frame.)
+particleGroup.tick( dt ); 
 
 ```
 
@@ -100,7 +102,8 @@ var particleGroup = new ShaderParticleGroup({
 	// [OPTIONAL] Should a depth test be performed on this group?
 	depthTest: true,
 
-	// [OPTIONAL] Specify a fixed time-step value if you're more bothered about smooth performance. Only use this if necessary. Measured in seconds.
+	// [OPTIONAL] Specify a fixed time-step value if you're more bothered 
+	// about smooth performance. Only use this if necessary. Measured in seconds.
 	fixedTimeStep: 0.016
 });
 ```
@@ -196,12 +199,14 @@ var particleEmitter = new ShaderParticleEmitter({
 ####"Public" Methods for ```ShaderParticleGroup```:####
 **```.addEmitter( emitter )```**
 * Adds an instance of ```ShaderParticleEmitter``` to the particle group.
+
 **arguments**
 * ```emitter``` - instanceof ShaderParticleEmitter
 
 
 **```.tick( dt )```**
 * Call this function once per frame. If no ```dt``` argument is given, the ```ShaderParticleGroup``` instance will use its ```.fixedTimeStep``` value as ```dt```.
+
 **arguments**
 * ```dt``` - Number. Delta time. How many seconds have elapsed since the last frame was drawn?
 
