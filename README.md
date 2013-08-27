@@ -3,6 +3,8 @@ ShaderParticleEngine
 A GLSL-based particle engine for THREE.js. Heavily based on [Stemkoski's great particle engine](https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 
 
+Pull requests and issue reports welcome.
+
 
 About
 =====
@@ -219,12 +221,7 @@ Call this function once per frame. If no ```dt``` argument is given, the ```Shad
 
 Known Bugs
 ==========
-* Speed calculations are dependant on the max age of the emitter. Acceleration, velocity, and speed (when using ```ShaderParticleEmitter.type = 'sphere'```) parameters need to be
-decoupled from the emitter's maximum age.
-
-* Variance in the ```dt``` argument passed to ```ShaderParticleGroup.tick()``` are persistant. Using a fixed time-step is a workaround for now.
-
-* To get particles to shrink to zero size at end of their lifetime, a ```sizeEnd``` value of -1 is required. Need to look into this oddity.
+No known bugs at this time. Please open issues if you notice any.
 
 
 
