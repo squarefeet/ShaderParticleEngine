@@ -1,4 +1,4 @@
-// ShaderParticleEmitter 0.1.0
+// ShaderParticleEmitter 0.2.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
@@ -125,7 +125,7 @@ ShaderParticleEmitter.prototype = {
             numParticles = this.numParticles;
 
         // Reset the recycled vertices array.
-        r.length = 0;
+        // r.length = 0;
 
         // Loop through all the particles in this emitter and
         // determine whether they're still alive and need advancing
@@ -170,8 +170,15 @@ ShaderParticleEmitter.prototype = {
         // then we still have particles to emit. 
         if( emitterAge <= m ) {
             // Determine indices of particles to activate
-            var startIndex  = start + Math.round( pps * emitterAge );
-            var endIndex    = start + Math.round( pps * (emitterAge + dt) );
+            //  Fix for bug #2 (https://github.com/squarefeet/ShaderParticleEngine/issues/2)
+            //  Rather than use Math.round, I'm flooring the indexes here.
+            //  This stops any particles that technically shouldn't be marked as
+            //  alive from being set so.
+            //
+            //  Using a bitwise OR because it's quicker on current gen browsers.
+            //      See http://jsperf.com/jsfvsbitnot/10 re bitwise OR performance.
+            var startIndex  = start + ( pps * emitterAge ) | 0;
+            var endIndex    = start + ( pps * (emitterAge + dt) ) | 0;
 
             // If the end index is greater than the number of particles the
             // emitter has, then clamp the end index to this number.
@@ -190,9 +197,24 @@ ShaderParticleEmitter.prototype = {
 
         // If we have any particles (vertices) in the recycled vertices 
         // array then we need to mark them as alive and reset them.
-        for(var i = 0; i < r.length; ++i) {
+        //
+        // Fix for bug #2 (https://github.com/squarefeet/ShaderParticleEngine/issues/2)
+        // Rather than loop through all of the vertices in the recycled array,
+        // we need to clamp the maximum number of vertices that we reset so
+        // that we don't activate too many particles. This smooths out any
+        // historical dt variations during a particles lifecycle, but note
+        // that it doesn't stop gaps appearing in a particle stream if 
+        // dt isn't fairly consistent.
+        var numVerticesToReset = Math.min( r.length - 1, (pps * dt | 0) - 1 );
+
+        // Moved to a backwards loop here so we can safely remove
+        // vertices that have been marked as alive. Hopefully the 
+        // splice operation shouldn't slow things down too much.
+        // JSPerf seems to suggest that it won't...(!)
+        for(var i = numVerticesToReset; i >= 0; --i) {
             alive[ r[i] ] = 1.0;
             this._resetParticle( this.vertices[ r[i] ] );
+            r.splice(i, 1);
         }
 
         // Add the delta time value to the age of the emitter.

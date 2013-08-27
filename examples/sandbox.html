@@ -1,3 +1,4 @@
+<!-- A seperate test file to play around with whilst doing updates/bug fixes -->
 <html>
 <head>
 	<title>Basic Shader Particles</title>
@@ -47,24 +48,28 @@
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 2
+        		maxAge: 1
         	});
 
         	emitter = new ShaderParticleEmitter({
         		position: new THREE.Vector3(0, 0, 0),
 
-        		acceleration: new THREE.Vector3(0, -10, 0),
-        		accelerationSpread: new THREE.Vector3( 10, 0, 10 ),
+        		acceleration: new THREE.Vector3(0, 0, 0),
+        		accelerationSpread: new THREE.Vector3( 10, 15, 10 ),
 
         		velocity: new THREE.Vector3(0, 15, 0),
-        		velocitySpread: new THREE.Vector3(10, 7.5, 10),
+        		velocitySpread: new THREE.Vector3(10, 0, 10),
 
         		colorStart: new THREE.Color('white'),
-        		colorEnd: new THREE.Color('blue'),
-        		size: 1,
-        		sizeEnd: 2,
+        		colorEnd: new THREE.Color('white'),
+        		size: 2.0,
+                sizeSpread: 0.0,
+        		sizeEnd: 0.0,
 
-        		particlesPerSecond: 1000
+                opacityStart: 1,
+                opacityEnd: 1,
+
+        		particlesPerSecond: 500
         	});
 
         	particleGroup.addEmitter( emitter );
@@ -77,7 +82,9 @@
         
 
         function animate() {
-            requestAnimationFrame( animate );
+            // requestAnimationFrame( animate );
+
+            setTimeout( animate, 1000/60 );
 
             // Using a fixed time-step here to avoid pauses
             render( clock.getDelta() );

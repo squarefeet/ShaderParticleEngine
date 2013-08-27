@@ -1,7 +1,7 @@
-// ShaderParticleGroup 0.1.0
+// ShaderParticleGroup 0.2.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-//     Based on Lee Stemkoski's original work.
+//     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
@@ -186,8 +186,9 @@ ShaderParticleGroup.prototype = {
 
             acceleration[i] = this._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
-
-            size[i]         = Math.max( 0.1, this._randomFloat( emitter.size, emitter.sizeSpread ) );
+            // Fix for bug #1 (https://github.com/squarefeet/ShaderParticleEngine/issues/1)
+            // For some stupid reason I was limiting the size value to a minimum of 0.1. Derp.
+            size[i]         = this._randomFloat( emitter.size, emitter.sizeSpread );
             sizeEnd[i]      = emitter.sizeEnd;
             age[i]          = 0.0;
             alive[i]        = 0.0;
@@ -257,22 +258,14 @@ ShaderParticleGroup.shaders = {
             'return (start + ((end - start) * (age / duration)));',
         '}',
 
-        // Return the size of the particle
-        'float GetSize( float newSize, vec4 mvPosition ) {',
-            'if( hasPerspective == 1 ) {',
-                'newSize = newSize * (300.0 / length( mvPosition.xyz ) );',
-            '}',
-            'return newSize;',
-        '}',
-
         // Integrate acceleration into velocity and apply it to the particle's position
         'vec4 GetPos() {',
             'vec3 newPos = vec3( position );',
-            'float positionInTime = age / duration;',
 
-            // Move acceleration & velocity vectors to the value they should be at the current age
-            'vec3 a = acceleration * positionInTime;',
-            'vec3 v = velocity * positionInTime;',
+            // Move acceleration & velocity vectors to the value they 
+            // should be at the current age
+            'vec3 a = acceleration * age;',
+            'vec3 v = velocity * age;',
 
             // Move velocity vector to correct values at this age
             'v = v + (a * age);',
@@ -283,9 +276,6 @@ ShaderParticleGroup.shaders = {
             // Convert the newPos vector into world-space
             'vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );',
 
-            // Set point size (should be moved to main() block, really)
-            'gl_PointSize = Lerp( GetSize( size, mvPosition ), GetSize( sizeEnd, mvPosition ) );',
-
             'return mvPosition;',
         '}',
 
@@ -293,14 +283,14 @@ ShaderParticleGroup.shaders = {
         'void main() {',
 
             'if( alive > 0.5 ) {',
-
                 // Integrate color "tween"
                 'vec3 color = vec3( customColor );',
                 'if( customColor != customColorEnd ) {',
                     'color = Lerp( customColor, customColorEnd );',
                 '}',
 
-                // Store the color of this particle in the varying vColor, so frag shader can access it.
+                // Store the color of this particle in the varying vColor, 
+                // so frag shader can access it.
                 'if( opacity != opacityEnd ) {',
                     'vColor = vec4( color, Lerp( opacity, opacityEnd ) );',
                 '}',
@@ -308,12 +298,25 @@ ShaderParticleGroup.shaders = {
                     'vColor = vec4( color, opacity );',
                 '}',
 
-                // Set the position of this particle
-                'gl_Position = projectionMatrix * GetPos();',
+                // Get the position of this particle so we can use it
+                // when we calculate any perspective that might be required.
+                'vec4 pos = GetPos();',
+
+                // Determine point size .
+                'float pointSize = Lerp( size, sizeEnd );',
+
+                'if( hasPerspective == 1 ) {',
+                    'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
+                '}',
+
+                // Set particle size and position
+                'gl_PointSize = pointSize;',
+                'gl_Position = projectionMatrix * pos;',
             '}',
 
             'else {',
-                // Hide particle and set its position to the (maybe) glsl equivalent of Number.POSITIVE_INFINITY
+                // Hide particle and set its position to the (maybe) glsl 
+                // equivalent of Number.POSITIVE_INFINITY
                 'vColor = vec4( customColor, 0.0 );',
                 'gl_Position = vec4(1e20, 1e20, 1e20, 0);',
             '}',
@@ -345,10 +348,10 @@ ShaderParticleGroup.shaders = {
     ].join('\n')
 };;
 
-// ShaderParticleEmitter 0.1.0
+// ShaderParticleEmitter 0.2.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-//     Based on Lee Stemkoski's original work.
+//     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
 // ShaderParticleEmitter may be freely distributed under the MIT license (See LICENSE.txt)
 
@@ -472,7 +475,7 @@ ShaderParticleEmitter.prototype = {
             numParticles = this.numParticles;
 
         // Reset the recycled vertices array.
-        r.length = 0;
+        // r.length = 0;
 
         // Loop through all the particles in this emitter and
         // determine whether they're still alive and need advancing
@@ -517,8 +520,15 @@ ShaderParticleEmitter.prototype = {
         // then we still have particles to emit. 
         if( emitterAge <= m ) {
             // Determine indices of particles to activate
-            var startIndex  = start + Math.round( pps * emitterAge );
-            var endIndex    = start + Math.round( pps * (emitterAge + dt) );
+            //  Fix for bug #2 (https://github.com/squarefeet/ShaderParticleEngine/issues/2)
+            //  Rather than use Math.round, I'm flooring the indexes here.
+            //  This stops any particles that technically shouldn't be marked as
+            //  alive from being set so.
+            //
+            //  Using a bitwise OR because it's quicker on current gen browsers.
+            //      See http://jsperf.com/jsfvsbitnot/10 re bitwise OR performance.
+            var startIndex  = start + ( pps * emitterAge ) | 0;
+            var endIndex    = start + ( pps * (emitterAge + dt) ) | 0;
 
             // If the end index is greater than the number of particles the
             // emitter has, then clamp the end index to this number.
@@ -537,9 +547,24 @@ ShaderParticleEmitter.prototype = {
 
         // If we have any particles (vertices) in the recycled vertices 
         // array then we need to mark them as alive and reset them.
-        for(var i = 0; i < r.length; ++i) {
+        //
+        // Fix for bug #2 (https://github.com/squarefeet/ShaderParticleEngine/issues/2)
+        // Rather than loop through all of the vertices in the recycled array,
+        // we need to clamp the maximum number of vertices that we reset so
+        // that we don't activate too many particles. This smooths out any
+        // historical dt variations during a particles lifecycle, but note
+        // that it doesn't stop gaps appearing in a particle stream if 
+        // dt isn't fairly consistent.
+        var numVerticesToReset = Math.min( r.length - 1, (pps * dt | 0) - 1 );
+
+        // Moved to a backwards loop here so we can safely remove
+        // vertices that have been marked as alive. Hopefully the 
+        // splice operation shouldn't slow things down too much.
+        // JSPerf seems to suggest that it won't...(!)
+        for(var i = numVerticesToReset; i >= 0; --i) {
             alive[ r[i] ] = 1.0;
             this._resetParticle( this.vertices[ r[i] ] );
+            r.splice(i, 1);
         }
 
         // Add the delta time value to the age of the emitter.
