@@ -1,4 +1,4 @@
-// ShaderParticleGroup 0.2.0
+// ShaderParticleGroup 0.3.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
@@ -113,7 +113,7 @@ ShaderParticleGroup.prototype = {
         return vec;
     },
 
-    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale ) {
+    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
         var direction = new THREE.Vector3().subVectors( base, position );
 
         direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
@@ -165,7 +165,7 @@ ShaderParticleGroup.prototype = {
 
             if( emitter.type === 'sphere' ) {
                 vertices[i]     = this._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
-                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale );
+                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale, emitter.radius );
             }
             else {
                 vertices[i]     = this._randomVector3( emitter.position, emitter.positionSpread );
@@ -341,7 +341,7 @@ ShaderParticleGroup.shaders = {
     ].join('\n')
 };;
 
-// ShaderParticleEmitter 0.2.0
+// ShaderParticleEmitter 0.3.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
