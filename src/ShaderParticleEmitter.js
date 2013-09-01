@@ -1,4 +1,4 @@
-// ShaderParticleEmitter 0.3.0
+// ShaderParticleEmitter 0.3.1
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
@@ -118,8 +118,10 @@ ShaderParticleEmitter.prototype = {
             alive = a.alive.value,
             age = a.age.value,
             start = this.verticesIndex,
-            end = start + this.numParticles,
-            ppsdt = this.particlesPerSecond * dt,
+            numParticles = this.numParticles,
+            end = start + numParticles,
+            pps = this.particlesPerSecond,
+            ppsdt = pps * dt,
             m = this.maxAge,
             emitterAge = this.age,
             duration = this.emitterDuration,
@@ -132,6 +134,10 @@ ShaderParticleEmitter.prototype = {
         for( var i = start; i < end; ++i ) {
             if( alive[ i ] === 0.0 ) {
                 continue;
+            }
+
+            if( age[ i ] === 0.0 ) {
+                this._resetParticle( this.vertices[ i ] );
             }
 
             if( alive[ i ] === 1.0 ) {
@@ -170,7 +176,7 @@ ShaderParticleEmitter.prototype = {
 
         this.particleIndex += ppsdt;
 
-        if( pIndex >= this.numParticles ) {
+        if( pIndex >= start + this.numParticles ) {
             this.particleIndex = parseFloat( start, 10 );
         }
 
