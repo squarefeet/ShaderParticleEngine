@@ -461,8 +461,10 @@ ShaderParticleEmitter.prototype = {
             alive = a.alive.value,
             age = a.age.value,
             start = this.verticesIndex,
-            end = start + this.numParticles,
-            ppsdt = this.particlesPerSecond * dt,
+            numParticles = this.numParticles,
+            end = start + numParticles,
+            pps = this.particlesPerSecond,
+            ppsdt = pps * dt,
             m = this.maxAge,
             emitterAge = this.age,
             duration = this.emitterDuration,
@@ -475,6 +477,10 @@ ShaderParticleEmitter.prototype = {
         for( var i = start; i < end; ++i ) {
             if( alive[ i ] === 0.0 ) {
                 continue;
+            }
+
+            if( age[ i ] === 0.0 ) {
+                this._resetParticle( this.vertices[ i ] );
             }
 
             if( alive[ i ] === 1.0 ) {
@@ -504,18 +510,51 @@ ShaderParticleEmitter.prototype = {
             return;
         }
 
-        var n = Math.min( end, pIndex + ppsdt );
 
-        for( i = pIndex | 0; i < n; ++i ) {
-            alive[ i ] = 1.0;
-            this._resetParticle( this.vertices[ i ] );
-        }
+        // If the emitter age is less than the maximum age of a particle,
+        // then we still have particles to emit. 
+        // if( emitterAge <= m ) {
+        //     // Determine indices of particles to activate
+        //     //  Fix for bug #2 (https://github.com/squarefeet/ShaderParticleEngine/issues/2)
+        //     //  Rather than use Math.round, I'm flooring the indexes here.
+        //     //  This stops any particles that technically shouldn't be marked as
+        //     //  alive from being set so.
+        //     //
+        //     //  Using a bitwise OR because it's quicker on current gen browsers.
+        //     //      See http://jsperf.com/jsfvsbitnot/10 re bitwise OR performance.
+        //     var startIndex  = start + ( pps * emitterAge ) | 0;
+        //     var endIndex    = start + ( pps * (emitterAge + dt) ) | 0;
 
-        this.particleIndex += ppsdt;
+        //     // If the end index is greater than the number of particles the
+        //     // emitter has, then clamp the end index to this number.
+        //     if( endIndex > start + numParticles ) {
+        //         endIndex = start + numParticles;
+        //     }
 
-        if( pIndex >= this.numParticles ) {
-            this.particleIndex = parseFloat( start, 10 );
-        }
+        //     // Loop through the particles we want to activate and mark
+        //     // them as alive, and reset them.
+        //     for( var i = startIndex; i < endIndex; i++ ) {
+        //         alive[i] = 1.0;
+        //         this._resetParticle( this.vertices[i] );
+        //     }
+
+        //     // this.particleIndex += endIndex;
+        // }
+
+        // else {
+            var n = Math.min( end, pIndex + ppsdt );
+
+            for( i = pIndex | 0; i < n; ++i ) {
+                alive[ i ] = 1.0;
+                this._resetParticle( this.vertices[ i ] );
+            }
+
+            this.particleIndex += ppsdt;
+
+            if( pIndex >= start + this.numParticles ) {
+                this.particleIndex = parseFloat( start, 10 );
+            }
+        // }
 
         // Add the delta time value to the age of the emitter.
         this.age += dt;

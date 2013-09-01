@@ -53,27 +53,19 @@
         	});
 
         	emitter = new ShaderParticleEmitter({
-        		type: 'sphere',
-                particlesPerSecond: 10000,
-                radius: 50,
-                radiusScale: new THREE.Vector3(1, 1, 0),
-                size: 1,
+                particlesPerSecond: 200,
+                size: 20,
                 sizeSpread: 0,
-                sizeEnd: 1,
-                colorStart: new THREE.Color( 'black' ),
-                colorEnd: new THREE.Color( 'white' ),
-                colorSpread: new THREE.Vector3(255, 255, 255),
+                sizeEnd: 20,
+                colorStart: new THREE.Color( 'white' ),
+                colorEnd: new THREE.Color( 'green' ),
                 opacityStart: 1.0,
                 opacityEnd: 0.0,
-                speed: 10,
+                alive: 0
         	});
 
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
-
-            // setInterval( function() {
-            //     emitter.alive = emitter.alive ? 0 : 1;
-            // }, 2000 );
 
         	document.querySelector('.numParticles').textContent = 
         		'Total particles: ' + emitter.numParticles;
