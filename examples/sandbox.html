@@ -27,7 +27,7 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
-            camera.position.z = 50;
+            camera.position.z = 200;
             camera.lookAt( scene.position );
 
             renderer = new THREE.WebGLRenderer();
@@ -48,32 +48,32 @@
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 1
+        		maxAge: 3,
+                blending: THREE.NoBlending
         	});
 
         	emitter = new ShaderParticleEmitter({
-        		position: new THREE.Vector3(0, 0, 0),
-
-        		acceleration: new THREE.Vector3(0, 0, 0),
-        		accelerationSpread: new THREE.Vector3( 10, 15, 10 ),
-
-        		velocity: new THREE.Vector3(0, 15, 0),
-        		velocitySpread: new THREE.Vector3(10, 0, 10),
-
-        		colorStart: new THREE.Color('white'),
-        		colorEnd: new THREE.Color('white'),
-        		size: 2.0,
-                sizeSpread: 0.0,
-        		sizeEnd: 0.0,
-
-                opacityStart: 1,
-                opacityEnd: 1,
-
-        		particlesPerSecond: 500
+        		type: 'sphere',
+                particlesPerSecond: 10000,
+                radius: 50,
+                radiusScale: new THREE.Vector3(1, 1, 0),
+                size: 1,
+                sizeSpread: 0,
+                sizeEnd: 1,
+                colorStart: new THREE.Color( 'black' ),
+                colorEnd: new THREE.Color( 'white' ),
+                colorSpread: new THREE.Vector3(255, 255, 255),
+                opacityStart: 1.0,
+                opacityEnd: 0.0,
+                speed: 10,
         	});
 
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
+
+            // setInterval( function() {
+            //     emitter.alive = emitter.alive ? 0 : 1;
+            // }, 2000 );
 
         	document.querySelector('.numParticles').textContent = 
         		'Total particles: ' + emitter.numParticles;
@@ -82,17 +82,16 @@
         
 
         function animate() {
-            // requestAnimationFrame( animate );
+            requestAnimationFrame( animate );
 
-            setTimeout( animate, 1000/60 );
+            // setTimeout( animate, 1 );
 
-            // Using a fixed time-step here to avoid pauses
             render( clock.getDelta() );
             stats.update();
         }
 
-
         function render( dt ) {
+
             particleGroup.tick( dt );
             renderer.render( scene, camera );
         }
@@ -111,7 +110,7 @@
         init();
         initParticles();
 
-        setTimeout(animate, 0);
+        setTimeout(animate, 1000);
 
 	</script>
 

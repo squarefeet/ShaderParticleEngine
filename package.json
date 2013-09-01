@@ -1,6 +1,6 @@
 {
   "name": "Shader-Particles",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-concat": "~0.3.0",

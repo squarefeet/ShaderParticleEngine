@@ -5,16 +5,17 @@
 //
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
+
 function ShaderParticleGroup( options ) {
-    this.fixedTimeStep          = options.fixedTimeStep || 0.016;
+    this.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016, 10 );
 
     // Uniform properties ( applied to all particles )
-    this.maxAge                 = options.maxAge || 3;
+    this.maxAge                 = parseFloat( options.maxAge || 3 );
     this.texture                = ( typeof options.texture === 'string' ? ASSET_LOADER.loaded.textures[ options.texture ] : options.texture ) || null;
-    this.hasPerspective         = typeof options.hasPerspective === 'number' ? options.hasPerspective : 1;
-    this.colorize               = options.colorize || 1;
+    this.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
+    this.colorize               = parseInt( options.colorize || 1 );
 
-    this.blending               = options.blending || THREE.AdditiveBlending;
+    this.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
     this.transparent            = options.transparent || true;
     this.alphaTest              = options.alphaTest || 0.5;
     this.depthWrite             = options.depthWrite || false;
@@ -22,10 +23,10 @@ function ShaderParticleGroup( options ) {
 
     // Create uniforms
     this.uniforms = {
-        duration:       { type: 'f', value: parseFloat( this.maxAge ) },
+        duration:       { type: 'f', value: this.maxAge },
         texture:        { type: 't', value: this.texture },
-        hasPerspective: { type: 'i', value: parseInt( this.hasPerspective ) },
-        colorize:       { type: 'i', value: parseInt( this.colorize ) }
+        hasPerspective: { type: 'i', value: this.hasPerspective },
+        colorize:       { type: 'i', value: this.colorize }
     };
 
     this.attributes = {
@@ -44,39 +45,26 @@ function ShaderParticleGroup( options ) {
     };
 
     this.emitters   = [];
-    this.geometry   = null;
-    this.material   = null;
-    this.mesh       = null;
 
-    this._createGeometry();
-    this._createMaterial();
-    this._createMesh();
+    this.geometry   = new THREE.Geometry();
 
+    this.material   = new THREE.ShaderMaterial({
+        uniforms:       this.uniforms,
+        attributes:     this.attributes,
+        vertexShader:   ShaderParticleGroup.shaders.vertex,
+        fragmentShader: ShaderParticleGroup.shaders.fragment,
+        blending:       THREE.AdditiveBlending,
+        transparent:    this.transparent,
+        alphaTest:      this.alphaTest,
+        depthWrite:     this.depthWrite,
+        depthTest:      this.depthTest,
+    });
+
+    this.mesh       = new THREE.ParticleSystem( this.geometry, this.material );
+    this.mesh.dynamic = true;
 }
 
 ShaderParticleGroup.prototype = {
-    _createGeometry: function() {
-        this.geometry = new THREE.Geometry();
-    },
-
-    _createMaterial: function() {
-        this.material = new THREE.ShaderMaterial({
-            uniforms:       this.uniforms,
-            attributes:     this.attributes,
-            vertexShader:   ShaderParticleGroup.shaders.vertex,
-            fragmentShader: ShaderParticleGroup.shaders.fragment,
-            blending:       THREE.AdditiveBlending,
-            transparent:    this.transparent,
-            alphaTest:      this.alphaTest,
-            depthWrite:     this.depthWrite,
-            depthTest:      this.depthTest,
-        });
-    },
-
-    _createMesh: function() {
-        this.mesh = new THREE.ParticleSystem( this.geometry, this.material );
-        this.mesh.dynamic = true;
-    },
 
     _randomVector3: function( base, spread ) {
         var v = new THREE.Vector3();
@@ -118,8 +106,6 @@ ShaderParticleGroup.prototype = {
 
         vec.multiplyScalar( radius ).add( base );
 
-        // var vec = new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
-
         if( scale ) {
             vec.multiply( scale );
         }
@@ -129,6 +115,7 @@ ShaderParticleGroup.prototype = {
 
     _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale ) {
         var direction = new THREE.Vector3().subVectors( base, position );
+
         direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
 
         if( scale ) {
@@ -148,10 +135,10 @@ ShaderParticleGroup.prototype = {
 
     addEmitter: function( emitter ) {
         if( emitter.duration ) {
-            emitter.numParticles = emitter.particlesPerSecond * (this.maxAge < emitter.emitterDuration ? this.maxAge : emitter.emitterDuration);
+            emitter.numParticles = emitter.particlesPerSecond * (this.maxAge < emitter.emitterDuration ? this.maxAge : emitter.emitterDuration) | 0;
         }
         else {
-            emitter.numParticles = emitter.particlesPerSecond * this.maxAge;
+            emitter.numParticles = emitter.particlesPerSecond * this.maxAge | 0;
         }
 
         emitter.numParticles = Math.ceil(emitter.numParticles);
@@ -170,6 +157,8 @@ ShaderParticleGroup.prototype = {
             customColorEnd = a.customColorEnd.value,
             opacity = a.opacity.value,
             opacityEnd = a.opacityEnd.value;
+
+        emitter.particleIndex = parseFloat( start, 10 );
 
         // Create the values
         for( var i = start; i < end; ++i ) {
@@ -202,13 +191,21 @@ ShaderParticleGroup.prototype = {
 
         // Cache properties on the emitter so we can access
         // them from its tick function.
-        emitter.verticesIndex   = start;
+        emitter.verticesIndex   = parseFloat( start );
         emitter.attributes      = this.attributes;
         emitter.vertices        = this.geometry.vertices;
         emitter.maxAge          = this.maxAge;
 
         // Save this emitter in an array for processing during this.tick()
         this.emitters.push( emitter );
+    },
+
+    _flagUpdate: function() {
+        // Set flags to update (causes less garbage than 
+        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
+        this.attributes.age.needsUpdate = true;
+        this.attributes.alive.needsUpdate = true;
+        this.geometry.verticesNeedUpdate = true;
     },
 
     tick: function( dt ) {
@@ -218,11 +215,7 @@ ShaderParticleGroup.prototype = {
             this.emitters[i].tick( dt );
         }
 
-        // Set flags to update (causes less garbage than 
-        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
-        this.attributes.age.needsUpdate = true;
-        this.attributes.alive.needsUpdate = true;
-        this.geometry.verticesNeedUpdate = true;
+        this._flagUpdate();
     }
 };
 
@@ -381,80 +374,83 @@ function ShaderParticleEmitter( options ) {
     that.velocitySpread         = options.velocitySpread instanceof THREE.Vector3 ? options.velocitySpread : new THREE.Vector3();
 
     // And again here; only used when this.type === 'sphere'
-    that.speed                  = typeof options.speed === 'number' ? options.speed : 0;
-    that.speedSpread            = typeof options.speedSpread === 'number' ? options.speedSpread : 0;
+    that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0, 10 );
+    that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0, 10 );
 
-    that.size                   = typeof options.size === 'number' ? options.size : 10.0;
-    that.sizeSpread             = typeof options.sizeSpread === 'number' ? options.sizeSpread : 0;
-    that.sizeEnd                = typeof options.sizeEnd === 'number' ? options.sizeEnd : 10.0;
+    that.size                   = parseFloat( typeof options.size === 'number' ? options.size : 10.0, 10 );
+    that.sizeSpread             = parseFloat( typeof options.sizeSpread === 'number' ? options.sizeSpread : 0, 10 );
+    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : 10.0, 10 );
 
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : new THREE.Color( 'blue' );
     that.colorSpread            = options.colorSpread instanceof THREE.Vector3 ? options.colorSpread : new THREE.Vector3();
 
-    that.opacityStart           = typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1;
-    that.opacityEnd             = typeof options.opacityEnd === 'number' ? options.opacityEnd : 0;
+    that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1, 10 );
+    that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0, 10 );
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
-    that.alive                  = typeof options.alive === 'number' ? options.alive : 1;
+    that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10);
 
     // The following properties are used internally, and mostly set when 
-    that.numParticles           = null;
+    that.numParticles           = 0;
     that.attributes             = null;
     that.vertices               = null;
     that.verticesIndex          = 0;
-    that.age                    = 0;
-    that.maxAge                 = null;
-    that.recycled               = [];
+    that.age                    = 0.0;
+    that.maxAge                 = 0.0;
+
+    that.particleIndex = 0.0;
 
     that.userData = {};
 }
 
 ShaderParticleEmitter.prototype = {
     _resetParticle: function( p ) {
-        var spread = this.positionSpread;
+        var spread = this.positionSpread,
+            type = this.type;
 
         // Optimise for no position spread or radius
         if(
-            ( this.type === 'cube' && spread.x === 0 && spread.y === 0 && spread.z === 0 ) ||
-            ( this.type === 'sphere' && this.radius === 0 )
+            ( type === 'cube' && spread.x === 0 && spread.y === 0 && spread.z === 0 ) ||
+            ( type === 'sphere' && this.radius === 0 )
         ) {
             p.copy( this.position );
         }
 
         // If there is a position spread, then get a new position based on this spread.
-        else if( this.type === 'cube' ) {
+        else if( type === 'cube' ) {
             this._randomizeExistingVector3( p, this.position, spread );
         }
 
-        else if( this.type === 'sphere') {
+        else if( type === 'sphere') {
             this._randomizeExistingVector3OnSphere( p, this.position, this.radius );
         }
     },
 
     _randomizeExistingVector3: function( v, base, spread ) {
+        var r = Math.random;
+
         v.copy( base );
 
-        v.x += Math.random() * spread.x - (spread.x/2);
-        v.y += Math.random() * spread.y - (spread.y/2);
-        v.z += Math.random() * spread.z - (spread.z/2);
+        v.x += r() * spread.x - (spread.x/2);
+        v.y += r() * spread.y - (spread.y/2);
+        v.z += r() * spread.z - (spread.z/2);
     },
 
     _randomizeExistingVector3OnSphere: function( v, base, radius ) {
-        var z = 2 * Math.random() - 1;
-        var t = 6.2832 * Math.random();
+        var rand = Math.random;
+
+        var z = 2 * rand() - 1;
+        var t = 6.2832 * rand();
         var r = Math.sqrt( 1 - z*z );
 
         var x = ((r * Math.cos(t)) * radius) + base.x;
         var y = ((r * Math.sin(t)) * radius) + base.y;
-        var z = (z * radius) + base.z;
+        var z = (z * radius) + base.z; 
 
-        x *= this.radiusScale.x;
-        y *= this.radiusScale.y;
-        z *= this.radiusScale.z;
-
-        v.set(x, y, z);
+        v.set(x, y, z).multiply( this.radiusScale );
     },
+
 
     // This function is called by the instance of `ShaderParticleEmitter` that 
     // this emitter has been added to.
@@ -464,32 +460,30 @@ ShaderParticleEmitter.prototype = {
         var a = this.attributes,
             alive = a.alive.value,
             age = a.age.value,
-            velocity = a.velocity.value,
             start = this.verticesIndex,
             end = start + this.numParticles,
-            r = this.recycled,
-            pps = this.particlesPerSecond,
+            ppsdt = this.particlesPerSecond * dt,
             m = this.maxAge,
             emitterAge = this.age,
             duration = this.emitterDuration,
-            numParticles = this.numParticles;
-
-        // Reset the recycled vertices array.
-        // r.length = 0;
+            pIndex = this.particleIndex;
 
         // Loop through all the particles in this emitter and
         // determine whether they're still alive and need advancing
         // or if they should be dead and therefore marked as such
         // and pushed into the recycled vertices array for reuse.
         for( var i = start; i < end; ++i ) {
-            if( alive[i] === 1.0 ) {
-                age[i] += dt;
+            if( alive[ i ] === 0.0 ) {
+                continue;
             }
 
-            if(age[i] >= m) {
-                age[i] = 0.0;
-                alive[i] = 0.0;
-                r.push(i);
+            if( alive[ i ] === 1.0 ) {
+                age[ i ] += dt;
+            }
+
+            if( age[ i ] >= m ) {
+                age[ i ] = 0.0;
+                alive[ i ] = 0.0;
             }
         }
 
@@ -497,74 +491,30 @@ ShaderParticleEmitter.prototype = {
         // the recycled vertices array and reset the age of the 
         // emitter to zero ready to go again if required, then
         // exit this function.
-        if( !this.alive ) {
-            if(r.length) {
-                for(var i = 0; i < r.length; ++i) {
-                    this._resetParticle( this.vertices[ r[i] ] );
-                }
-            }
-
-            this.age = 0;
+        if( this.alive === 0 ) {
+            this.age = 0.0;
             return;
         }
 
         // If the emitter has a specified lifetime and we've exceeded it,
         // mark the emitter as dead and exit this function.
-        if( typeof duration === 'number' && this.age > duration ) {
+        if( typeof duration === 'number' && emitterAge > duration ) {
             this.alive = 0;
+            this.age = 0.0;
             return;
         }
 
+        var n = Math.min( end, pIndex + ppsdt );
 
-        // If the emitter age is less than the maximum age of a particle,
-        // then we still have particles to emit. 
-        if( emitterAge <= m ) {
-            // Determine indices of particles to activate
-            //  Fix for bug #2 (https://github.com/squarefeet/ShaderParticleEngine/issues/2)
-            //  Rather than use Math.round, I'm flooring the indexes here.
-            //  This stops any particles that technically shouldn't be marked as
-            //  alive from being set so.
-            //
-            //  Using a bitwise OR because it's quicker on current gen browsers.
-            //      See http://jsperf.com/jsfvsbitnot/10 re bitwise OR performance.
-            var startIndex  = start + ( pps * emitterAge ) | 0;
-            var endIndex    = start + ( pps * (emitterAge + dt) ) | 0;
-
-            // If the end index is greater than the number of particles the
-            // emitter has, then clamp the end index to this number.
-            if( endIndex > start + numParticles ) {
-                endIndex = start + numParticles;
-            }
-
-            // Loop through the particles we want to activate and mark
-            // them as alive, and reset them.
-            for( var i = startIndex; i < endIndex; i++ ) {
-                alive[i] = 1.0;
-                this._resetParticle( this.vertices[i] );
-            }
+        for( i = pIndex | 0; i < n; ++i ) {
+            alive[ i ] = 1.0;
+            this._resetParticle( this.vertices[ i ] );
         }
 
+        this.particleIndex += ppsdt;
 
-        // If we have any particles (vertices) in the recycled vertices 
-        // array then we need to mark them as alive and reset them.
-        //
-        // Fix for bug #2 (https://github.com/squarefeet/ShaderParticleEngine/issues/2)
-        // Rather than loop through all of the vertices in the recycled array,
-        // we need to clamp the maximum number of vertices that we reset so
-        // that we don't activate too many particles. This smooths out any
-        // historical dt variations during a particles lifecycle, but note
-        // that it doesn't stop gaps appearing in a particle stream if 
-        // dt isn't fairly consistent.
-        var numVerticesToReset = Math.min( r.length - 1, (pps * dt | 0) - 1 );
-
-        // Moved to a backwards loop here so we can safely remove
-        // vertices that have been marked as alive. Hopefully the 
-        // splice operation shouldn't slow things down too much.
-        // JSPerf seems to suggest that it won't...(!)
-        for(var i = numVerticesToReset; i >= 0; --i) {
-            alive[ r[i] ] = 1.0;
-            this._resetParticle( this.vertices[ r[i] ] );
-            r.splice(i, 1);
+        if( pIndex >= this.numParticles ) {
+            this.particleIndex = parseFloat( start, 10 );
         }
 
         // Add the delta time value to the age of the emitter.

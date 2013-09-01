@@ -1,20 +1,21 @@
-// ShaderParticleGroup 0.2.0
+// ShaderParticleGroup 0.3.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
+
 function ShaderParticleGroup( options ) {
-    this.fixedTimeStep          = options.fixedTimeStep || 0.016;
+    this.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016, 10 );
 
     // Uniform properties ( applied to all particles )
-    this.maxAge                 = options.maxAge || 3;
+    this.maxAge                 = parseFloat( options.maxAge || 3 );
     this.texture                = ( typeof options.texture === 'string' ? ASSET_LOADER.loaded.textures[ options.texture ] : options.texture ) || null;
-    this.hasPerspective         = typeof options.hasPerspective === 'number' ? options.hasPerspective : 1;
-    this.colorize               = options.colorize || 1;
+    this.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
+    this.colorize               = parseInt( options.colorize || 1 );
 
-    this.blending               = options.blending || THREE.AdditiveBlending;
+    this.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
     this.transparent            = options.transparent || true;
     this.alphaTest              = options.alphaTest || 0.5;
     this.depthWrite             = options.depthWrite || false;
@@ -22,10 +23,10 @@ function ShaderParticleGroup( options ) {
 
     // Create uniforms
     this.uniforms = {
-        duration:       { type: 'f', value: parseFloat( this.maxAge ) },
+        duration:       { type: 'f', value: this.maxAge },
         texture:        { type: 't', value: this.texture },
-        hasPerspective: { type: 'i', value: parseInt( this.hasPerspective ) },
-        colorize:       { type: 'i', value: parseInt( this.colorize ) }
+        hasPerspective: { type: 'i', value: this.hasPerspective },
+        colorize:       { type: 'i', value: this.colorize }
     };
 
     this.attributes = {
@@ -44,39 +45,26 @@ function ShaderParticleGroup( options ) {
     };
 
     this.emitters   = [];
-    this.geometry   = null;
-    this.material   = null;
-    this.mesh       = null;
 
-    this._createGeometry();
-    this._createMaterial();
-    this._createMesh();
+    this.geometry   = new THREE.Geometry();
 
+    this.material   = new THREE.ShaderMaterial({
+        uniforms:       this.uniforms,
+        attributes:     this.attributes,
+        vertexShader:   ShaderParticleGroup.shaders.vertex,
+        fragmentShader: ShaderParticleGroup.shaders.fragment,
+        blending:       THREE.AdditiveBlending,
+        transparent:    this.transparent,
+        alphaTest:      this.alphaTest,
+        depthWrite:     this.depthWrite,
+        depthTest:      this.depthTest,
+    });
+
+    this.mesh       = new THREE.ParticleSystem( this.geometry, this.material );
+    this.mesh.dynamic = true;
 }
 
 ShaderParticleGroup.prototype = {
-    _createGeometry: function() {
-        this.geometry = new THREE.Geometry();
-    },
-
-    _createMaterial: function() {
-        this.material = new THREE.ShaderMaterial({
-            uniforms:       this.uniforms,
-            attributes:     this.attributes,
-            vertexShader:   ShaderParticleGroup.shaders.vertex,
-            fragmentShader: ShaderParticleGroup.shaders.fragment,
-            blending:       THREE.AdditiveBlending,
-            transparent:    this.transparent,
-            alphaTest:      this.alphaTest,
-            depthWrite:     this.depthWrite,
-            depthTest:      this.depthTest,
-        });
-    },
-
-    _createMesh: function() {
-        this.mesh = new THREE.ParticleSystem( this.geometry, this.material );
-        this.mesh.dynamic = true;
-    },
 
     _randomVector3: function( base, spread ) {
         var v = new THREE.Vector3();
@@ -118,8 +106,6 @@ ShaderParticleGroup.prototype = {
 
         vec.multiplyScalar( radius ).add( base );
 
-        // var vec = new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
-
         if( scale ) {
             vec.multiply( scale );
         }
@@ -127,8 +113,9 @@ ShaderParticleGroup.prototype = {
         return vec;
     },
 
-    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale ) {
+    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
         var direction = new THREE.Vector3().subVectors( base, position );
+
         direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
 
         if( scale ) {
@@ -148,10 +135,10 @@ ShaderParticleGroup.prototype = {
 
     addEmitter: function( emitter ) {
         if( emitter.duration ) {
-            emitter.numParticles = emitter.particlesPerSecond * (this.maxAge < emitter.emitterDuration ? this.maxAge : emitter.emitterDuration);
+            emitter.numParticles = emitter.particlesPerSecond * (this.maxAge < emitter.emitterDuration ? this.maxAge : emitter.emitterDuration) | 0;
         }
         else {
-            emitter.numParticles = emitter.particlesPerSecond * this.maxAge;
+            emitter.numParticles = emitter.particlesPerSecond * this.maxAge | 0;
         }
 
         emitter.numParticles = Math.ceil(emitter.numParticles);
@@ -171,12 +158,14 @@ ShaderParticleGroup.prototype = {
             opacity = a.opacity.value,
             opacityEnd = a.opacityEnd.value;
 
+        emitter.particleIndex = parseFloat( start, 10 );
+
         // Create the values
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
                 vertices[i]     = this._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
-                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale );
+                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale, emitter.radius );
             }
             else {
                 vertices[i]     = this._randomVector3( emitter.position, emitter.positionSpread );
@@ -202,13 +191,21 @@ ShaderParticleGroup.prototype = {
 
         // Cache properties on the emitter so we can access
         // them from its tick function.
-        emitter.verticesIndex   = start;
+        emitter.verticesIndex   = parseFloat( start );
         emitter.attributes      = this.attributes;
         emitter.vertices        = this.geometry.vertices;
         emitter.maxAge          = this.maxAge;
 
         // Save this emitter in an array for processing during this.tick()
         this.emitters.push( emitter );
+    },
+
+    _flagUpdate: function() {
+        // Set flags to update (causes less garbage than 
+        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
+        this.attributes.age.needsUpdate = true;
+        this.attributes.alive.needsUpdate = true;
+        this.geometry.verticesNeedUpdate = true;
     },
 
     tick: function( dt ) {
@@ -218,11 +215,7 @@ ShaderParticleGroup.prototype = {
             this.emitters[i].tick( dt );
         }
 
-        // Set flags to update (causes less garbage than 
-        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
-        this.attributes.age.needsUpdate = true;
-        this.attributes.alive.needsUpdate = true;
-        this.geometry.verticesNeedUpdate = true;
+        this._flagUpdate();
     }
 };
 
