@@ -1,20 +1,21 @@
-// ShaderParticleGroup 0.1.0
+// ShaderParticleGroup 0.3.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
+
 function ShaderParticleGroup( options ) {
-    this.fixedTimeStep          = options.fixedTimeStep || 0.016;
+    this.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016, 10 );
 
     // Uniform properties ( applied to all particles )
-    this.maxAge                 = options.maxAge || 3;
+    this.maxAge                 = parseFloat( options.maxAge || 3 );
     this.texture                = ( typeof options.texture === 'string' ? ASSET_LOADER.loaded.textures[ options.texture ] : options.texture ) || null;
-    this.hasPerspective         = typeof options.hasPerspective === 'number' ? options.hasPerspective : 1;
-    this.colorize               = options.colorize || 1;
+    this.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
+    this.colorize               = parseInt( options.colorize || 1 );
 
-    this.blending               = options.blending || THREE.AdditiveBlending;
+    this.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
     this.transparent            = options.transparent || true;
     this.alphaTest              = options.alphaTest || 0.5;
     this.depthWrite             = options.depthWrite || false;
@@ -22,10 +23,10 @@ function ShaderParticleGroup( options ) {
 
     // Create uniforms
     this.uniforms = {
-        duration:       { type: 'f', value: parseFloat( this.maxAge ) },
+        duration:       { type: 'f', value: this.maxAge },
         texture:        { type: 't', value: this.texture },
-        hasPerspective: { type: 'i', value: parseInt( this.hasPerspective ) },
-        colorize:       { type: 'i', value: parseInt( this.colorize ) }
+        hasPerspective: { type: 'i', value: this.hasPerspective },
+        colorize:       { type: 'i', value: this.colorize }
     };
 
     this.attributes = {
@@ -44,39 +45,26 @@ function ShaderParticleGroup( options ) {
     };
 
     this.emitters   = [];
-    this.geometry   = null;
-    this.material   = null;
-    this.mesh       = null;
 
-    this._createGeometry();
-    this._createMaterial();
-    this._createMesh();
+    this.geometry   = new THREE.Geometry();
 
+    this.material   = new THREE.ShaderMaterial({
+        uniforms:       this.uniforms,
+        attributes:     this.attributes,
+        vertexShader:   ShaderParticleGroup.shaders.vertex,
+        fragmentShader: ShaderParticleGroup.shaders.fragment,
+        blending:       THREE.AdditiveBlending,
+        transparent:    this.transparent,
+        alphaTest:      this.alphaTest,
+        depthWrite:     this.depthWrite,
+        depthTest:      this.depthTest,
+    });
+
+    this.mesh       = new THREE.ParticleSystem( this.geometry, this.material );
+    this.mesh.dynamic = true;
 }
 
 ShaderParticleGroup.prototype = {
-    _createGeometry: function() {
-        this.geometry = new THREE.Geometry();
-    },
-
-    _createMaterial: function() {
-        this.material = new THREE.ShaderMaterial({
-            uniforms:       this.uniforms,
-            attributes:     this.attributes,
-            vertexShader:   ShaderParticleGroup.shaders.vertex,
-            fragmentShader: ShaderParticleGroup.shaders.fragment,
-            blending:       THREE.AdditiveBlending,
-            transparent:    this.transparent,
-            alphaTest:      this.alphaTest,
-            depthWrite:     this.depthWrite,
-            depthTest:      this.depthTest,
-        });
-    },
-
-    _createMesh: function() {
-        this.mesh = new THREE.ParticleSystem( this.geometry, this.material );
-        this.mesh.dynamic = true;
-    },
 
     _randomVector3: function( base, spread ) {
         var v = new THREE.Vector3();
@@ -118,8 +106,6 @@ ShaderParticleGroup.prototype = {
 
         vec.multiplyScalar( radius ).add( base );
 
-        // var vec = new THREE.Vector3().addVectors( base, vec3.multiplyScalar( radius ) );
-
         if( scale ) {
             vec.multiply( scale );
         }
@@ -127,8 +113,9 @@ ShaderParticleGroup.prototype = {
         return vec;
     },
 
-    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale ) {
+    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
         var direction = new THREE.Vector3().subVectors( base, position );
+
         direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
 
         if( scale ) {
@@ -148,10 +135,10 @@ ShaderParticleGroup.prototype = {
 
     addEmitter: function( emitter ) {
         if( emitter.duration ) {
-            emitter.numParticles = emitter.particlesPerSecond * (this.maxAge < emitter.emitterDuration ? this.maxAge : emitter.emitterDuration);
+            emitter.numParticles = emitter.particlesPerSecond * (this.maxAge < emitter.emitterDuration ? this.maxAge : emitter.emitterDuration) | 0;
         }
         else {
-            emitter.numParticles = emitter.particlesPerSecond * this.maxAge;
+            emitter.numParticles = emitter.particlesPerSecond * this.maxAge | 0;
         }
 
         emitter.numParticles = Math.ceil(emitter.numParticles);
@@ -171,12 +158,14 @@ ShaderParticleGroup.prototype = {
             opacity = a.opacity.value,
             opacityEnd = a.opacityEnd.value;
 
+        emitter.particleIndex = parseFloat( start, 10 );
+
         // Create the values
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
                 vertices[i]     = this._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
-                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale );
+                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale, emitter.radius );
             }
             else {
                 vertices[i]     = this._randomVector3( emitter.position, emitter.positionSpread );
@@ -186,8 +175,9 @@ ShaderParticleGroup.prototype = {
 
             acceleration[i] = this._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
-
-            size[i]         = Math.max( 0.1, this._randomFloat( emitter.size, emitter.sizeSpread ) );
+            // Fix for bug #1 (https://github.com/squarefeet/ShaderParticleEngine/issues/1)
+            // For some stupid reason I was limiting the size value to a minimum of 0.1. Derp.
+            size[i]         = this._randomFloat( emitter.size, emitter.sizeSpread );
             sizeEnd[i]      = emitter.sizeEnd;
             age[i]          = 0.0;
             alive[i]        = 0.0;
@@ -201,13 +191,21 @@ ShaderParticleGroup.prototype = {
 
         // Cache properties on the emitter so we can access
         // them from its tick function.
-        emitter.verticesIndex   = start;
+        emitter.verticesIndex   = parseFloat( start );
         emitter.attributes      = this.attributes;
         emitter.vertices        = this.geometry.vertices;
         emitter.maxAge          = this.maxAge;
 
         // Save this emitter in an array for processing during this.tick()
         this.emitters.push( emitter );
+    },
+
+    _flagUpdate: function() {
+        // Set flags to update (causes less garbage than 
+        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
+        this.attributes.age.needsUpdate = true;
+        this.attributes.alive.needsUpdate = true;
+        this.geometry.verticesNeedUpdate = true;
     },
 
     tick: function( dt ) {
@@ -217,11 +215,7 @@ ShaderParticleGroup.prototype = {
             this.emitters[i].tick( dt );
         }
 
-        // Set flags to update (causes less garbage than 
-        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
-        this.attributes.age.needsUpdate = true;
-        this.attributes.alive.needsUpdate = true;
-        this.geometry.verticesNeedUpdate = true;
+        this._flagUpdate();
     }
 };
 
@@ -257,22 +251,14 @@ ShaderParticleGroup.shaders = {
             'return (start + ((end - start) * (age / duration)));',
         '}',
 
-        // Return the size of the particle
-        'float GetSize( float newSize, vec4 mvPosition ) {',
-            'if( hasPerspective == 1 ) {',
-                'newSize = newSize * (300.0 / length( mvPosition.xyz ) );',
-            '}',
-            'return newSize;',
-        '}',
-
         // Integrate acceleration into velocity and apply it to the particle's position
         'vec4 GetPos() {',
             'vec3 newPos = vec3( position );',
-            'float positionInTime = age / duration;',
 
-            // Move acceleration & velocity vectors to the value they should be at the current age
-            'vec3 a = acceleration * positionInTime;',
-            'vec3 v = velocity * positionInTime;',
+            // Move acceleration & velocity vectors to the value they 
+            // should be at the current age
+            'vec3 a = acceleration * age;',
+            'vec3 v = velocity * age;',
 
             // Move velocity vector to correct values at this age
             'v = v + (a * age);',
@@ -283,9 +269,6 @@ ShaderParticleGroup.shaders = {
             // Convert the newPos vector into world-space
             'vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );',
 
-            // Set point size (should be moved to main() block, really)
-            'gl_PointSize = Lerp( GetSize( size, mvPosition ), GetSize( sizeEnd, mvPosition ) );',
-
             'return mvPosition;',
         '}',
 
@@ -293,14 +276,14 @@ ShaderParticleGroup.shaders = {
         'void main() {',
 
             'if( alive > 0.5 ) {',
-
                 // Integrate color "tween"
                 'vec3 color = vec3( customColor );',
                 'if( customColor != customColorEnd ) {',
                     'color = Lerp( customColor, customColorEnd );',
                 '}',
 
-                // Store the color of this particle in the varying vColor, so frag shader can access it.
+                // Store the color of this particle in the varying vColor, 
+                // so frag shader can access it.
                 'if( opacity != opacityEnd ) {',
                     'vColor = vec4( color, Lerp( opacity, opacityEnd ) );',
                 '}',
@@ -308,12 +291,25 @@ ShaderParticleGroup.shaders = {
                     'vColor = vec4( color, opacity );',
                 '}',
 
-                // Set the position of this particle
-                'gl_Position = projectionMatrix * GetPos();',
+                // Get the position of this particle so we can use it
+                // when we calculate any perspective that might be required.
+                'vec4 pos = GetPos();',
+
+                // Determine point size .
+                'float pointSize = Lerp( size, sizeEnd );',
+
+                'if( hasPerspective == 1 ) {',
+                    'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
+                '}',
+
+                // Set particle size and position
+                'gl_PointSize = pointSize;',
+                'gl_Position = projectionMatrix * pos;',
             '}',
 
             'else {',
-                // Hide particle and set its position to the (maybe) glsl equivalent of Number.POSITIVE_INFINITY
+                // Hide particle and set its position to the (maybe) glsl 
+                // equivalent of Number.POSITIVE_INFINITY
                 'vColor = vec4( customColor, 0.0 );',
                 'gl_Position = vec4(1e20, 1e20, 1e20, 0);',
             '}',
