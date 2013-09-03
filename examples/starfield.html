@@ -46,27 +46,26 @@
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/star.png'),
-        		maxAge: 5,
-                blending: THREE.NormalBlending
+        		maxAge: 2,
+                blending: THREE.AdditiveBlending
         	});
 
         	emitter = new ShaderParticleEmitter({
-        		positionSpread: new THREE.Vector3(50, 50, 50),
+        		positionSpread: new THREE.Vector3(50, 50, 0),
 
-                accelerationSpread: new THREE.Vector3(0, 0, 10),
+                acceleration: new THREE.Vector3(0, 0, 10),
 
-        		velocity: new THREE.Vector3(0, 0, 100),
+        		velocity: new THREE.Vector3(0, 0, 10),
 
         		colorStart: new THREE.Color('white'),
         		colorEnd: new THREE.Color('white'),
-        		size: 1,
+        		size: 2,
         		sizeEnd: 2,
-
-
                 opacityStart: 0,
-                opacityEnd: 1,
+                opacityMiddle: 1,
+                opacityEnd: 0,
 
-        		particlesPerSecond: 10000
+        		particlesPerSecond: 5000
         	});
 
         	particleGroup.addEmitter( emitter );

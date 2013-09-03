@@ -1,4 +1,3 @@
-<!-- A seperate test file to play around with whilst doing updates/bug fixes -->
 <html>
 <head>
 	<title>Basic Shader Particles</title>
@@ -12,8 +11,7 @@
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
-	<script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
-    <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+	<script type="text/javascript" src="../build/ShaderParticles.min.js"></script>
 
 
 	<script type="text/javascript">
@@ -27,7 +25,7 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
-            camera.position.z = 200;
+            camera.position.z = 50;
             camera.lookAt( scene.position );
 
             renderer = new THREE.WebGLRenderer();
@@ -46,25 +44,29 @@
 
         // Create particle group and emitter
         function initParticles() {
+            var texture = THREE.ImageUtils.loadTexture('./img/cloudSml.png');
+            texture.magFilter = THREE.LinearMipMapLinearFilter;
+            texture.minFilter = THREE.LinearMipMapLinearFilter;
+
         	particleGroup = new ShaderParticleGroup({
-        		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 1,
-                blending: THREE.NoBlending
+        		texture: texture,
+        		maxAge: 5
         	});
 
         	emitter = new ShaderParticleEmitter({
-                particlesPerSecond: 20,
-                positionSpread: new THREE.Vector3(500, 500, 500),
+        		position: new THREE.Vector3(0, 0, 0),
+                positionSpread: new THREE.Vector3(100, 50, 100),
 
-                velocity: new THREE.Vector3(0, 0, 10),
+        		colorStart: new THREE.Color('black'),
+                colorSpread: new THREE.Vector3(1, 0.1, 0.3),
+        		colorEnd: new THREE.Color('black'),
+        		size: 500,
+                sizeSpread: 10,
+                opacityStart: 0,
+                opacityMiddle: 1,
+                opacityEnd: 0,
 
-                size: 20,
-                sizeEnd: 20,
-                colorStart: new THREE.Color( 'white' ),
-                colorEnd: new THREE.Color( 'white' ),
-                opacityStart: 0.0,
-                // opacityMiddle: 1.0,
-                opacityEnd: 1.0
+        		particlesPerSecond: 10,
         	});
 
         	particleGroup.addEmitter( emitter );
@@ -79,16 +81,19 @@
         function animate() {
             requestAnimationFrame( animate );
 
-            // setTimeout( animate, 1 );
-
-            render( clock.getDelta() );
+            // Using a fixed time-step here to avoid pauses
+            render( 0.016 );
             stats.update();
         }
 
-        function render( dt ) {
 
+        function render( dt ) {
             particleGroup.tick( dt );
             renderer.render( scene, camera );
+
+            camera.position.x = Math.sin( Date.now() * 0.0005 ) * 150;
+            camera.position.z = Math.cos( Date.now() * 0.0005 ) * 150;
+            camera.lookAt( scene.position );
         }
 
 
@@ -105,7 +110,7 @@
         init();
         initParticles();
 
-        setTimeout(animate, 1000);
+        setTimeout(animate, 0);
 
 	</script>
 

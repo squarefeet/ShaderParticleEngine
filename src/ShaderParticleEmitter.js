@@ -1,4 +1,4 @@
-// ShaderParticleEmitter 0.3.1
+// ShaderParticleEmitter 0.4.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
@@ -44,9 +44,16 @@ function ShaderParticleEmitter( options ) {
 
     that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1, 10 );
     that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0, 10 );
+    that.opacityMiddle          = parseFloat( 
+        typeof options.opacityMiddle !== 'undefined' ? 
+        options.opacityMiddle : 
+        Math.abs(that.opacityEnd - that.opacityStart) / 2, 
+    10 );
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10);
+
+    that.static                 = typeof options.static === 'number' ? options.static : 0;
 
     // The following properties are used internally, and mostly set when 
     that.numParticles           = 0;
@@ -113,6 +120,10 @@ ShaderParticleEmitter.prototype = {
     // this emitter has been added to.
     tick: function( dt ) {
 
+        if( this.static ) {
+            return;
+        }
+
         // Cache some values for quicker access in loops.
         var a = this.attributes,
             alive = a.alive.value,
@@ -132,14 +143,6 @@ ShaderParticleEmitter.prototype = {
         // or if they should be dead and therefore marked as such
         // and pushed into the recycled vertices array for reuse.
         for( var i = start; i < end; ++i ) {
-            if( alive[ i ] === 0.0 ) {
-                continue;
-            }
-
-            if( age[ i ] === 0.0 ) {
-                this._resetParticle( this.vertices[ i ] );
-            }
-
             if( alive[ i ] === 1.0 ) {
                 age[ i ] += dt;
             }
@@ -170,8 +173,10 @@ ShaderParticleEmitter.prototype = {
         var n = Math.min( end, pIndex + ppsdt );
 
         for( i = pIndex | 0; i < n; ++i ) {
-            alive[ i ] = 1.0;
-            this._resetParticle( this.vertices[ i ] );
+            if( alive[ i ] !== 1.0 ) {
+                alive[ i ] = 1.0;
+                this._resetParticle( this.vertices[ i ] );
+            }
         }
 
         this.particleIndex += ppsdt;

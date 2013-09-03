@@ -1,9 +1,17 @@
 ShaderParticleEngine
 ====================
-A GLSL-based particle engine for THREE.js. Heavily based on [Stemkoski's great particle engine](https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
+A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle engine](https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 
 
 Pull requests and issue reports welcome.
+
+
+Version
+=======
+## 0.4.0 ##
+Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
+That said, it ain't gonna be long until it's at 1.0.0.
+
 
 
 About
@@ -184,6 +192,12 @@ var particleEmitter = new ShaderParticleEmitter({
 	// [OPTIONAL] Particle start opacity.
 	opacityStart: 1,
 
+	// [OPTIONAL] New in v0.4.0. Particle middle opacity. 
+	// The opacity value at half a particle's lifecycle.
+	// If not specified, it will be set to halfway between the
+	// `opacityStart` and `opacityEnd` values.
+	opacityMiddle: 0.5
+
 	// [OPTIONAL] Particle end opacity.
 	opacityEnd: 0,
 
@@ -197,7 +211,14 @@ var particleEmitter = new ShaderParticleEmitter({
 
 	// [OPTIONAL] Should this emitter be alive (i.e. should it be emitting)?
 	// 0 for false, 1 for true
-	alive: 1
+	alive: 1,
+
+	// [OPTIONAL] New in v0.4.0. If you want a huge amount of particles, and 
+	// they aren't going to be moving, then set this property to `1`. This will
+	// take the start values for color, opacity, and size (with spreads applied),
+	// not add the emitter from its group's tick function, and so will be static.
+	// See the static.html file in the examples directory for more.
+	static: 0
 });
 ```
 
