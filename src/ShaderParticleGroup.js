@@ -1,4 +1,4 @@
-// ShaderParticleGroup 0.3.1
+// ShaderParticleGroup 0.4.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
@@ -41,6 +41,7 @@ function ShaderParticleGroup( options ) {
         customColorEnd: { type: 'c', value: [] },
 
         opacity:        { type: 'f', value: [] },
+        opacityMiddle:  { type: 'f', value: [] },
         opacityEnd:     { type: 'f', value: [] }
     };
 
@@ -83,13 +84,13 @@ ShaderParticleGroup.prototype = {
 
         v.copy( base );
 
-        v.r += Math.random() * spread.x - (spread.x/2);
-        v.g += Math.random() * spread.y - (spread.y/2);
-        v.b += Math.random() * spread.z - (spread.z/2);
+        v.r += (Math.random() * spread.x) - (spread.x/2);
+        v.g += (Math.random() * spread.y) - (spread.y/2);
+        v.b += (Math.random() * spread.z) - (spread.z/2);
 
-        v.r = Math.min( v.r, 255 );
-        v.g = Math.min( v.g, 255 );
-        v.b = Math.min( v.b, 255 );
+        v.r = Math.max( 0, Math.min( v.r, 1 ) );
+        v.g = Math.max( 0, Math.min( v.g, 1 ) );
+        v.b = Math.max( 0, Math.min( v.b, 1 ) );
 
         return v;
     },
@@ -156,6 +157,7 @@ ShaderParticleGroup.prototype = {
             customColor = a.customColor.value,
             customColorEnd = a.customColorEnd.value,
             opacity = a.opacity.value,
+            opacityMiddle = a.opacityMiddle.value;
             opacityEnd = a.opacityEnd.value;
 
         emitter.particleIndex = parseFloat( start, 10 );
@@ -180,12 +182,13 @@ ShaderParticleGroup.prototype = {
             size[i]         = this._randomFloat( emitter.size, emitter.sizeSpread );
             sizeEnd[i]      = emitter.sizeEnd;
             age[i]          = 0.0;
-            alive[i]        = 0.0;
+            alive[i]        = emitter.static ? 1.0 : 0.0;
 
 
             customColor[i]      = this._randomColor( emitter.colorStart, emitter.colorSpread );
             customColorEnd[i]   = emitter.colorEnd;
             opacity[i]          = emitter.opacityStart;
+            opacityMiddle[i]    = emitter.opacityMiddle;
             opacityEnd[i]       = emitter.opacityEnd;
         }
 
@@ -197,7 +200,9 @@ ShaderParticleGroup.prototype = {
         emitter.maxAge          = this.maxAge;
 
         // Save this emitter in an array for processing during this.tick()
-        this.emitters.push( emitter );
+        if( !emitter.static ) {
+            this.emitters.push( emitter );
+        }
     },
 
     _flagUpdate: function() {
@@ -210,6 +215,8 @@ ShaderParticleGroup.prototype = {
 
     tick: function( dt ) {
         dt = dt || this.fixedTimeStep;
+
+        if( !this.emitters.length ) return;
 
         for( var i = 0; i < this.emitters.length; ++i ) {
             this.emitters[i].tick( dt );
@@ -230,6 +237,7 @@ ShaderParticleGroup.shaders = {
         'attribute vec3 customColor;',
         'attribute vec3 customColorEnd;',
         'attribute float opacity;',
+        'attribute float opacityMiddle;',
         'attribute float opacityEnd;',
 
         'attribute vec3 acceleration;',
@@ -241,14 +249,17 @@ ShaderParticleGroup.shaders = {
 
         'varying vec4 vColor;',
 
+        'float positionInTime = (age / duration);',
+        'float halfDuration = (duration / 2.0);',
+
         // Linearly lerp a float
-        'float Lerp( float start, float end ) {',
-            'return (start + ((end - start) * (age / duration)));',
+        'float Lerp( float start, float end, float amount ) {',
+            'return (start + ((end - start) * amount));',
         '}',
 
         // Linearly lerp a vector3
-        'vec3 Lerp( vec3 start, vec3 end ) {',
-            'return (start + ((end - start) * (age / duration)));',
+        'vec3 Lerp( vec3 start, vec3 end, float amount ) {',
+            'return (start + ((end - start) * amount));',
         '}',
 
         // Integrate acceleration into velocity and apply it to the particle's position
@@ -279,16 +290,25 @@ ShaderParticleGroup.shaders = {
                 // Integrate color "tween"
                 'vec3 color = vec3( customColor );',
                 'if( customColor != customColorEnd ) {',
-                    'color = Lerp( customColor, customColorEnd );',
+                    'color = Lerp( customColor, customColorEnd, positionInTime );',
                 '}',
 
                 // Store the color of this particle in the varying vColor, 
                 // so frag shader can access it.
-                'if( opacity != opacityEnd ) {',
-                    'vColor = vec4( color, Lerp( opacity, opacityEnd ) );',
-                '}',
-                'else {',
+                'if( opacity == opacityMiddle && opacityMiddle == opacityEnd ) {',
                     'vColor = vec4( color, opacity );',
+                '}',
+
+                'else if( positionInTime < 0.5 ) {',
+                    'vColor = vec4( color, Lerp( opacity, opacityMiddle, age / halfDuration ) );',
+                '}',
+
+                'else if( positionInTime > 0.5 ) {',
+                    'vColor = vec4( color, Lerp( opacityMiddle, opacityEnd, (age - halfDuration) / halfDuration ) );',
+                '}',
+
+                'else {',
+                    'vColor = vec4( color, opacityMiddle );',
                 '}',
 
                 // Get the position of this particle so we can use it
@@ -296,7 +316,7 @@ ShaderParticleGroup.shaders = {
                 'vec4 pos = GetPos();',
 
                 // Determine point size .
-                'float pointSize = Lerp( size, sizeEnd );',
+                'float pointSize = Lerp( size, sizeEnd, positionInTime );',
 
                 'if( hasPerspective == 1 ) {',
                     'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
@@ -329,7 +349,7 @@ ShaderParticleGroup.shaders = {
             'vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,',
                                   'c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);',
 
-            'vec4 rotatedTexture = texture2D( texture,  rotatedUV );',
+            'vec4 rotatedTexture = texture2D( texture, rotatedUV );',
 
             'if( colorize == 1 ) {',
                 'gl_FragColor = vColor * rotatedTexture;',

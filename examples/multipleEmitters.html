@@ -19,7 +19,7 @@
         var scene, camera, renderer, stats, stats2, clock;
 
         // Used in initParticles()
-		var emitter, particleGroup, numEmitters = 30;
+		var emitter, particleGroup, numEmitters = 120;
 
 		// Setup the scene
         function init() {
@@ -50,42 +50,43 @@
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 5
+        		maxAge: 2
         	});
 
-            for( var i = 0; i < 30; ++i ) {
+            for( var i = 0; i < numEmitters; ++i ) {
             	emitter = new ShaderParticleEmitter({
             		position: new THREE.Vector3(
                         getRandomNumber(window.innerWidth/5),
                         getRandomNumber(window.innerHeight/5),
-                        getRandomNumber(0)
+                        getRandomNumber(200)
                     ),
                     
             		accelerationSpread: new THREE.Vector3(
-                        getRandomNumber(100),
-                        getRandomNumber(100),
-                        getRandomNumber(100)
+                        getRandomNumber(-50),
+                        getRandomNumber(-100),
+                        getRandomNumber(-50)
                     ),
 
                     velocitySpread: new THREE.Vector3(
+                        getRandomNumber(50),
                         getRandomNumber(100),
-                        getRandomNumber(100),
-                        getRandomNumber(100)
+                        getRandomNumber(50)
                     ),                    
 
                     colorStart: (new THREE.Color()).setRGB(
-                        getRandomNumber(255), getRandomNumber(255), getRandomNumber(255)
+                        getRandomNumber(10), getRandomNumber(10), getRandomNumber(10)
                     ),
                     colorEnd: (new THREE.Color()).setRGB(
-                        getRandomNumber(255), getRandomNumber(255), getRandomNumber(255)
+                        getRandomNumber(1), getRandomNumber(1), getRandomNumber(1)
                     ),
             		size: 5,
             		sizeEnd: 0,
 
-            		particlesPerSecond: 500,
+            		particlesPerSecond: 250,
 
-                    opacityStart: 1,
-                    opacityEnd: 1
+                    opacityStart: 0,
+                    opacityMiddle: 1,
+                    opacityEnd: 0
             	});
 
             	particleGroup.addEmitter( emitter );
@@ -103,13 +104,22 @@
             requestAnimationFrame( animate );
 
             // Using a fixed time-step here to avoid pauses
-            render( 0.016 );
+            render( clock.getDelta() );
             stats.update();
+        }
+
+
+        function updateCamera() {
+            var now = Date.now() * 0.0005;
+            camera.position.x = Math.sin( now ) * 200;
+            camera.position.z = Math.cos( now ) * 200;
+            camera.lookAt( scene.position );
         }
 
 
         function render( dt ) {
             particleGroup.tick( dt );
+            updateCamera();
             renderer.render( scene, camera );
         }
 

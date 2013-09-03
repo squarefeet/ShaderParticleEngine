@@ -54,18 +54,20 @@
 
         		position: new THREE.Vector3(0, 0, 0),
 
-        		radius: 10,
-                speed: 1,
+        		radius: 20,
+                speed: 0.2,
 
         		colorStart: new THREE.Color('white'),
-        		colorEnd: new THREE.Color('blue'),
+                colorSpread: new THREE.Vector3(10, 10, 10),
+        		colorEnd: new THREE.Color('white'),
         		size: 5,
         		sizeEnd: 0,
 
                 opacityStart: 0,
-                opacityEnd: 1,
+                opacityMiddle: 1,
+                opacityEnd: 0,
 
-        		particlesPerSecond: 3000
+        		particlesPerSecond: 5000
         	});
 
         	particleGroup.addEmitter( emitter );
@@ -85,9 +87,16 @@
             stats.update();
         }
 
+        function updateCamera() {
+            var now = Date.now() * 0.0003;
+            camera.position.x = Math.sin( now ) * 50;
+            camera.position.z = Math.cos( now ) * 100;
+            camera.lookAt( scene.position );
+        }
 
         function render( dt ) {
             particleGroup.tick( dt );
+            updateCamera();
             renderer.render( scene, camera );
         }
 

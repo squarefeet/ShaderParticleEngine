@@ -50,21 +50,25 @@
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 1
+        		maxAge: 3
         	});
 
         	emitter = new ShaderParticleEmitter({
         		position: new THREE.Vector3(0, 0, 0),
-                positionSpread: new THREE.Vector3(1, 1, 1),
+                // positionSpread: new THREE.Vector3(2, 2, 2),
 
-                accelerationSpread: new THREE.Vector3(10, 10, 10),
+                acceleration: new THREE.Vector3(0, -5, 0),
+                accelerationSpread: new THREE.Vector3(5, 0, 5),
 
-        		colorStart: new THREE.Color('white'),
-        		colorEnd: new THREE.Color('blue'),
-        		size: 2,
+                velocity: new THREE.Vector3(0, 10, 0),
+
+        		colorStart: (new THREE.Color()).setRGB(0.5, 0.5, 0.5),
+                colorSpread: new THREE.Vector3(1, 1, 1),
+        		colorEnd: new THREE.Color('white'),
+        		size: 5,
         		sizeEnd: 0,
 
-        		particlesPerSecond: 200
+        		particlesPerSecond: 500
         	});
 
         	particleGroup.addEmitter( emitter );
@@ -72,8 +76,6 @@
 
         	document.querySelector('.numParticles').textContent = 
         		'Total particles: ' + emitter.numParticles;
-
-                console.log(emitter);
         }
 
 

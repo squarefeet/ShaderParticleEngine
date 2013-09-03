@@ -1,4 +1,3 @@
-<!-- A seperate test file to play around with whilst doing updates/bug fixes -->
 <html>
 <head>
 	<title>Basic Shader Particles</title>
@@ -12,8 +11,7 @@
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
-	<script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
-    <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+	<script type="text/javascript" src="../build/ShaderParticles.min.js"></script>
 
 
 	<script type="text/javascript">
@@ -21,7 +19,7 @@
         var scene, camera, renderer, stats, stats2, clock;
 
         // Used in initParticles()
-		var emitter, particleGroup;
+		var emitter, particleGroup, numEmitters = 400;
 
 		// Setup the scene
         function init() {
@@ -44,34 +42,46 @@
             document.body.appendChild( stats.domElement );
         }
 
+        function getRandomNumber( base ) {
+            return base * Math.random() - (base/2);
+        }
+
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 1,
-                blending: THREE.NoBlending
+        		maxAge: 2
         	});
 
-        	emitter = new ShaderParticleEmitter({
-                particlesPerSecond: 20,
-                positionSpread: new THREE.Vector3(500, 500, 500),
+            for( var i = 0; i < numEmitters; ++i ) {
+            	emitter = new ShaderParticleEmitter({
+                    type: 'sphere',
 
-                velocity: new THREE.Vector3(0, 0, 10),
+                    radius: 5 + i,
+                    radiusScale: new THREE.Vector3(1, 1 - (i/numEmitters), 1),
 
-                size: 20,
-                sizeEnd: 20,
-                colorStart: new THREE.Color( 'white' ),
-                colorEnd: new THREE.Color( 'white' ),
-                opacityStart: 0.0,
-                // opacityMiddle: 1.0,
-                opacityEnd: 1.0
-        	});
+            		position: new THREE.Vector3( 0, 0, 0 ),                
 
-        	particleGroup.addEmitter( emitter );
+                    colorStart: (new THREE.Color()).setRGB(
+                        getRandomNumber( 1 ),
+                        getRandomNumber( 1 ),
+                        getRandomNumber( 1 )
+                    ),
+            		size: 1.75,
+
+            		particlesPerSecond: 400,
+
+                    opacityStart: 1,
+                    static: 1
+            	});
+
+            	particleGroup.addEmitter( emitter );
+            }
+
         	scene.add( particleGroup.mesh );
 
         	document.querySelector('.numParticles').textContent = 
-        		'Total particles: ' + emitter.numParticles;
+        		'Total particles: ' + (emitter.numParticles * numEmitters);
         }
 
         
@@ -79,15 +89,24 @@
         function animate() {
             requestAnimationFrame( animate );
 
-            // setTimeout( animate, 1 );
-
+            // Using a fixed time-step here to avoid pauses
             render( clock.getDelta() );
             stats.update();
         }
 
-        function render( dt ) {
 
+        function updateCamera() {
+            var now = Date.now() * 0.0005;
+            camera.position.x = Math.sin( now ) * 200;
+            camera.position.y = Math.cos( Date.now() * 0.0004 ) * 200;
+            camera.position.z = Math.cos( Date.now() * 0.001 ) * 500;
+            camera.lookAt( scene.position );
+        }
+
+
+        function render( dt ) {
             particleGroup.tick( dt );
+            updateCamera();
             renderer.render( scene, camera );
         }
 
@@ -105,7 +124,7 @@
         init();
         initParticles();
 
-        setTimeout(animate, 1000);
+        setTimeout(animate, 0);
 
 	</script>
 
