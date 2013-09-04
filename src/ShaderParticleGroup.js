@@ -54,7 +54,7 @@ function ShaderParticleGroup( options ) {
         attributes:     this.attributes,
         vertexShader:   ShaderParticleGroup.shaders.vertex,
         fragmentShader: ShaderParticleGroup.shaders.fragment,
-        blending:       THREE.AdditiveBlending,
+        blending:       this.blending,
         transparent:    this.transparent,
         alphaTest:      this.alphaTest,
         depthWrite:     this.depthWrite,
