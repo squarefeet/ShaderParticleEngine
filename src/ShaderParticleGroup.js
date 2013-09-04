@@ -1,5 +1,5 @@
 // ShaderParticleGroup 0.4.0
-// 
+//
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
@@ -54,7 +54,7 @@ function ShaderParticleGroup( options ) {
         attributes:     this.attributes,
         vertexShader:   ShaderParticleGroup.shaders.vertex,
         fragmentShader: ShaderParticleGroup.shaders.fragment,
-        blending:       THREE.AdditiveBlending,
+        blending:       this.blending,
         transparent:    this.transparent,
         alphaTest:      this.alphaTest,
         depthWrite:     this.depthWrite,
@@ -206,7 +206,7 @@ ShaderParticleGroup.prototype = {
     },
 
     _flagUpdate: function() {
-        // Set flags to update (causes less garbage than 
+        // Set flags to update (causes less garbage than
         // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
         this.attributes.age.needsUpdate = true;
         this.attributes.alive.needsUpdate = true;
@@ -249,9 +249,6 @@ ShaderParticleGroup.shaders = {
 
         'varying vec4 vColor;',
 
-        'float positionInTime = (age / duration);',
-        'float halfDuration = (duration / 2.0);',
-
         // Linearly lerp a float
         'float Lerp( float start, float end, float amount ) {',
             'return (start + ((end - start) * amount));',
@@ -266,7 +263,7 @@ ShaderParticleGroup.shaders = {
         'vec4 GetPos() {',
             'vec3 newPos = vec3( position );',
 
-            // Move acceleration & velocity vectors to the value they 
+            // Move acceleration & velocity vectors to the value they
             // should be at the current age
             'vec3 a = acceleration * age;',
             'vec3 v = velocity * age;',
@@ -286,6 +283,9 @@ ShaderParticleGroup.shaders = {
 
         'void main() {',
 
+            'float positionInTime = (age / duration);',
+            'float halfDuration = (duration / 2.0);',
+
             'if( alive > 0.5 ) {',
                 // Integrate color "tween"
                 'vec3 color = vec3( customColor );',
@@ -293,7 +293,7 @@ ShaderParticleGroup.shaders = {
                     'color = Lerp( customColor, customColorEnd, positionInTime );',
                 '}',
 
-                // Store the color of this particle in the varying vColor, 
+                // Store the color of this particle in the varying vColor,
                 // so frag shader can access it.
                 'if( opacity == opacityMiddle && opacityMiddle == opacityEnd ) {',
                     'vColor = vec4( color, opacity );',
@@ -328,7 +328,7 @@ ShaderParticleGroup.shaders = {
             '}',
 
             'else {',
-                // Hide particle and set its position to the (maybe) glsl 
+                // Hide particle and set its position to the (maybe) glsl
                 // equivalent of Number.POSITIVE_INFINITY
                 'vColor = vec4( customColor, 0.0 );',
                 'gl_Position = vec4(1e20, 1e20, 1e20, 0);',
