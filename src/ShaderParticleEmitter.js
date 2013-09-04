@@ -47,7 +47,7 @@ function ShaderParticleEmitter( options ) {
     that.opacityMiddle          = parseFloat( 
         typeof options.opacityMiddle !== 'undefined' ? 
         options.opacityMiddle : 
-        Math.abs(that.opacityEnd - that.opacityStart) / 2, 
+        Math.abs(that.opacityEnd + that.opacityStart) / 2, 
     10 );
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
