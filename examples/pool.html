@@ -5,7 +5,7 @@
 	<link rel="stylesheet" type="text/css" href="./css/style.css">
 </head>
 <body>
-	<p class="numParticles"></p>
+	<p class="numParticles">Click mouse or press any key to trigger an explosion.</p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
 	<script type="text/javascript" src="./js/THREE-r60.min.js"></script>
@@ -30,16 +30,16 @@
                 type: 'sphere',
                 positionSpread: new THREE.Vector3(10, 10, 10),
                 radius: 1,
-                speed: 50,
-                size: 50,
-                sizeSpread: 50,
-                sizeEnd: 50,
+                speed: 100,
+                size: 30,
+                sizeSpread: 30,
+                sizeEnd: 0,
                 opacityStart: 1,
                 opacityEnd: 0,
                 colorStart: new THREE.Color('yellow'),
                 colorSpread: new THREE.Vector3(0, 10, 0),
                 colorEnd: new THREE.Color('red'),
-                particlesPerSecond: 500,
+                particlesPerSecond: 2000,
                 alive: 0,
                 emitterDuration: 0.05
             };
@@ -50,6 +50,17 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
             camera.position.z = 200;
             camera.lookAt( scene.position );
+
+            var referenceCube = new THREE.Mesh(
+                new THREE.CubeGeometry(300, 300, 300),
+                new THREE.MeshBasicMaterial({ 
+                    wireframe: true, 
+                    opacity: 0.1,
+                    transparent: true,
+                    color: 0xffffff
+                })
+            );
+            scene.add( referenceCube );
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
@@ -68,27 +79,13 @@
 
         // Create particle group and emitter
         function initParticles() {
-
-            // Create a new pool to hold the explosions.
-            pool = new Pool(
-                50, // Number of emitters to create
-                ShaderParticleEmitter, // Constructor to use
-                emitterSettings // the settings to pass to the emitter
-            );
-
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 3,
+        		maxAge: 0.5,
                 blending: THREE.AdditiveBlending
         	});
 
-            // Get all the emitters in the pool
-            var emitters = pool.getStore();
-
-            // Add each emitter to the particle group.
-            for( var i = 0; i < emitters.length; ++i ) {
-                particleGroup.addEmitter( emitters[i] );
-            }
+            particleGroup.addPool( 10, emitterSettings, false );
 
             // Add particle group to scene.
         	scene.add( particleGroup.mesh );
@@ -101,31 +98,8 @@
 
         // Trigger an explosion and random co-ords.
         function createExplosion() {
-            // Set the position vector to be something random.
-            pos.set( rand(100), rand(100), rand(100) );
-
-            // Get a new emitter from the pool.
-            var explosion = pool.get();
-
-            if( !explosion ) {
-                console.log( 'Pool ran out' );
-                return;
-            }
-
-            // set the emitters position
-            explosion.position.copy( pos );
-
-            // turn the explosion on
-            explosion.alive = 1.0;
-
-            // Set a timer to mark is as dead after the particleGroup's
-            // `maxAge` value and return it to the pool ready for
-            // re-use.
-            setTimeout(function() {
-                explosion.alive = 0.0;
-                pool.release( explosion );
-            }, (particleGroup.maxAge*1000) + 50 );
-
+            var num = 150;
+            particleGroup.triggerPoolEmitter( 1, (pos.set( rand(num), rand(num), rand(num) )) );
         }
 
 
@@ -135,8 +109,16 @@
             stats.update();
         }
 
+        function updateCamera() {
+            var now = Date.now() * 0.0007;
+
+            camera.position.set( Math.sin( now ) * 500, 0, Math.cos( now ) * 500 );
+            camera.lookAt( scene.position );
+        }
+
         function render( dt ) {
             particleGroup.tick( dt );
+            updateCamera();
             renderer.render( scene, camera );
         }
 

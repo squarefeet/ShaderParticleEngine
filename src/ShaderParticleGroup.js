@@ -1,4 +1,4 @@
-// ShaderParticleGroup 0.4.0
+// ShaderParticleGroup 0.5.0
 //
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
@@ -7,29 +7,33 @@
 
 
 function ShaderParticleGroup( options ) {
-    this.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016, 10 );
+    var that = this;
+
+    that.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016, 10 );
 
     // Uniform properties ( applied to all particles )
-    this.maxAge                 = parseFloat( options.maxAge || 3 );
-    this.texture                = ( typeof options.texture === 'string' ? ASSET_LOADER.loaded.textures[ options.texture ] : options.texture ) || null;
-    this.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
-    this.colorize               = parseInt( options.colorize || 1 );
+    that.maxAge                 = parseFloat( options.maxAge || 3 );
+    that.texture                = options.texture || null;
+    that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
+    that.colorize               = parseInt( options.colorize || 1 );
 
-    this.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
-    this.transparent            = options.transparent || true;
-    this.alphaTest              = options.alphaTest || 0.5;
-    this.depthWrite             = options.depthWrite || false;
-    this.depthTest              = options.depthTest || true;
+    // Material properties
+    that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
+    that.transparent            = options.transparent || true;
+    that.alphaTest              = options.alphaTest || 0.5;
+    that.depthWrite             = options.depthWrite || false;
+    that.depthTest              = options.depthTest || true;
 
     // Create uniforms
-    this.uniforms = {
-        duration:       { type: 'f', value: this.maxAge },
-        texture:        { type: 't', value: this.texture },
-        hasPerspective: { type: 'i', value: this.hasPerspective },
-        colorize:       { type: 'i', value: this.colorize }
+    that.uniforms = {
+        duration:       { type: 'f', value: that.maxAge },
+        texture:        { type: 't', value: that.texture },
+        hasPerspective: { type: 'i', value: that.hasPerspective },
+        colorize:       { type: 'i', value: that.colorize }
     };
 
-    this.attributes = {
+    // Create a map of attributes that will hold values for each particle in this group.
+    that.attributes = {
         acceleration:   { type: 'v3', value: [] },
         velocity:       { type: 'v3', value: [] },
         alive:          { type: 'f', value: [] },
@@ -45,28 +49,52 @@ function ShaderParticleGroup( options ) {
         opacityEnd:     { type: 'f', value: [] }
     };
 
-    this.emitters   = [];
+    // Emitters (that aren't static) will be added to this array for 
+    // processing during the `tick()` function.
+    that.emitters = [];
 
-    this.geometry   = new THREE.Geometry();
+    // Create properties for use by the emitter pooling functions.
+    that._pool = [];
+    that._poolCreationSettings = null;
+    that._createNewWhenPoolEmpty = 0;
+    that.maxAgeMilliseconds = that.maxAge * 1000;
 
-    this.material   = new THREE.ShaderMaterial({
-        uniforms:       this.uniforms,
-        attributes:     this.attributes,
+    // Create an empty geometry to hold the particles.
+    // Each particle is a vertex pushed into this geometry's
+    // vertices array.
+    that.geometry = new THREE.Geometry();
+
+    // Create the shader material using the properties we set above.
+    that.material = new THREE.ShaderMaterial({
+        uniforms:       that.uniforms,
+        attributes:     that.attributes,
         vertexShader:   ShaderParticleGroup.shaders.vertex,
         fragmentShader: ShaderParticleGroup.shaders.fragment,
-        blending:       this.blending,
-        transparent:    this.transparent,
-        alphaTest:      this.alphaTest,
-        depthWrite:     this.depthWrite,
-        depthTest:      this.depthTest,
+        blending:       that.blending,
+        transparent:    that.transparent,
+        alphaTest:      that.alphaTest,
+        depthWrite:     that.depthWrite,
+        depthTest:      that.depthTest,
     });
 
-    this.mesh       = new THREE.ParticleSystem( this.geometry, this.material );
-    this.mesh.dynamic = true;
+    // And finally create the ParticleSystem. It's got its `dynamic` property
+    // set so that THREE.js knows to update it on each frame.
+    that.mesh = new THREE.ParticleSystem( that.geometry, that.material );
+    that.mesh.dynamic = true;
 }
 
 ShaderParticleGroup.prototype = {
 
+    /**
+     * Given a base vector and a spread range vector, create
+     * a new THREE.Vector3 instance with randomised values.
+     *
+     * @private
+     * 
+     * @param  {THREE.Vector3} base
+     * @param  {THREE.Vector3} spread
+     * @return {THREE.Vector3}
+     */
     _randomVector3: function( base, spread ) {
         var v = new THREE.Vector3();
 
@@ -79,6 +107,18 @@ ShaderParticleGroup.prototype = {
         return v;
     },
 
+    /**
+     * Create a new THREE.Color instance and given a base vector and 
+     * spread range vector, assign random values.
+     *
+     * Note that THREE.Color RGB values are in the range of 0 - 1, not 0 - 255.
+     *
+     * @private
+     * 
+     * @param  {THREE.Vector3} base
+     * @param  {THREE.Vector3} spread
+     * @return {THREE.Color}
+     */
     _randomColor: function( base, spread ) {
         var v = new THREE.Color();
 
@@ -95,10 +135,34 @@ ShaderParticleGroup.prototype = {
         return v;
     },
 
+
+    /**
+     * Create a random Number value based on an initial value and 
+     * a spread range
+     *
+     * @private
+     * 
+     * @param  {Number} base
+     * @param  {Number} spread
+     * @return {Number}
+     */
     _randomFloat: function( base, spread ) {
         return base + spread * (Math.random() - 0.5);
     },
 
+
+    /**
+     * Create a new THREE.Vector3 instance and project it onto a random point
+     * on a sphere with radius `radius`.
+     * 
+     * @param  {THREE.Vector3} base
+     * @param  {Number} radius
+     * @param  {THREE.Vector3} scale
+     *
+     * @private
+     * 
+     * @return {THREE.Vector3}
+     */
     _randomVector3OnSphere: function( base, radius, scale ) {
         var z = 2 * Math.random() - 1;
         var t = 6.2832 * Math.random();
@@ -116,6 +180,22 @@ ShaderParticleGroup.prototype = {
         return vec;
     },
 
+
+    /**
+     * Create a new THREE.Vector3 instance, and given a base position, and various
+     * other values, project it onto a random point on a sphere with radius `radius`.
+     * 
+     * @param  {THREE.Vector3} base
+     * @param  {THREE.Vector3} position
+     * @param  {Number} speed
+     * @param  {Number} speedSpread
+     * @param  {THREE.Vector3} scale
+     * @param  {Number} radius
+     *
+     * @private
+     * 
+     * @return {THREE.Vector3}
+     */
     _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
         var direction = new THREE.Vector3().subVectors( base, position );
 
@@ -128,6 +208,19 @@ ShaderParticleGroup.prototype = {
         return direction;
     },
 
+
+    /**
+     * Given a base vector and a spread vector, randomise the given vector
+     * accordingly.
+     * 
+     * @param  {THREE.Vector3} vector
+     * @param  {THREE.Vector3} base
+     * @param  {THREE.Vector3} spread
+     *
+     * @private
+     * 
+     * @return {[type]}
+     */
     _randomizeExistingVector3: function( vector, base, spread ) {
         vector.set(
             Math.random() * base.x - spread.x,
@@ -136,20 +229,51 @@ ShaderParticleGroup.prototype = {
         );
     },
 
+
+    /**
+     * Tells the age and alive attributes (and the geometry vertices) 
+     * that they need updating by THREE.js's internal tick functions.
+     * 
+     * @private
+     * 
+     * @return {this}
+     */
+    _flagUpdate: function() {
+        var that = this;
+
+        // Set flags to update (causes less garbage than
+        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
+        that.attributes.age.needsUpdate = true;
+        that.attributes.alive.needsUpdate = true;
+        that.geometry.verticesNeedUpdate = true;
+
+        return that;
+    },
+
+
+    /**
+     * Add an emitter to this particle group. Once added, an emitter will be automatically
+     * updated when ShaderParticleGroup#tick() is called.
+     * 
+     * @param {ShaderParticleEmitter} emitter
+     * @return {this}
+     */
     addEmitter: function( emitter ) {
+        var that = this;
+
         if( emitter.duration ) {
-            emitter.numParticles = emitter.particlesPerSecond * (this.maxAge < emitter.emitterDuration ? this.maxAge : emitter.emitterDuration) | 0;
+            emitter.numParticles = emitter.particlesPerSecond * (that.maxAge < emitter.emitterDuration ? that.maxAge : emitter.emitterDuration) | 0;
         }
         else {
-            emitter.numParticles = emitter.particlesPerSecond * this.maxAge | 0;
+            emitter.numParticles = emitter.particlesPerSecond * that.maxAge | 0;
         }
 
         emitter.numParticles = Math.ceil(emitter.numParticles);
 
-        var vertices = this.geometry.vertices,
+        var vertices = that.geometry.vertices,
             start = vertices.length,
             end = emitter.numParticles + start,
-            a = this.attributes,
+            a = that.attributes,
             acceleration = a.acceleration.value,
             velocity = a.velocity.value,
             alive = a.alive.value,
@@ -168,26 +292,26 @@ ShaderParticleGroup.prototype = {
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
-                vertices[i]     = this._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
-                velocity[i]     = this._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale, emitter.radius );
+                vertices[i]     = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
+                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale, emitter.radius );
             }
             else {
-                vertices[i]     = this._randomVector3( emitter.position, emitter.positionSpread );
-                velocity[i]     = this._randomVector3( emitter.velocity, emitter.velocitySpread );
+                vertices[i]     = that._randomVector3( emitter.position, emitter.positionSpread );
+                velocity[i]     = that._randomVector3( emitter.velocity, emitter.velocitySpread );
             }
 
 
-            acceleration[i] = this._randomVector3( emitter.acceleration, emitter.accelerationSpread );
+            acceleration[i] = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
             // Fix for bug #1 (https://github.com/squarefeet/ShaderParticleEngine/issues/1)
             // For some stupid reason I was limiting the size value to a minimum of 0.1. Derp.
-            size[i]         = this._randomFloat( emitter.size, emitter.sizeSpread );
+            size[i]         = that._randomFloat( emitter.size, emitter.sizeSpread );
             sizeEnd[i]      = emitter.sizeEnd;
             age[i]          = 0.0;
             alive[i]        = emitter.static ? 1.0 : 0.0;
 
 
-            customColor[i]      = this._randomColor( emitter.colorStart, emitter.colorSpread );
+            customColor[i]      = that._randomColor( emitter.colorStart, emitter.colorSpread );
             customColorEnd[i]   = emitter.colorEnd;
             opacity[i]          = emitter.opacityStart;
             opacityMiddle[i]    = emitter.opacityMiddle;
@@ -197,34 +321,177 @@ ShaderParticleGroup.prototype = {
         // Cache properties on the emitter so we can access
         // them from its tick function.
         emitter.verticesIndex   = parseFloat( start );
-        emitter.attributes      = this.attributes;
-        emitter.vertices        = this.geometry.vertices;
-        emitter.maxAge          = this.maxAge;
+        emitter.attributes      = that.attributes;
+        emitter.vertices        = that.geometry.vertices;
+        emitter.maxAge          = that.maxAge;
 
         // Save this emitter in an array for processing during this.tick()
         if( !emitter.static ) {
-            this.emitters.push( emitter );
+            that.emitters.push( emitter );
         }
+
+        return that;
     },
 
-    _flagUpdate: function() {
-        // Set flags to update (causes less garbage than
-        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
-        this.attributes.age.needsUpdate = true;
-        this.attributes.alive.needsUpdate = true;
-        this.geometry.verticesNeedUpdate = true;
-    },
 
+    /**
+     * The main particle group update function. Call this once per frame.
+     * 
+     * @param  {Number} dt
+     * @return {this}
+     */
     tick: function( dt ) {
-        dt = dt || this.fixedTimeStep;
+        var that = this,
+            emitters = that.emitters,
+            numEmitters = emitters.length;
 
-        if( !this.emitters.length ) return;
+        dt = dt || that.fixedTimeStep;
 
-        for( var i = 0; i < this.emitters.length; ++i ) {
-            this.emitters[i].tick( dt );
+        if( numEmitters === 0 ) return;
+
+        for( var i = 0; i < numEmitters; ++i ) {
+            emitters[i].tick( dt );
         }
 
-        this._flagUpdate();
+        that._flagUpdate();
+        return that;
+    },
+
+
+    /**
+     * Fetch a single emitter instance from the pool.
+     * If there are no objects in the pool, a new emitter will be 
+     * created if specified.
+     * 
+     * @return {ShaderParticleEmitter | null}
+     */
+    getFromPool: function() {
+        var that = this,
+            pool = that._pool,
+            createNew = that._createNewWhenPoolEmpty;
+
+        if( pool.length ) {
+            return pool.pop();
+        }
+        else if( createNew ) {
+            return new ShaderParticleEmitter( that._poolCreationSettings );
+        }
+        
+        return null;
+    },
+
+
+    /**
+     * Release an emitter into the pool.
+     * 
+     * @param  {ShaderParticleEmitter} emitter
+     * @return {this}
+     */
+    releaseIntoPool: function( emitter ) {
+        if( !(emitter instanceof ShaderParticleEmitter) ) {
+            console.error( 'Will not add non-emitter to particle group pool:', emitter );
+            return;
+        }
+
+        emitter.reset();
+        this._pool.unshift( emitter );
+
+        return this;
+    },
+
+
+    /**
+     * Get the pool array
+     * 
+     * @return {Array}
+     */
+    getPool: function() {
+        return this._pool;
+    },
+
+
+    /**
+     * Add a pool of emitters to this particle group
+     * 
+     * @param {Number} numEmitters      The number of emitters to add to the pool.
+     * @param {Object} emitterSettings  An object describing the settings to pass to each emitter.
+     * @param {Boolean} createNew       Should a new emitter be created if the pool runs out?
+     * @return {this}
+     */
+    addPool: function( numEmitters, emitterSettings, createNew ) {
+        var that = this,
+            pool = that._pool,
+            emitter;
+
+        // Save relevant settings and flags.
+        that._poolCreationSettings = emitterSettings;
+        that._createNewWhenPoolEmpty = !!createNew;
+
+        // Create the emitters, add them to this group and the pool.
+        for( var i = 0; i < numEmitters; ++i ) {
+            emitter = new ShaderParticleEmitter( emitterSettings );
+            that.addEmitter( emitter );
+            that.releaseIntoPool( emitter );
+        }
+
+        return that;
+    },
+
+
+    /**
+     * Internal method. Sets a single emitter to be alive
+     * 
+     * @private
+     * 
+     * @param  {THREE.Vector3} pos
+     * @return {this}
+     */
+    _triggerSingleEmitter: function( pos ) {
+        var that = this,
+            emitter = that.getFromPool();
+
+        if( emitter === null ) {
+            console.log('ShaderParticleGroup pool ran out.');
+            return;
+        }
+
+        // TODO: Should an instanceof check happen here? Or maybe at least a typeof?
+        if( pos ) {
+            emitter.position.copy( pos );
+        }
+            
+        emitter.enable();
+
+        setTimeout( function() {
+            emitter.disable();
+            that.releaseIntoPool( emitter );
+        }, that.maxAgeMilliseconds );
+
+        return that;
+    },
+
+
+    /**
+     * Set a given number of emitters as alive, with an optional position
+     * vector3 to move them to.
+     * 
+     * @param  {Number} numEmitters
+     * @param  {THREE.Vector3} position
+     * @return {this}
+     */
+    triggerPoolEmitter: function( numEmitters, position ) {
+        var that = this;
+
+        if( typeof numEmitters === 'number' && numEmitters > 1) {
+            for( var i = 0; i < numEmitters; ++i ) {
+                that._triggerSingleEmitter( position );
+            }
+        }
+        else {
+            that._triggerSingleEmitter( position );
+        }
+
+        return that;
     }
 };
 

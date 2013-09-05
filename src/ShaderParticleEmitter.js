@@ -1,4 +1,4 @@
-// ShaderParticleEmitter 0.4.0
+// ShaderParticleEmitter 0.5.0
 // 
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
@@ -55,7 +55,8 @@ function ShaderParticleEmitter( options ) {
 
     that.static                 = typeof options.static === 'number' ? options.static : 0;
 
-    // The following properties are used internally, and mostly set when 
+    // The following properties are used internally, and mostly set when this emitter
+    // is added to a particle group.
     that.numParticles           = 0;
     that.attributes             = null;
     that.vertices               = null;
@@ -68,29 +69,49 @@ function ShaderParticleEmitter( options ) {
     that.userData = {};
 }
 
+
 ShaderParticleEmitter.prototype = {
+
+    /**
+     * Reset a particle's position. Accounts for emitter type and spreads.
+     *
+     * @private
+     * 
+     * @param  {THREE.Vector3} p
+     */
     _resetParticle: function( p ) {
-        var spread = this.positionSpread,
-            type = this.type;
+        var that = this;
+            spread = that.positionSpread,
+            type = that.type;
 
         // Optimise for no position spread or radius
         if(
             ( type === 'cube' && spread.x === 0 && spread.y === 0 && spread.z === 0 ) ||
-            ( type === 'sphere' && this.radius === 0 )
+            ( type === 'sphere' && that.radius === 0 )
         ) {
-            p.copy( this.position );
+            p.copy( that.position );
         }
 
         // If there is a position spread, then get a new position based on this spread.
         else if( type === 'cube' ) {
-            this._randomizeExistingVector3( p, this.position, spread );
+            that._randomizeExistingVector3( p, that.position, spread );
         }
 
         else if( type === 'sphere') {
-            this._randomizeExistingVector3OnSphere( p, this.position, this.radius );
+            that._randomizeExistingVector3OnSphere( p, that.position, that.radius );
         }
     },
 
+
+    /**
+     * Given an existing particle vector, randomise it based on base and spread vectors
+     *
+     * @private
+     * 
+     * @param  {THREE.Vector3} v
+     * @param  {THREE.Vector3} base
+     * @param  {THREE.Vector3} spread
+     */
     _randomizeExistingVector3: function( v, base, spread ) {
         var r = Math.random;
 
@@ -101,6 +122,17 @@ ShaderParticleEmitter.prototype = {
         v.z += r() * spread.z - (spread.z/2);
     },
 
+
+    /**
+     * Given an existing particle vector, project it onto a random point on a 
+     * sphere with radius `radius` and position `base`.
+     *
+     * @private
+     * 
+     * @param  {THREE.Vector3} v
+     * @param  {THREE.Vector3} base
+     * @param  {Number} radius
+     */
     _randomizeExistingVector3OnSphere: function( v, base, radius ) {
         var rand = Math.random;
 
@@ -120,6 +152,12 @@ ShaderParticleEmitter.prototype = {
 
     // This function is called by the instance of `ShaderParticleEmitter` that 
     // this emitter has been added to.
+    /**
+     * Update this emitter's particle's positions. Called by the ShaderParticleGroup
+     * that this emitter belongs to.
+     * 
+     * @param  {Number} dt
+     */
     tick: function( dt ) {
 
         if( this.static ) {
@@ -127,18 +165,19 @@ ShaderParticleEmitter.prototype = {
         }
 
         // Cache some values for quicker access in loops.
-        var a = this.attributes,
+        var that = this,
+            a = that.attributes,
             alive = a.alive.value,
             age = a.age.value,
-            start = this.verticesIndex,
-            numParticles = this.numParticles,
+            start = that.verticesIndex,
+            numParticles = that.numParticles,
             end = start + numParticles,
-            pps = this.particlesPerSecond,
+            pps = that.particlesPerSecond,
             ppsdt = pps * dt,
-            m = this.maxAge,
-            emitterAge = this.age,
-            duration = this.emitterDuration,
-            pIndex = this.particleIndex;
+            m = that.maxAge,
+            emitterAge = that.age,
+            duration = that.emitterDuration,
+            pIndex = that.particleIndex;
 
         // Loop through all the particles in this emitter and
         // determine whether they're still alive and need advancing
@@ -159,16 +198,16 @@ ShaderParticleEmitter.prototype = {
         // the recycled vertices array and reset the age of the 
         // emitter to zero ready to go again if required, then
         // exit this function.
-        if( this.alive === 0 ) {
-            this.age = 0.0;
+        if( that.alive === 0 ) {
+            that.age = 0.0;
             return;
         }
 
         // If the emitter has a specified lifetime and we've exceeded it,
         // mark the emitter as dead and exit this function.
         if( typeof duration === 'number' && emitterAge > duration ) {
-            this.alive = 0;
-            this.age = 0.0;
+            that.alive = 0;
+            that.age = 0.0;
             return;
         }
 
@@ -177,17 +216,62 @@ ShaderParticleEmitter.prototype = {
         for( i = pIndex | 0; i < n; ++i ) {
             if( alive[ i ] !== 1.0 ) {
                 alive[ i ] = 1.0;
-                this._resetParticle( this.vertices[ i ] );
+                that._resetParticle( that.vertices[ i ] );
             }
         }
 
-        this.particleIndex += ppsdt;
+        that.particleIndex += ppsdt;
 
-        if( pIndex >= start + this.numParticles ) {
-            this.particleIndex = parseFloat( start, 10 );
+        if( pIndex >= start + that.numParticles ) {
+            that.particleIndex = parseFloat( start, 10 );
         }
 
         // Add the delta time value to the age of the emitter.
-        this.age += dt;
+        that.age += dt;
+    },
+
+    /**
+     * Reset this emitter back to its starting position.
+     * If `force` is truthy, then reset all particles in this
+     * emitter as well, even if they're currently alive.
+     * 
+     * @param  {Boolean} force
+     * @return {this}
+     */
+    reset: function( force ) {
+        var that = this;
+
+        that.age = 0.0;
+        that.alive = 0;
+
+        if( force ) {
+            var start = that.verticesIndex,
+                end = that.verticesIndex + that.numParticles,
+                a = that.attributes,
+                alive = a.alive.value,
+                age = a.age.value;
+
+            for( var i = start; i < end; ++i ) {
+                alive[ i ] = 0.0;
+                age[ i ] = 0.0;
+            }
+        }
+
+        return that;
+    },
+
+
+    /**
+     * Enable this emitter.
+     */
+    enable: function() {
+        this.alive = 1;
+    },
+
+    /**
+     * Disable this emitter.
+     */
+    disable: function() {
+        this.alive = 0;
     }
 };

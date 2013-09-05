@@ -62,25 +62,29 @@
                     ),
                     
             		accelerationSpread: new THREE.Vector3(
-                        getRandomNumber(-50),
-                        getRandomNumber(-100),
-                        getRandomNumber(-50)
+                        getRandomNumber(-10),
+                        getRandomNumber(-10),
+                        getRandomNumber(-10)
                     ),
 
                     velocitySpread: new THREE.Vector3(
-                        getRandomNumber(50),
-                        getRandomNumber(100),
-                        getRandomNumber(50)
+                        getRandomNumber(20),
+                        getRandomNumber(20),
+                        getRandomNumber(20)
                     ),                    
 
                     colorStart: (new THREE.Color()).setRGB(
-                        getRandomNumber(10), getRandomNumber(10), getRandomNumber(10)
+                        Math.random(), 
+                        Math.random(), 
+                        Math.random()
                     ),
                     colorEnd: (new THREE.Color()).setRGB(
-                        getRandomNumber(1), getRandomNumber(1), getRandomNumber(1)
+                        Math.random(), 
+                        Math.random(), 
+                        Math.random()
                     ),
-            		size: 5,
-            		sizeEnd: 0,
+            		size: 2,
+            		sizeEnd: 2,
 
             		particlesPerSecond: 250,
 
