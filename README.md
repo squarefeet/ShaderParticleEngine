@@ -6,10 +6,17 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome.
 
 
-Version 0.4.1
+Version 0.5.0
 =============
 Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
 That said, it ain't gonna be long until it's at 1.0.0.
+
+
+Changelog
+=========
+**Version 0.5.0**
+* The latest update sees the addition of the ```ShaderParticleGroup.addPool()``` method. This allows for much easier control of emitter pools. See [the pool example](http://squarefeet.github.io/ShaderParticleEngine/examples/pool.html) for an example.
+* I've also added quite a few more comments to the source-code, so it should be easier to get your head around should you want/need to dig into the internals.
 
 
 
@@ -22,9 +29,10 @@ Another optimisation I wanted was to be able to 'group' lots of emitters into on
 This project requires THREE.js revision 58/59/60.
 
 
+
 Usage
 =====
-See the ```./examples/``` folder for some simple demos.
+See the ```./examples/``` folder (or [here](http://squarefeet.github.io/ShaderParticleEngine/)) for some simple demos.
 
 Assuming you have a basic scene set up using THREE.js and have added the JS to your page, adding a particle emitter is as simple as the following code:
 
@@ -226,22 +234,19 @@ var particleEmitter = new ShaderParticleEmitter({
 **- ```.addEmitter( emitter )```**
 Adds an instance of ```ShaderParticleEmitter``` to the particle group.
 
-**Arguments**
-- ```emitter``` - instanceof ShaderParticleEmitter
-
-
-
 **- ```.tick( dt )```**
 Call this function once per frame. If no ```dt``` argument is given, the ```ShaderParticleGroup``` instance will use its ```.fixedTimeStep``` value as ```dt```.
 
-**Arguments**
-- ```dt``` - Number. Delta time. How many seconds have elapsed since the last frame was drawn?
+**- ```.addPool( numEmitters, emitterSettings, createNewEmitterIfPoolRunsOut )```**
+Automatically create a pool of emitters for easy triggering in the future.
 
+**- ```.triggerPoolEmitter( numEmittersToActivate, positionVector )```**
+Turn on a given number of emitters that live in a pool created using the method above. You can also pass a ```THREE.Vector3``` instance to dictate where this emitter will sit.
 
 
 Known Bugs
 ==========
-No known bugs at this time. Please open issues if you notice any.
+See the [issues page](https://github.com/squarefeet/ShaderParticleEngine/issues) for any known bugs. Please open an issue if you find anything not behaving properly.
 
 
 
