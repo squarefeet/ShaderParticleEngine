@@ -105,11 +105,13 @@ ShaderParticleGroup.prototype = {
         var r = Math.sqrt( 1 - z*z );
         var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
 
-        vec.multiplyScalar( radius ).add( base );
-
+        vec.multiplyScalar( radius );
+        
         if( scale ) {
             vec.multiply( scale );
         }
+
+        vec.add( base );
 
         return vec;
     },
