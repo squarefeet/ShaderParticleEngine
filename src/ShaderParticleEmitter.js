@@ -108,11 +108,13 @@ ShaderParticleEmitter.prototype = {
         var t = 6.2832 * rand();
         var r = Math.sqrt( 1 - z*z );
 
-        var x = ((r * Math.cos(t)) * radius) + base.x;
-        var y = ((r * Math.sin(t)) * radius) + base.y;
-        var z = (z * radius) + base.z; 
+        var x = ((r * Math.cos(t)) * radius);
+        var y = ((r * Math.sin(t)) * radius);
+        var z = (z * radius); 
 
         v.set(x, y, z).multiply( this.radiusScale );
+        
+        v.add( base );
     },
 
 
