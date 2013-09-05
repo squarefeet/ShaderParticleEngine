@@ -49,32 +49,33 @@
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
         		maxAge: 1,
-                blending: THREE.NoBlending
+                blending: THREE.AdditiveBlending
         	});
 
         	emitter = new ShaderParticleEmitter({
-                particlesPerSecond: 20,
-                positionSpread: new THREE.Vector3(500, 500, 500),
-
-                velocity: new THREE.Vector3(0, 0, 10),
-
+                type: 'sphere',
+                position: new THREE.Vector3(0, 100, 0),
+                radius: 0.001,
+                radiusScale: new THREE.Vector3(1, 1, 1),
+                speed: 20,
+                speedSpread: 0,
+                colorStart: new THREE.Color('yellow'),
+                colorEnd: new THREE.Color('red'),
+                opacityStart: 1,
+                opacityEnd: 1,
                 size: 20,
                 sizeEnd: 20,
-                colorStart: new THREE.Color( 'white' ),
-                colorEnd: new THREE.Color( 'white' ),
-                opacityStart: 0.0,
-                // opacityMiddle: 1.0,
-                opacityEnd: 1.0
+                particlesPerSecond: 1000
         	});
 
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + emitter.numParticles;
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );
