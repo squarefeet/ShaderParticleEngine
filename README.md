@@ -16,6 +16,7 @@ Changelog
 =========
 **Version 0.5.0**
 * The latest update sees the addition of the ```ShaderParticleGroup.addPool()``` method. This allows for much easier control of emitter pools. See [the pool example](http://squarefeet.github.io/ShaderParticleEngine/examples/pool.html) for an example.
+* There are also quite a few bug fixes courtesy of [Stemkoski](https://github.com/stemkoski/).
 * I've also added quite a few more comments to the source-code, so it should be easier to get your head around should you want/need to dig into the internals.
 
 
