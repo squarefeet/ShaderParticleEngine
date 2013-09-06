@@ -50,7 +50,7 @@ function ShaderParticleGroup( options ) {
         opacityEnd:     { type: 'f', value: [] }
     };
 
-    // Emitters (that aren't static) will be added to this array for 
+    // Emitters (that aren't static) will be added to this array for
     // processing during the `tick()` function.
     that.emitters = [];
 
@@ -91,7 +91,7 @@ ShaderParticleGroup.prototype = {
      * a new THREE.Vector3 instance with randomised values.
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} spread
      * @return {THREE.Vector3}
@@ -109,13 +109,13 @@ ShaderParticleGroup.prototype = {
     },
 
     /**
-     * Create a new THREE.Color instance and given a base vector and 
+     * Create a new THREE.Color instance and given a base vector and
      * spread range vector, assign random values.
      *
      * Note that THREE.Color RGB values are in the range of 0 - 1, not 0 - 255.
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} spread
      * @return {THREE.Color}
@@ -138,11 +138,11 @@ ShaderParticleGroup.prototype = {
 
 
     /**
-     * Create a random Number value based on an initial value and 
+     * Create a random Number value based on an initial value and
      * a spread range
      *
      * @private
-     * 
+     *
      * @param  {Number} base
      * @param  {Number} spread
      * @return {Number}
@@ -155,14 +155,14 @@ ShaderParticleGroup.prototype = {
     /**
      * Create a new THREE.Vector3 instance and project it onto a random point
      * on a sphere with randomized radius.
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
      * @param  {THREE.Vector3} radiusSpread
      * @param  {THREE.Vector3} radiusScale
      *
      * @private
-     * 
+     *
      * @return {THREE.Vector3}
      */
     _randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale ) {
@@ -172,7 +172,7 @@ ShaderParticleGroup.prototype = {
         var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
 
         vec.multiplyScalar( this._randomFloat( radius, radiusSpread ) );
-        
+
         if( radiusScale ) {
             vec.multiply( radiusScale );
         }
@@ -185,41 +185,41 @@ ShaderParticleGroup.prototype = {
     /**
      * Create a new THREE.Vector3 instance and project it onto a random point
      * on a disk (in the XY-plane) centered at `base` and with randomized radius.
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
      * @param  {THREE.Vector3} radiusSpread
      * @param  {THREE.Vector3} radiusScale
      *
      * @private
-     * 
+     *
      * @return {THREE.Vector3}
      */
     _randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale ) {
-    
-        var t = 6.2832 * Math.random();        
+
+        var t = 6.2832 * Math.random();
 		var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( this._randomFloat( radius, radiusSpread ) );
 
 		if ( radiusScale ) {
 			vec.multiply( radiusScale );
 		}
-		
+
 		vec.add( base );
-		
+
 		return vec ;
     },
 
     /**
      * Create a new THREE.Vector3 instance, and given a sphere with center `base` and
      * point `position` on sphere, set direction away from sphere center with random magnitude.
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} position
      * @param  {Number} speed
      * @param  {Number} speedSpread
      *
      * @private
-     * 
+     *
      * @return {THREE.Vector3}
      */
     _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread ) {
@@ -234,13 +234,13 @@ ShaderParticleGroup.prototype = {
     /**
      * Given a base vector and a spread vector, randomise the given vector
      * accordingly.
-     * 
+     *
      * @param  {THREE.Vector3} vector
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} spread
      *
      * @private
-     * 
+     *
      * @return {[type]}
      */
     _randomizeExistingVector3: function( vector, base, spread ) {
@@ -253,11 +253,11 @@ ShaderParticleGroup.prototype = {
 
 
     /**
-     * Tells the age and alive attributes (and the geometry vertices) 
+     * Tells the age and alive attributes (and the geometry vertices)
      * that they need updating by THREE.js's internal tick functions.
-     * 
+     *
      * @private
-     * 
+     *
      * @return {this}
      */
     _flagUpdate: function() {
@@ -268,6 +268,7 @@ ShaderParticleGroup.prototype = {
         that.attributes.age.needsUpdate = true;
         that.attributes.alive.needsUpdate = true;
 		that.attributes.angle.needsUpdate = true;
+        that.attributes.velocity.needsUpdate = true;
         that.geometry.verticesNeedUpdate = true;
 
         return that;
@@ -277,7 +278,7 @@ ShaderParticleGroup.prototype = {
     /**
      * Add an emitter to this particle group. Once added, an emitter will be automatically
      * updated when ShaderParticleGroup#tick() is called.
-     * 
+     *
      * @param {ShaderParticleEmitter} emitter
      * @return {this}
      */
@@ -335,12 +336,14 @@ ShaderParticleGroup.prototype = {
             // For some stupid reason I was limiting the size value to a minimum of 0.1. Derp.
             size[i]         = that._randomFloat( emitter.size, emitter.sizeSpread );
             sizeEnd[i]      = emitter.sizeEnd;
+
 			if (that.angleAlignVelocity) {
 				angle[i]    = -Math.atan2( velocity[i].y, velocity[i].x );
 			}
 			else {
 				angle[i]    = that._randomFloat( emitter.angle, emitter.angleSpread );
             }
+
 			age[i]          = 0.0;
             alive[i]        = emitter.static ? 1.0 : 0.0;
 
@@ -369,7 +372,7 @@ ShaderParticleGroup.prototype = {
 
     /**
      * The main particle group update function. Call this once per frame.
-     * 
+     *
      * @param  {Number} dt
      * @return {this}
      */
@@ -393,9 +396,9 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Fetch a single emitter instance from the pool.
-     * If there are no objects in the pool, a new emitter will be 
+     * If there are no objects in the pool, a new emitter will be
      * created if specified.
-     * 
+     *
      * @return {ShaderParticleEmitter | null}
      */
     getFromPool: function() {
@@ -409,14 +412,14 @@ ShaderParticleGroup.prototype = {
         else if( createNew ) {
             return new ShaderParticleEmitter( that._poolCreationSettings );
         }
-        
+
         return null;
     },
 
 
     /**
      * Release an emitter into the pool.
-     * 
+     *
      * @param  {ShaderParticleEmitter} emitter
      * @return {this}
      */
@@ -435,7 +438,7 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Get the pool array
-     * 
+     *
      * @return {Array}
      */
     getPool: function() {
@@ -445,7 +448,7 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Add a pool of emitters to this particle group
-     * 
+     *
      * @param {Number} numEmitters      The number of emitters to add to the pool.
      * @param {Object} emitterSettings  An object describing the settings to pass to each emitter.
      * @param {Boolean} createNew       Should a new emitter be created if the pool runs out?
@@ -473,9 +476,9 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Internal method. Sets a single emitter to be alive
-     * 
+     *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} pos
      * @return {this}
      */
@@ -492,7 +495,7 @@ ShaderParticleGroup.prototype = {
         if( pos ) {
             emitter.position.copy( pos );
         }
-            
+
         emitter.enable();
 
         setTimeout( function() {
@@ -507,7 +510,7 @@ ShaderParticleGroup.prototype = {
     /**
      * Set a given number of emitters as alive, with an optional position
      * vector3 to move them to.
-     * 
+     *
      * @param  {Number} numEmitters
      * @param  {THREE.Vector3} position
      * @return {this}
@@ -590,7 +593,7 @@ ShaderParticleGroup.shaders = {
             'float positionInTime = (age / duration);',
             'float halfDuration = (duration / 2.0);',
 			'vAngle = angle;',
-			
+
             'if( alive > 0.5 ) {',
                 // Integrate color "tween"
                 'vec3 color = vec3( customColor );',
