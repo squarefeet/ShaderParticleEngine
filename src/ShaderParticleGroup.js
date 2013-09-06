@@ -40,6 +40,7 @@ function ShaderParticleGroup( options ) {
         age:            { type: 'f', value: [] },
         size:           { type: 'f', value: [] },
         sizeEnd:        { type: 'f', value: [] },
+		angle:			{ type: 'f', value: [] },
 
         customColor:    { type: 'c', value: [] },
         customColorEnd: { type: 'c', value: [] },
@@ -153,26 +154,27 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Create a new THREE.Vector3 instance and project it onto a random point
-     * on a sphere with radius `radius`.
+     * on a sphere with randomized radius.
      * 
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
-     * @param  {THREE.Vector3} scale
+     * @param  {THREE.Vector3} radiusSpread
+     * @param  {THREE.Vector3} radiusScale
      *
      * @private
      * 
      * @return {THREE.Vector3}
      */
-    _randomVector3OnSphere: function( base, radius, scale ) {
+    _randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale ) {
         var z = 2 * Math.random() - 1;
         var t = 6.2832 * Math.random();
         var r = Math.sqrt( 1 - z*z );
         var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
 
-        vec.multiplyScalar( radius );
+        vec.multiplyScalar( this._randomFloat( radius, radiusSpread ) );
         
-        if( scale ) {
-            vec.multiply( scale );
+        if( radiusScale ) {
+            vec.multiply( radiusScale );
         }
 
         vec.add( base );
@@ -180,30 +182,50 @@ ShaderParticleGroup.prototype = {
         return vec;
     },
 
-
     /**
-     * Create a new THREE.Vector3 instance, and given a base position, and various
-     * other values, project it onto a random point on a sphere with radius `radius`.
+     * Create a new THREE.Vector3 instance and project it onto a random point
+     * on a disk (in the XY-plane) centered at `base` and with randomized radius.
      * 
      * @param  {THREE.Vector3} base
-     * @param  {THREE.Vector3} position
-     * @param  {Number} speed
-     * @param  {Number} speedSpread
-     * @param  {THREE.Vector3} scale
      * @param  {Number} radius
+     * @param  {THREE.Vector3} radiusSpread
+     * @param  {THREE.Vector3} radiusScale
      *
      * @private
      * 
      * @return {THREE.Vector3}
      */
-    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
+    _randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale ) {
+    
+        var t = 6.2832 * Math.random();        
+		var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( this._randomFloat( radius, radiusSpread ) );
+
+		if ( radiusScale ) {
+			vec.multiply( radiusScale );
+		}
+		
+		vec.add( base );
+		
+		return vec ;
+    },
+
+    /**
+     * Create a new THREE.Vector3 instance, and given a sphere with center `base` and
+     * point `position` on sphere, set direction away from sphere center with random magnitude.
+     * 
+     * @param  {THREE.Vector3} base
+     * @param  {THREE.Vector3} position
+     * @param  {Number} speed
+     * @param  {Number} speedSpread
+     *
+     * @private
+     * 
+     * @return {THREE.Vector3}
+     */
+    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread ) {
         var direction = new THREE.Vector3().subVectors( base, position );
 
         direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
-
-        if( scale ) {
-            direction.multiply( scale );
-        }
 
         return direction;
     },
@@ -245,6 +267,7 @@ ShaderParticleGroup.prototype = {
         // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
         that.attributes.age.needsUpdate = true;
         that.attributes.alive.needsUpdate = true;
+		that.attributes.angle.needsUpdate = true;
         that.geometry.verticesNeedUpdate = true;
 
         return that;
@@ -280,6 +303,7 @@ ShaderParticleGroup.prototype = {
             age = a.age.value,
             size = a.size.value,
             sizeEnd = a.sizeEnd.value,
+			angle = a.angle.value,
             customColor = a.customColor.value,
             customColorEnd = a.customColorEnd.value,
             opacity = a.opacity.value,
@@ -292,8 +316,12 @@ ShaderParticleGroup.prototype = {
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
-                vertices[i]     = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
-                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale, emitter.radius );
+                vertices[i]     = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale );
+                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+            }
+            else if( emitter.type === 'disk' ) {
+                vertices[i]     = that._randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale );
+                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else {
                 vertices[i]     = that._randomVector3( emitter.position, emitter.positionSpread );
@@ -307,9 +335,14 @@ ShaderParticleGroup.prototype = {
             // For some stupid reason I was limiting the size value to a minimum of 0.1. Derp.
             size[i]         = that._randomFloat( emitter.size, emitter.sizeSpread );
             sizeEnd[i]      = emitter.sizeEnd;
-            age[i]          = 0.0;
+			if (that.angleAlignVelocity) {
+				angle[i]    = -Math.atan2( velocity[i].y, velocity[i].x );
+			}
+			else {
+				angle[i]    = that._randomFloat( emitter.angle, emitter.angleSpread );
+            }
+			age[i]          = 0.0;
             alive[i]        = emitter.static ? 1.0 : 0.0;
-
 
             customColor[i]      = that._randomColor( emitter.colorStart, emitter.colorSpread );
             customColorEnd[i]   = emitter.colorEnd;
@@ -515,8 +548,10 @@ ShaderParticleGroup.shaders = {
         'attribute float age;',
         'attribute float size;',
         'attribute float sizeEnd;',
+        'attribute float angle;',
 
         'varying vec4 vColor;',
+        'varying float vAngle;',
 
         // Linearly lerp a float
         'float Lerp( float start, float end, float amount ) {',
@@ -554,7 +589,8 @@ ShaderParticleGroup.shaders = {
 
             'float positionInTime = (age / duration);',
             'float halfDuration = (duration / 2.0);',
-
+			'vAngle = angle;',
+			
             'if( alive > 0.5 ) {',
                 // Integrate color "tween"
                 'vec3 color = vec3( customColor );',
@@ -610,10 +646,11 @@ ShaderParticleGroup.shaders = {
         'uniform int colorize;',
 
         'varying vec4 vColor;',
+        'varying float vAngle;',
 
         'void main() {',
-            'float c = cos(0.0);',
-            'float s = sin(0.0);',
+            'float c = cos(vAngle);',
+            'float s = sin(vAngle);',
 
             'vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,',
                                   'c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);',
