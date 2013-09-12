@@ -34,19 +34,21 @@ function ShaderParticleEmitter( options ) {
     that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0, 10 );
     that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0, 10 );
 
-    that.size                   = parseFloat( typeof options.size === 'number' ? options.size : 10.0, 10 );
-    that.sizeSpread             = parseFloat( typeof options.sizeSpread === 'number' ? options.sizeSpread : 0, 10 );
-    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : 10.0, 10 );
+    that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 10.0, 10 );
+    that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0, 10 );
+    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart, 10 );
 
 	that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0, 10 );
     that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0, 10 );
     that.angleVelocity          = parseFloat( typeof options.angleVelocity === 'number' ? options.angleVelocity : 0, 10 );
     that.angleAlignVelocity     = options.angleAlignVelocity || false;
 
-    that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
-    that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : new THREE.Color( 'blue' );
-    that.colorSpread            = options.colorSpread instanceof THREE.Vector3 ? options.colorSpread : new THREE.Vector3();
-
+    that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'blue' );
+    that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3(0,0,0);
+    that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
+	that.colorMiddle			= options.colorMiddle instanceof THREE.Color ? options.colorMiddle : 
+		new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
+		
     that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1, 10 );
     that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0, 10 );
     that.opacityMiddle          = parseFloat(
