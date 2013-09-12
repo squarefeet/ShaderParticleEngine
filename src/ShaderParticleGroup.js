@@ -38,14 +38,15 @@ function ShaderParticleGroup( options ) {
         velocity:       { type: 'v3', value: [] },
         alive:          { type: 'f', value: [] },
         age:            { type: 'f', value: [] },
-        size:           { type: 'f', value: [] },
+        sizeStart:      { type: 'f', value: [] },
         sizeEnd:        { type: 'f', value: [] },
 		angle:			{ type: 'f', value: [] },
 
-        customColor:    { type: 'c', value: [] },
-        customColorEnd: { type: 'c', value: [] },
+        colorStart:  { type: 'c', value: [] },
+		colorMiddle: { type: 'c', value: [] },
+        colorEnd:    { type: 'c', value: [] },
 
-        opacity:        { type: 'f', value: [] },
+        opacityStart:   { type: 'f', value: [] },
         opacityMiddle:  { type: 'f', value: [] },
         opacityEnd:     { type: 'f', value: [] }
     };
@@ -295,21 +296,22 @@ ShaderParticleGroup.prototype = {
         emitter.numParticles = Math.ceil(emitter.numParticles);
 
         var vertices = that.geometry.vertices,
-            start = vertices.length,
-            end = emitter.numParticles + start,
-            a = that.attributes,
-            acceleration = a.acceleration.value,
-            velocity = a.velocity.value,
-            alive = a.alive.value,
-            age = a.age.value,
-            size = a.size.value,
-            sizeEnd = a.sizeEnd.value,
-			angle = a.angle.value,
-            customColor = a.customColor.value,
-            customColorEnd = a.customColorEnd.value,
-            opacity = a.opacity.value,
+            start    = vertices.length,
+            end      = emitter.numParticles + start,
+            a             = that.attributes,
+            acceleration  = a.acceleration.value,
+            velocity      = a.velocity.value,
+            alive         = a.alive.value,
+            age           = a.age.value,
+            sizeStart     = a.sizeStart.value,
+            sizeEnd       = a.sizeEnd.value,
+			angle         = a.angle.value,
+            colorStart    = a.colorStart.value,
+            colorMiddle   = a.colorMiddle.value,
+            colorEnd      = a.colorEnd.value,
+            opacityStart  = a.opacityStart.value,
             opacityMiddle = a.opacityMiddle.value;
-            opacityEnd = a.opacityEnd.value;
+            opacityEnd    = a.opacityEnd.value;
 
         emitter.particleIndex = parseFloat( start, 10 );
 
@@ -329,12 +331,9 @@ ShaderParticleGroup.prototype = {
                 velocity[i]     = that._randomVector3( emitter.velocity, emitter.velocitySpread );
             }
 
-
             acceleration[i] = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
-            // Fix for bug #1 (https://github.com/squarefeet/ShaderParticleEngine/issues/1)
-            // For some stupid reason I was limiting the size value to a minimum of 0.1. Derp.
-            size[i]         = that._randomFloat( emitter.size, emitter.sizeSpread );
+            sizeStart[i]    = that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread );
             sizeEnd[i]      = emitter.sizeEnd;
 
 			if (that.angleAlignVelocity) {
@@ -347,11 +346,12 @@ ShaderParticleGroup.prototype = {
 			age[i]          = 0.0;
             alive[i]        = emitter.static ? 1.0 : 0.0;
 
-            customColor[i]      = that._randomColor( emitter.colorStart, emitter.colorSpread );
-            customColorEnd[i]   = emitter.colorEnd;
-            opacity[i]          = emitter.opacityStart;
-            opacityMiddle[i]    = emitter.opacityMiddle;
-            opacityEnd[i]       = emitter.opacityEnd;
+            colorStart[i]    = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
+            colorMiddle[i]   = emitter.colorMiddle;
+            colorEnd[i]      = emitter.colorEnd;
+            opacityStart[i]  = emitter.opacityStart;
+            opacityMiddle[i] = emitter.opacityMiddle;
+            opacityEnd[i]    = emitter.opacityEnd;
         }
 
         // Cache properties on the emitter so we can access
@@ -539,9 +539,10 @@ ShaderParticleGroup.shaders = {
         'uniform float duration;',
         'uniform int hasPerspective;',
 
-        'attribute vec3 customColor;',
-        'attribute vec3 customColorEnd;',
-        'attribute float opacity;',
+        'attribute vec3 colorStart;',
+        'attribute vec3 colorMiddle;',
+        'attribute vec3 colorEnd;',
+        'attribute float opacityStart;',
         'attribute float opacityMiddle;',
         'attribute float opacityEnd;',
 
@@ -549,22 +550,13 @@ ShaderParticleGroup.shaders = {
         'attribute vec3 velocity;',
         'attribute float alive;',
         'attribute float age;',
-        'attribute float size;',
+        'attribute float sizeStart;',
         'attribute float sizeEnd;',
         'attribute float angle;',
 
+	// values to be passed to the fragment shader
         'varying vec4 vColor;',
         'varying float vAngle;',
-
-        // Linearly lerp a float
-        'float Lerp( float start, float end, float amount ) {',
-            'return (start + ((end - start) * amount));',
-        '}',
-
-        // Linearly lerp a vector3
-        'vec3 Lerp( vec3 start, vec3 end, float amount ) {',
-            'return (start + ((end - start) * amount));',
-        '}',
 
         // Integrate acceleration into velocity and apply it to the particle's position
         'vec4 GetPos() {',
@@ -591,40 +583,27 @@ ShaderParticleGroup.shaders = {
         'void main() {',
 
             'float positionInTime = (age / duration);',
-            'float halfDuration = (duration / 2.0);',
+			'float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
+			'float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
+			'float halfDuration = duration / 2.0;',
 			'vAngle = angle;',
 
             'if( alive > 0.5 ) {',
-                // Integrate color "tween"
-                'vec3 color = vec3( customColor );',
-                'if( customColor != customColorEnd ) {',
-                    'color = Lerp( customColor, customColorEnd, positionInTime );',
-                '}',
-
-                // Store the color of this particle in the varying vColor,
-                // so frag shader can access it.
-                'if( opacity == opacityMiddle && opacityMiddle == opacityEnd ) {',
-                    'vColor = vec4( color, opacity );',
-                '}',
-
-                'else if( positionInTime < 0.5 ) {',
-                    'vColor = vec4( color, Lerp( opacity, opacityMiddle, age / halfDuration ) );',
-                '}',
-
-                'else if( positionInTime > 0.5 ) {',
-                    'vColor = vec4( color, Lerp( opacityMiddle, opacityEnd, (age - halfDuration) / halfDuration ) );',
-                '}',
-
-                'else {',
-                    'vColor = vec4( color, opacityMiddle );',
-                '}',
+			
+				// lerp the color and opacity
+				'if( positionInTime < 0.5) {',
+					'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacityStart, opacityMiddle, lerpAmount1) );',
+				'}',
+				'else {',
+					'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacityMiddle, opacityEnd, lerpAmount2) );',
+				'}',
 
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
                 'vec4 pos = GetPos();',
 
                 // Determine point size .
-                'float pointSize = Lerp( size, sizeEnd, positionInTime );',
+                'float pointSize = mix( sizeStart, sizeEnd, positionInTime );',
 
                 'if( hasPerspective == 1 ) {',
                     'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
@@ -638,7 +617,7 @@ ShaderParticleGroup.shaders = {
             'else {',
                 // Hide particle and set its position to the (maybe) glsl
                 // equivalent of Number.POSITIVE_INFINITY
-                'vColor = vec4( customColor, 0.0 );',
+                'vColor = vec4( colorStart, 0.0 );',
                 'gl_Position = vec4(1e20, 1e20, 1e20, 0);',
             '}',
         '}',
