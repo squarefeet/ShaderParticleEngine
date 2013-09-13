@@ -1,0 +1,120 @@
+<!-- A seperate test file to play around with whilst doing updates/bug fixes -->
+<html>
+<head>
+    <title>Universal Gravitation Particles</title>
+    <link rel="stylesheet" type="text/css" href="../examples/css/style.css">
+</head>
+<body>
+    <!-- THREE.min.js r60 and FPS stats -->
+    <script type="text/javascript" src="../examples/js/THREE-r60.min.js"></script>
+    <script type="text/javascript" src="../examples/js/Stats.min.js"></script>
+
+    <!-- ShaderParticles -->
+    <script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+
+
+    <script type="text/javascript">
+        // variables used in init()
+        var scene, camera, renderer, stats, stats2, clock;
+
+        // Used in initParticles()
+        var emitter, particleGroup, pool,
+            pos = new THREE.Vector3();
+
+        // Setup the scene
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 200;
+            camera.lookAt( scene.position );
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000);
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+
+        // Create particle group and emitter
+        function initParticles() {
+            particleGroup = new ShaderParticleGroup({
+                texture: THREE.ImageUtils.loadTexture('../examples/img/smokeparticle.png'),
+                maxAge: 5,
+                blending: THREE.AdditiveBlending,
+                useGravity: true
+            });
+
+            emitter = new ShaderParticleEmitter({
+                position: new THREE.Vector3(10, 10, 10),
+                size: 30,
+                sizeEnd: 30,
+                opacityStart: 1,
+                opacityEnd: 1,
+                colorStart: new THREE.Color('yellow'),
+                colorSpread: new THREE.Vector3(0, 10, 0),
+                colorEnd: new THREE.Color('red'),
+                particlesPerSecond: 1,
+                
+                mass: 1000,
+                planetMass: 100000,
+                planetPosition: new THREE.Vector3()
+            });
+
+            particleGroup.addEmitter( emitter );
+
+            // Add particle group to scene.
+            scene.add( particleGroup.mesh );
+        }
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+            render( clock.getDelta() );
+            stats.update();
+        }
+
+        function updateCamera() {
+            var now = Date.now() * 0.0007;
+
+            camera.position.set( Math.sin( now ) * 500, 0, Math.cos( now ) * 500 );
+            camera.lookAt( scene.position );
+        }
+
+        function render( dt ) {
+            particleGroup.tick( 0.016 );
+            // updateCamera();
+            renderer.render( scene, camera );
+        }
+
+
+        // Resize listener...
+        window.addEventListener( 'resize', function() {
+            var w = window.innerWidth,
+                h = window.innerHeight;
+
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize( w, h );
+        }, false );
+
+
+        // Kick it all off.
+        init();
+        initParticles();
+
+        setTimeout(animate, 0);
+
+    </script>
+
+</body>
+</html>

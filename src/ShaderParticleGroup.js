@@ -41,6 +41,9 @@ function ShaderParticleGroup( options ) {
         sizeStart:      { type: 'f', value: [] },
         sizeEnd:        { type: 'f', value: [] },
 		angle:			{ type: 'f', value: [] },
+        particleMass:   { type: 'f', value: [] },
+        planetMass:     { type: 'f', value: [] },
+        planetPosition: { type: 'v3', value: [] },
 
         colorStart:  { type: 'c', value: [] },
 		colorMiddle: { type: 'c', value: [] },
@@ -311,7 +314,10 @@ ShaderParticleGroup.prototype = {
             colorEnd      = a.colorEnd.value,
             opacityStart  = a.opacityStart.value,
             opacityMiddle = a.opacityMiddle.value;
-            opacityEnd    = a.opacityEnd.value;
+            opacityEnd    = a.opacityEnd.value,
+            particleMass = a.particleMass.value,
+            planetMass = a.planetMass.value,
+            planetPosition = a.planetPosition.value;
 
         emitter.particleIndex = parseFloat( start, 10 );
 
@@ -342,6 +348,10 @@ ShaderParticleGroup.prototype = {
 			else {
 				angle[i]    = that._randomFloat( emitter.angle, emitter.angleSpread );
             }
+
+            particleMass[i]     = emitter.particleMass;
+            planetMass[i]       = emitter.planetMass;
+            planetPosition[i]   = emitter.planetPosition;
 
 			age[i]          = 0.0;
             alive[i]        = emitter.static ? 1.0 : 0.0;
@@ -554,9 +564,45 @@ ShaderParticleGroup.shaders = {
         'attribute float sizeEnd;',
         'attribute float angle;',
 
+        'attribute float particleMass;',  
+        'attribute float planetMass;',    
+        'attribute vec3 planetPosition;',
+
 	// values to be passed to the fragment shader
         'varying vec4 vColor;',
         'varying float vAngle;',
+
+        'float G = 6.67384;',
+
+        'vec4 GetPosGravity() {',
+            'vec3 newPos = vec3( position );',
+
+            'vec3 v = velocity * age;',
+            'float ageCounter = 0.0;',
+
+
+            // Sadface :( - "Loop index cannot be compared with non-constant expression"
+            // TODO: Find a way to do these calculations outside of a loop. Can't use whiles,
+            // or do-whiles either. Argh, help!
+            'for( float i = 0.0; i < age; i += 0.016 ) {',
+                // r1 = planetPosition
+                // r2 = position
+                // r12 = position - planetPosition
+                'vec3 r12 = vec3( position - planetPosition );',
+                'float r12Sq = (r12.x * r12.x) + (r12.y * r12.y) + (r12.z * r12.z);',
+                'normalize( r12 );',
+                'float c = -(G * particleMass / r12Sq);',
+
+                'vec3 a12 = r12 * c;',
+
+                'v = v + a12;',
+            '}',
+
+            'newPos = newPos + v;',
+            'vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );',
+
+            'return mvPosition;',
+        '}',
 
         // Integrate acceleration into velocity and apply it to the particle's position
         'vec4 GetPos() {',
@@ -600,7 +646,7 @@ ShaderParticleGroup.shaders = {
 
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
-                'vec4 pos = GetPos();',
+                'vec4 pos = GetPosGravity();',
 
                 // Determine point size .
                 'float pointSize = mix( sizeStart, sizeEnd, positionInTime );',

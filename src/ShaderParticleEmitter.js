@@ -57,6 +57,10 @@ function ShaderParticleEmitter( options ) {
         Math.abs(that.opacityEnd + that.opacityStart) / 2,
     10 );
 
+    that.particleMass           = parseFloat( typeof options.particleMass === 'number' ? options.particleMass : 10 );
+    that.planetMass             = parseFloat( typeof options.planetMass === 'number' ? options.planetMass : 10 );
+    that.planetPosition         = options.planetPosition instanceof THREE.Vector3 ? options.planetPosition : new THREE.Vector3();
+
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10);
 
