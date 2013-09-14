@@ -283,7 +283,7 @@ ShaderParticleEmitter.prototype = {
             return;
         }
 
-        var n = Math.min( end, pIndex + ppsdt );
+        var n = Math.max( Math.min( end, pIndex + ppsdt ), 0);
 
         for( i = pIndex | 0; i < n; ++i ) {
             if( alive[ i ] !== 1.0 ) {
@@ -294,12 +294,20 @@ ShaderParticleEmitter.prototype = {
 
         that.particleIndex += ppsdt;
 
+        if( that.particleIndex < 0.0 ) {
+            that.particleIndex = 0.0;
+        }
+
         if( pIndex >= start + that.numParticles ) {
             that.particleIndex = parseFloat( start, 10 );
         }
 
         // Add the delta time value to the age of the emitter.
         that.age += dt;
+
+        if( that.age < 0.0 ) {
+            that.age = 0.0;
+        }
     },
 
     /**

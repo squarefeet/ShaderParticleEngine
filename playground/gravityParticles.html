@@ -22,7 +22,8 @@
         var emitter, particleGroup, pool,
             pos = new THREE.Vector3();
 
-        var camDistance = 150;
+        var camDistance = 150,
+            dt = 0.016;
 
         // Setup the scene
         function init() {
@@ -42,7 +43,7 @@
                     color: 0x870853
                 })
             );
-            planet.position = new THREE.Vector3( -20, 0, 0 );
+            planet.position.set(0, 0, 0);
             scene.add( planet );
 
             scene.add( new THREE.DirectionalLight() );
@@ -62,28 +63,36 @@
         // Create particle group and emitter
         function initParticles() {
             particleGroup = new ShaderParticleGroup({
-                texture: THREE.ImageUtils.loadTexture('../examples/img/star.png'),
-                maxAge: 20,
+                texture: THREE.ImageUtils.loadTexture('../examples/img/smokeParticle.png'),
+                maxAge: 10,
                 blending: THREE.AdditiveBlending
             });
 
+
+            var now2 = Date.now() * 0.001;
+
+
             emitter = new ShaderParticleEmitter({
-                position: new THREE.Vector3(-100, 10, -25),
+                position: new THREE.Vector3(
+                    Math.sin( now2 ) * 100, 
+                    0, 
+                    Math.cos( now2 ) * 100
+                ),
                 // positionSpread: new THREE.Vector3(100, 10, 10),
                 velocity: new THREE.Vector3(0.1, 1, 0.1),
-                velocitySpread: new THREE.Vector3(0.05, 0.05, 0.05),
-                sizeStart: 2,
-                sizeSpread: 10,
-                sizeEnd: 2,
+                velocitySpread: new THREE.Vector3(0.09, 0.09, 0.09),
+                sizeStart: 0.1,
+                sizeEnd: 0.1,
                 opacityStart: 1,
+                opacityMiddle: 1,
                 opacityEnd: 1,
-                colorStart: new THREE.Color('red'),
+                colorStart: new THREE.Color('white'),
                 colorEnd: new THREE.Color('white'),
-                particlesPerSecond: 1000,
+                particlesPerSecond: 3000,
                 
-                particleMass: 20,
+                particleMass: 30,
                 planetMass: 100,
-                planetPosition: new THREE.Vector3( -20, 0, 0 )
+                planetPosition: new THREE.Vector3( 0, 0, 0 )
             });
 
             particleGroup.addEmitter( emitter );
@@ -95,23 +104,23 @@
 
         function animate() {
             requestAnimationFrame( animate );
-            render( clock.getDelta() );
+            render();
             stats.update();
         }
 
         function updateCamera() {
             var now = Date.now() * 0.0007;
-            var now2 = Date.now() * 0.007;
+            var now2 = Date.now() * 0.001;
 
-            camera.position.set( Math.sin( now ) * camDistance, 0, Math.cos( now ) * camDistance );
-            camera.lookAt( scene.position );
+            // camera.position.set( Math.sin( now ) * camDistance, 0, Math.cos( now ) * camDistance );
+            // camera.lookAt( scene.position );
 
-            emitter.position.x = -100 + (Math.sin( now2 ) * 20 );
-            emitter.position.z = (Math.cos( now2 ) * 20);
+            emitter.position.set( Math.sin( now2 ) * 100, 0, Math.cos( now2 ) * 100 );
+            dt = (Math.sin( Date.now() * 0.0005 ) * 0.1) + 0.1;
         }
 
-        function render( dt ) {
-            particleGroup.tick( 0.016 );
+        function render() {
+            particleGroup.tick( dt );
             updateCamera();
 
             renderer.render( scene, camera );
