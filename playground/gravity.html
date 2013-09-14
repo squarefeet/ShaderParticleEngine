@@ -112,34 +112,3 @@
 
     </body>
 </html>
-
-<script type="text/javascript">
-    function handleGravity() {
-        for(var j = 0; j < spheres.length; j++) {
-
-            for(var i = 0; i < spheres.length; i++) {
-                if(i != j) {
-                    var r1 = new Array( spheres[j].position.x, spheres[j].position.y, spheres[j].position.z);
-                    var r2 = new Array( spheres[i].position.x, spheres[i].position.y, spheres[i].position.z);
-                    var r12 = new Array(r2[0]-r1[0], r2[1]-r1[1], r2[2]-r1[2]);
-
-                    var r12UnitVector = new Array( r12[0]/Math.abs(r12[0] + r12[1] + r12[2])/3, r12[1]/Math.abs(r12[0] + r12[1] + r12[2])/3, r12[2]/Math.abs(r12[0] + r12[1] + r12[2])/3 );
-
-                    var m1 = masses[j];
-                    var m2 = masses[i];
-                    var r12Squared = r12[0]*r12[0] + r12[1]*r12[1] + r12[2]*r12[2];
-                    var a12 = new Array( -(gravConst*m2/r12Squared)*r12UnitVector[0], -(gravConst*m2/r12Squared)*r12UnitVector[1], -(gravConst*m2/r12Squared)*r12UnitVector[2]);
-
-                    velocities[j][0] -= a12[0]*timePassed;
-                    velocities[j][1] -= a12[1]*timePassed;
-                    velocities[j][2] -= a12[2]*timePassed;
-
-
-
-
-                }
-            }
-
-        }
-    }
-</script>
