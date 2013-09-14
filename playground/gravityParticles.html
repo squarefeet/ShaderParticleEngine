@@ -48,23 +48,24 @@
         function initParticles() {
             particleGroup = new ShaderParticleGroup({
                 texture: THREE.ImageUtils.loadTexture('../examples/img/smokeparticle.png'),
-                maxAge: 5,
+                maxAge: 50,
                 blending: THREE.AdditiveBlending,
-                useGravity: true
+                useGravity: true,
+                hasPerspective: 0
             });
 
             emitter = new ShaderParticleEmitter({
-                position: new THREE.Vector3(10, 10, 10),
-                size: 30,
+                position: new THREE.Vector3(50, 50, 0),
+                // velocity: new THREE.Vector3(-5, -5, 0),
+                sizeStart: 30,
                 sizeEnd: 30,
                 opacityStart: 1,
                 opacityEnd: 1,
-                colorStart: new THREE.Color('yellow'),
-                colorSpread: new THREE.Vector3(0, 10, 0),
+                colorStart: new THREE.Color('red'),
                 colorEnd: new THREE.Color('red'),
                 particlesPerSecond: 1,
                 
-                mass: 1000,
+                particleMass: 1000,
                 planetMass: 100000,
                 planetPosition: new THREE.Vector3()
             });

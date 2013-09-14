@@ -584,7 +584,7 @@ ShaderParticleGroup.shaders = {
             // Sadface :( - "Loop index cannot be compared with non-constant expression"
             // TODO: Find a way to do these calculations outside of a loop. Can't use whiles,
             // or do-whiles either. Argh, help!
-            'for( float i = 0.0; i < age; i += 0.016 ) {',
+            // 'for( float i = 0.0; i < age; i += 0.016 ) {',
                 // r1 = planetPosition
                 // r2 = position
                 // r12 = position - planetPosition
@@ -596,7 +596,7 @@ ShaderParticleGroup.shaders = {
                 'vec3 a12 = r12 * c;',
 
                 'v = v + a12;',
-            '}',
+            // '}',
 
             'newPos = newPos + v;',
             'vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );',
