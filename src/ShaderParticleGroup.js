@@ -568,37 +568,40 @@ ShaderParticleGroup.shaders = {
         'attribute float planetMass;',    
         'attribute vec3 planetPosition;',
 
-	// values to be passed to the fragment shader
+        // values to be passed to the fragment shader
         'varying vec4 vColor;',
         'varying float vAngle;',
 
         'float G = 6.67384;',
 
-        'vec4 GetPosGravity() {',
-            'vec3 newPos = vec3( position );',
+        'vec3 CalculatePosition( vec3 pos, vec3 v, float incr ) {',
 
-            'vec3 v = velocity * age;',
-            'float ageCounter = 0.0;',
+            'for( float i = 0.0; i < 500.0; i += 0.016 ) {',
+                'if( i >= age ) { break; }',
 
+                'vec3 r12 = vec3( pos - planetPosition );',
 
-            // Sadface :( - "Loop index cannot be compared with non-constant expression"
-            // TODO: Find a way to do these calculations outside of a loop. Can't use whiles,
-            // or do-whiles either. Argh, help!
-            // 'for( float i = 0.0; i < age; i += 0.016 ) {',
-                // r1 = planetPosition
-                // r2 = position
-                // r12 = position - planetPosition
-                'vec3 r12 = vec3( position - planetPosition );',
                 'float r12Sq = (r12.x * r12.x) + (r12.y * r12.y) + (r12.z * r12.z);',
-                'normalize( r12 );',
+                
+                'r12 = normalize( r12 );',
+
                 'float c = -(G * particleMass / r12Sq);',
 
                 'vec3 a12 = r12 * c;',
 
-                'v = v + a12;',
-            // '}',
+                'v += a12;',
+                'pos += v;',
+            '}',
 
-            'newPos = newPos + v;',
+            'return pos;',
+        '}',
+
+        'vec4 GetPosGravity() {',
+            'vec3 newPos = vec3( position );',
+
+            'vec3 v = velocity;',
+
+            'newPos = CalculatePosition( newPos, v, 0.016 );',
             'vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );',
 
             'return mvPosition;',
