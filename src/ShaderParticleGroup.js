@@ -47,7 +47,7 @@ function ShaderParticleGroup( options ) {
         planetPosition: { type: 'v3', value: [] },
 
         colorStart:  { type: 'c', value: [] },
-		colorMiddle: { type: 'c', value: [] },
+	colorMiddle: { type: 'c', value: [] },
         colorEnd:    { type: 'c', value: [] },
 
         opacityStart:   { type: 'f', value: [] },
@@ -346,7 +346,6 @@ ShaderParticleGroup.prototype = {
             sizeStart[i]    = that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread );
             sizeEnd[i]      = emitter.sizeEnd;
 
-
 			if (that.angleAlignVelocity) {
 				angle[i]    = -Math.atan2( velocity[i].y, velocity[i].x );
 			}
@@ -358,7 +357,7 @@ ShaderParticleGroup.prototype = {
             planetMass[i]       = emitter.planetMass;
             planetPosition[i]   = emitter.planetPosition;
 
-			age[i]          = 0.0;
+            age[i]          = 0.0;
             alive[i]        = emitter.static ? 1.0 : 0.0;
 
             colorStart[i]    = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
@@ -578,7 +577,6 @@ ShaderParticleGroup.shaders = {
         'float G = 6.67384;',
 
         'vec3 CalculatePosition( vec3 pos, vec3 v, float incr ) {',
-
             'for( float i = 0.0; i < 500.0; i += 0.016 ) {',
                 'if( i >= age ) { break; }',
 
@@ -670,8 +668,8 @@ ShaderParticleGroup.shaders = {
             'else {',
                 // Hide particle and set its position to the (maybe) glsl
                 // equivalent of Number.POSITIVE_INFINITY
-                'vColor = vec4( colorStart, 0.0 );',
-                'gl_Position = vec4(1e20, 1e20, 1e20, 0);',
+                'vColor = vec4( 0.0, 0.0, 0.0, 0.0 );',
+                'gl_Position = vec4(1000000000.0, 1000000000.0, 1000000000.0, 0.0);',
             '}',
         '}',
     ].join('\n'),
