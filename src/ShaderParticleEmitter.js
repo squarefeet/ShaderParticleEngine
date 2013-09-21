@@ -1,5 +1,5 @@
 // ShaderParticleEmitter 0.5.0
-// 
+//
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
@@ -44,10 +44,10 @@ function ShaderParticleEmitter( options ) {
 
     that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1, 10 );
     that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0, 10 );
-    that.opacityMiddle          = parseFloat( 
-        typeof options.opacityMiddle !== 'undefined' ? 
-        options.opacityMiddle : 
-        Math.abs(that.opacityEnd + that.opacityStart) / 2, 
+    that.opacityMiddle          = parseFloat(
+        typeof options.opacityMiddle !== 'undefined' ?
+        options.opacityMiddle :
+        Math.abs(that.opacityEnd + that.opacityStart) / 2,
     10 );
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
@@ -67,6 +67,31 @@ function ShaderParticleEmitter( options ) {
     that.particleIndex = 0.0;
 
     that.userData = {};
+
+    // A map of option names and their types that require attribute updates if changed.
+    // Used by ShaderParticleEmitter.prototype.setOption()
+    that.attributeUpdateNames = {
+        'acceleration': THREE.Vector3,
+        'velocity': THREE.Vector3,
+        'alive': Number,
+        'age': Number,
+        'size': Number,
+        'sizeEnd': Number,
+        'customColor': THREE.Color,
+        'customColorEnd': THREE.Color,
+        'opacity': Number,
+        'opacityMiddle': Number,
+        'opacityEnd': Number
+    };
+
+    that.nonAttributeUpdateNames = {
+        'particlesPerSecond': Number,
+        'type': String,
+        'position': THREE.Vector3,
+        'positionSpread': THREE.Vector3,
+        'velocitySpread': THREE.Vector3,
+        'accelerationSpread': THREE.Vector3
+    };
 }
 
 
@@ -76,7 +101,7 @@ ShaderParticleEmitter.prototype = {
      * Reset a particle's position. Accounts for emitter type and spreads.
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} p
      */
     _resetParticle: function( p ) {
@@ -107,7 +132,7 @@ ShaderParticleEmitter.prototype = {
      * Given an existing particle vector, randomise it based on base and spread vectors
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} v
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} spread
@@ -124,11 +149,11 @@ ShaderParticleEmitter.prototype = {
 
 
     /**
-     * Given an existing particle vector, project it onto a random point on a 
+     * Given an existing particle vector, project it onto a random point on a
      * sphere with radius `radius` and position `base`.
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} v
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
@@ -142,20 +167,20 @@ ShaderParticleEmitter.prototype = {
 
         var x = ((r * Math.cos(t)) * radius);
         var y = ((r * Math.sin(t)) * radius);
-        var z = (z * radius); 
+        var z = (z * radius);
 
         v.set(x, y, z).multiply( this.radiusScale );
-        
+
         v.add( base );
     },
 
 
-    // This function is called by the instance of `ShaderParticleEmitter` that 
+    // This function is called by the instance of `ShaderParticleEmitter` that
     // this emitter has been added to.
     /**
      * Update this emitter's particle's positions. Called by the ShaderParticleGroup
      * that this emitter belongs to.
-     * 
+     *
      * @param  {Number} dt
      */
     tick: function( dt ) {
@@ -195,7 +220,7 @@ ShaderParticleEmitter.prototype = {
         }
 
         // If the emitter is dead, reset any particles that are in
-        // the recycled vertices array and reset the age of the 
+        // the recycled vertices array and reset the age of the
         // emitter to zero ready to go again if required, then
         // exit this function.
         if( that.alive === 0 ) {
@@ -234,7 +259,7 @@ ShaderParticleEmitter.prototype = {
      * Reset this emitter back to its starting position.
      * If `force` is truthy, then reset all particles in this
      * emitter as well, even if they're currently alive.
-     * 
+     *
      * @param  {Boolean} force
      * @return {this}
      */
@@ -273,5 +298,43 @@ ShaderParticleEmitter.prototype = {
      */
     disable: function() {
         this.alive = 0;
+    },
+
+
+    setOption: function( optionName, value ) {
+        var that = this,
+            attributeUpdateNames = that.attributeUpdateNames,
+            nonAttributeUpdateNames = that.nonAttributeUpdateNames,
+            attr, start, end, i, originalName;
+
+        if( attributeUpdateNames[ optionName ] && (value instanceof attributeUpdateNames[ optionName ]) ) {
+            attr = that.attributes[ optionName ];
+            start = that.verticesIndex;
+            end = start + that.numParticles;
+
+            for( i = start; i < end; ++i ) {
+                that._randomizeExistingVector3( attr.value[ i ], that[ optionName ], that[ optionName + 'Spread' ] );
+            }
+
+            that.attributes[ optionName ].needsUpdate = true;
+        }
+
+        else if( nonAttributeUpdateNames[ optionName ] && ( value instanceof nonAttributeUpdateNames[ optionName ] ) ) {
+
+            that[ optionName ] = value;
+
+            if( optionName.indexOf('Spread') > -1 && optionName !== 'positionSpread' ) {
+                originalName = optionName.replace('Spread', '');
+                attr = that.attributes[ originalName ];
+                start = that.verticesIndex;
+                end = start + that.numParticles;
+
+                for( i = start; i < end; ++i ) {
+                    that._randomizeExistingVector3( attr.value[ i ], that[ originalName ], that[ optionName ] );
+                }
+
+                that.attributes[ originalName ].needsUpdate = true;
+            }
+        }
     }
 };

@@ -1,0 +1,149 @@
+<html>
+<head>
+	<title>Basic Shader Particles</title>
+	<link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+<body>
+	<p class="numParticles"></p>
+
+	<!-- THREE.min.js r60 and FPS stats -->
+	<script type="text/javascript" src="./js/THREE-r60.min.js"></script>
+	<script type="text/javascript" src="./js/Stats.min.js"></script>
+    <script type="text/javascript" src="./js/dat.gui.min.js"></script>
+
+	<!-- ShaderParticles -->
+	<script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
+
+
+	<script type="text/javascript">
+		// variables used in init()
+        var scene, camera, renderer, stats, stats2, clock, gui;
+
+        // Used in initParticles()
+		var emitter, particleGroup;
+
+        var deltaTime = 0.016;
+
+		// Setup the scene
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 50;
+            camera.lookAt( scene.position );
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000);
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+
+        function makeAttributeGUI( folder, attributeName ) {
+            for( var i in emitter[ attributeName ] ) {
+                if( i !== 'x' && i !== 'y' && i !== 'z' ) continue;
+
+                folder.add( emitter[ attributeName ], i, -100, 100 ).step(1).onChange( (function( prop ) {
+                    return function( value ) {
+                        if( isNaN( value ) ) return;
+                        emitter[ attributeName ][ prop ] = value;
+                        emitter.setOption( attributeName, emitter[ attributeName ] );
+                    };
+                }(i)) );
+            }
+        }
+
+
+        function initGUI() {
+            gui = new dat.GUI();
+
+            var standard = gui.addFolder( 'Standard' );
+            standard.add( emitter, 'particlesPerSecond' ).min(1).max( emitter.particlesPerSecond ).step(1);
+
+            var velocityObj = {};
+
+
+
+            makeAttributeGUI( gui.addFolder( 'Position' ), 'position' );
+            makeAttributeGUI( gui.addFolder( 'Position Spread' ), 'positionSpread' );
+
+            makeAttributeGUI( gui.addFolder( 'sizeStart' ), 'size' );
+
+            makeAttributeGUI( gui.addFolder( 'Velocity' ), 'velocity' );
+            makeAttributeGUI( gui.addFolder( 'Velocity Spread' ), 'velocitySpread' );
+            makeAttributeGUI( gui.addFolder( 'Acceleration' ), 'acceleration' );
+            makeAttributeGUI( gui.addFolder( 'Acceleration Spread' ), 'accelerationSpread' );
+
+        }
+
+        // Create particle group and emitter
+        function initParticles() {
+        	particleGroup = new ShaderParticleGroup({
+        		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
+        		maxAge: 2
+        	});
+
+        	emitter = new ShaderParticleEmitter({
+        		position: new THREE.Vector3(0, 0, 0),
+
+        		colorStart: new THREE.Color('white'),
+        		colorEnd: new THREE.Color('blue'),
+        		size: 1,
+        		sizeEnd: 2,
+
+        		particlesPerSecond: 1000
+        	});
+
+        	particleGroup.addEmitter( emitter );
+        	scene.add( particleGroup.mesh );
+
+        	document.querySelector('.numParticles').textContent =
+        		'Total particles: ' + emitter.numParticles;
+        }
+
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+
+            // Use a fixed time-step here to avoid gaps
+            render( deltaTime );
+
+            stats.update();
+        }
+
+
+        function render( dt ) {
+            particleGroup.tick( dt );
+            renderer.render( scene, camera );
+        }
+
+
+        window.addEventListener( 'resize', function() {
+        	var w = window.innerWidth,
+        		h = window.innerHeight;
+
+        	camera.aspect = w / h;
+        	camera.updateProjectionMatrix();
+
+        	renderer.setSize( w, h );
+        }, false );
+
+        init();
+        initParticles();
+        initGUI();
+
+        setTimeout(animate, 0);
+
+	</script>
+
+</body>
+</html>
