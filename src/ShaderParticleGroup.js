@@ -47,7 +47,7 @@ function ShaderParticleGroup( options ) {
         planetPosition: { type: 'v3', value: [] },
 
         colorStart:  { type: 'c', value: [] },
-	colorMiddle: { type: 'c', value: [] },
+        colorMiddle: { type: 'c', value: [] },
         colorEnd:    { type: 'c', value: [] },
 
         opacityStart:   { type: 'f', value: [] },
