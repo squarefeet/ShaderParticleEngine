@@ -11,6 +11,7 @@ module.exports = function( grunt ) {
 
     // Specify input files and output paths
     var files = [
+            'src/ShaderParticleUtils.js',
             'src/ShaderParticleGroup.js',
             'src/ShaderParticleEmitter.js'
         ],
