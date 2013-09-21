@@ -34,13 +34,24 @@ function ShaderParticleEmitter( options ) {
     that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0, 10 );
     that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0, 10 );
 
-    that.size                   = parseFloat( typeof options.size === 'number' ? options.size : 10.0, 10 );
-    that.sizeSpread             = parseFloat( typeof options.sizeSpread === 'number' ? options.sizeSpread : 0, 10 );
-    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : 10.0, 10 );
+    that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 10.0, 10 );
+    that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0, 10 );
+    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart, 10 );
 
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : new THREE.Color( 'blue' );
     that.colorSpread            = options.colorSpread instanceof THREE.Vector3 ? options.colorSpread : new THREE.Vector3();
+
+	that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0, 10 );
+    that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0, 10 );
+    that.angleVelocity          = parseFloat( typeof options.angleVelocity === 'number' ? options.angleVelocity : 0, 10 );
+    that.angleAlignVelocity     = options.angleAlignVelocity || false;
+
+    that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'blue' );
+    that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3(0,0,0);
+    that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
+	that.colorMiddle			= options.colorMiddle instanceof THREE.Color ? options.colorMiddle :
+		new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
 
     that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1, 10 );
     that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0, 10 );
@@ -49,6 +60,10 @@ function ShaderParticleEmitter( options ) {
         options.opacityMiddle :
         Math.abs(that.opacityEnd + that.opacityStart) / 2,
     10 );
+
+    that.particleMass           = parseFloat( typeof options.particleMass === 'number' ? options.particleMass : 10 );
+    that.planetMass             = parseFloat( typeof options.planetMass === 'number' ? options.planetMass : 10 );
+    that.planetPosition         = options.planetPosition instanceof THREE.Vector3 ? options.planetPosition : new THREE.Vector3();
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10);
@@ -123,10 +138,34 @@ ShaderParticleEmitter.prototype = {
         }
 
         else if( type === 'sphere') {
-            that._randomizeExistingVector3OnSphere( p, that.position, that.radius );
+            that._randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale );
+			that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
+
+        else if( type === 'disk') {
+            that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale );
+			that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+        }
+
+		if (that.angleAlignVelocity) {
+			that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
+        }
+
     },
 
+	/**
+     * Create a random Number value based on an initial value and
+     * a spread range
+     *
+     * @private
+     *
+     * @param  {Number} base
+     * @param  {Number} spread
+     * @return {Number}
+     */
+    _randomFloat: function( base, spread ) {
+        return base + spread * (Math.random() - 0.5);
+    },
 
     /**
      * Given an existing particle vector, randomise it based on base and spread vectors
@@ -158,25 +197,58 @@ ShaderParticleEmitter.prototype = {
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
      */
-    _randomizeExistingVector3OnSphere: function( v, base, radius ) {
-        var rand = Math.random;
+    _randomizeExistingVector3OnSphere: function( v, base, radius, radiusSpread, radiusScale ) {
+        var rand = Math.random,
+            z = 2 * rand() - 1,
+            t = 6.2832 * rand(),
+            r = Math.sqrt( 1 - z*z ),
+            randomRadius = this._randomFloat( radius, radiusSpread );
 
-        var z = 2 * rand() - 1;
-        var t = 6.2832 * rand();
-        var r = Math.sqrt( 1 - z*z );
-
-        var x = ((r * Math.cos(t)) * radius);
-        var y = ((r * Math.sin(t)) * radius);
-        var z = (z * radius);
-
-        v.set(x, y, z).multiply( this.radiusScale );
+        v.set(
+            (r * Math.cos(t)) * randomRadius,
+            (r * Math.sin(t)) * randomRadius,
+            z * randomRadius
+        ).multiply( radiusScale );
 
         v.add( base );
     },
 
+    /**
+     * Given an existing particle vector, project it onto a random point
+     * on a disk (in the XY-plane) centered at `base` and with radius `radius`.
+     *
+     * @private
+     *
+     * @param  {THREE.Vector3} v
+     * @param  {THREE.Vector3} base
+     * @param  {Number} radius
+     */
+    _randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale ) {
+        var rand = Math.random,
+            t = 6.2832 * rand(),
+            randomRadius = this._randomFloat( radius, radiusSpread );
 
-    // This function is called by the instance of `ShaderParticleEmitter` that
-    // this emitter has been added to.
+        v.set(
+            Math.cos( t ),
+            Math.sin( t ),
+            0
+        ).multiplyScalar( randomRadius );
+
+		if ( radiusScale ) {
+			v.multiply( radiusScale );
+		}
+
+        v.add( base );
+    },
+
+	_randomizeExistingVelocityVector3OnSphere: function( v, base, position, speed, speedSpread ) {
+        v.copy(position)
+            .sub(base)
+            .normalize()
+            .multiplyScalar( this._randomFloat( speed, speedSpread ) );
+    },
+
+
     /**
      * Update this emitter's particle's positions. Called by the ShaderParticleGroup
      * that this emitter belongs to.
@@ -236,7 +308,7 @@ ShaderParticleEmitter.prototype = {
             return;
         }
 
-        var n = Math.min( end, pIndex + ppsdt );
+        var n = Math.max( Math.min( end, pIndex + ppsdt ), 0);
 
         for( i = pIndex | 0; i < n; ++i ) {
             if( alive[ i ] !== 1.0 ) {
@@ -247,12 +319,20 @@ ShaderParticleEmitter.prototype = {
 
         that.particleIndex += ppsdt;
 
+        if( that.particleIndex < 0.0 ) {
+            that.particleIndex = 0.0;
+        }
+
         if( pIndex >= start + that.numParticles ) {
             that.particleIndex = parseFloat( start, 10 );
         }
 
         // Add the delta time value to the age of the emitter.
         that.age += dt;
+
+        if( that.age < 0.0 ) {
+            that.age = 0.0;
+        }
     },
 
     /**

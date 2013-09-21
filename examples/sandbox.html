@@ -47,24 +47,28 @@
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
-        		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
+        		texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
         		maxAge: 1,
-                blending: THREE.AdditiveBlending
+                blending: THREE.NormalBlending
         	});
 
         	emitter = new ShaderParticleEmitter({
-                type: 'sphere',
-                position: new THREE.Vector3(0, 100, 0),
-                radius: 0.001,
-                radiusScale: new THREE.Vector3(1, 1, 1),
-                speed: 20,
+                type: 'disk',
+                position: new THREE.Vector3(0, 0, 0),
+                radius: 50,
+                radiusSpread: 0,
+                speed: 50,
                 speedSpread: 0,
                 colorStart: new THREE.Color('yellow'),
                 colorEnd: new THREE.Color('red'),
-                opacityStart: 1,
-                opacityEnd: 1,
+                opacityStart: 0,
+                opacityMiddle: 1,
+                opacityEnd: 0,
                 size: 20,
                 sizeEnd: 20,
+                angle: 0,
+                // angleSpread: 2 * Math.PI, // use for random direction
+                angleAlignVelocity : true,
                 particlesPerSecond: 1000
         	});
 
@@ -86,9 +90,18 @@
             stats.update();
         }
 
-        function render( dt ) {
 
+        function updateCamera() {
+            var now = Date.now() * 0.0003;
+            camera.position.x = Math.sin( now ) * 10;
+            camera.position.z = Math.cos( now ) * 10;
+            camera.lookAt( scene.position );
+        }
+
+
+        function render( dt ) {
             particleGroup.tick( dt );
+            // updateCamera();
             renderer.render( scene, camera );
         }
 
