@@ -16,6 +16,7 @@ function ShaderParticleGroup( options ) {
     that.texture                = options.texture || null;
     that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
     that.colorize               = parseInt( options.colorize || 1 );
+    that.hasGravity             = parseInt( options.hasGravity || 0 );
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
@@ -29,7 +30,8 @@ function ShaderParticleGroup( options ) {
         duration:       { type: 'f', value: that.maxAge },
         texture:        { type: 't', value: that.texture },
         hasPerspective: { type: 'i', value: that.hasPerspective },
-        colorize:       { type: 'i', value: that.colorize }
+        colorize:       { type: 'i', value: that.colorize },
+        hasGravity:     { type: 'i', value: that.hasGravity }
     };
 
     // Create a map of attributes that will hold values for each particle in this group.
@@ -43,7 +45,7 @@ function ShaderParticleGroup( options ) {
 
 		angle:			{ type: 'f', value: [] },
         particleMass:   { type: 'f', value: [] },
-        planetMass:     { type: 'f', value: [] },
+        hasGravity:     { type: 'f', value: [] },
         planetPosition: { type: 'v3', value: [] },
 
         colorStart:  { type: 'c', value: [] },
@@ -90,180 +92,6 @@ function ShaderParticleGroup( options ) {
 }
 
 ShaderParticleGroup.prototype = {
-
-    /**
-     * Given a base vector and a spread range vector, create
-     * a new THREE.Vector3 instance with randomised values.
-     *
-     * @private
-     *
-     * @param  {THREE.Vector3} base
-     * @param  {THREE.Vector3} spread
-     * @return {THREE.Vector3}
-     */
-    _randomVector3: function( base, spread ) {
-        var v = new THREE.Vector3();
-
-        v.copy( base );
-
-        v.x += Math.random() * spread.x - (spread.x/2);
-        v.y += Math.random() * spread.y - (spread.y/2);
-        v.z += Math.random() * spread.z - (spread.z/2);
-
-        return v;
-    },
-
-    /**
-     * Create a new THREE.Color instance and given a base vector and
-     * spread range vector, assign random values.
-     *
-     * Note that THREE.Color RGB values are in the range of 0 - 1, not 0 - 255.
-     *
-     * @private
-     *
-     * @param  {THREE.Vector3} base
-     * @param  {THREE.Vector3} spread
-     * @return {THREE.Color}
-     */
-    _randomColor: function( base, spread ) {
-        var v = new THREE.Color();
-
-        v.copy( base );
-
-        v.r += (Math.random() * spread.x) - (spread.x/2);
-        v.g += (Math.random() * spread.y) - (spread.y/2);
-        v.b += (Math.random() * spread.z) - (spread.z/2);
-
-        v.r = Math.max( 0, Math.min( v.r, 1 ) );
-        v.g = Math.max( 0, Math.min( v.g, 1 ) );
-        v.b = Math.max( 0, Math.min( v.b, 1 ) );
-
-        return v;
-    },
-
-
-    /**
-     * Create a random Number value based on an initial value and
-     * a spread range
-     *
-     * @private
-     *
-     * @param  {Number} base
-     * @param  {Number} spread
-     * @return {Number}
-     */
-    _randomFloat: function( base, spread ) {
-        return base + spread * (Math.random() - 0.5);
-    },
-
-
-    /**
-     * Create a new THREE.Vector3 instance and project it onto a random point
-     * on a sphere with randomized radius.
-     *
-     * @param  {THREE.Vector3} base
-     * @param  {Number} radius
-     * @param  {THREE.Vector3} radiusSpread
-     * @param  {THREE.Vector3} radiusScale
-     *
-     * @private
-     *
-     * @return {THREE.Vector3}
-     */
-    _randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale ) {
-        var z = 2 * Math.random() - 1;
-        var t = 6.2832 * Math.random();
-        var r = Math.sqrt( 1 - z*z );
-        var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
-
-        vec.multiplyScalar( this._randomFloat( radius, radiusSpread ) );
-
-        if( radiusScale ) {
-            vec.multiply( radiusScale );
-        }
-
-        vec.add( base );
-
-        return vec;
-    },
-
-
-    /**
-     * Create a new THREE.Vector3 instance and project it onto a random point
-     * on a disk (in the XY-plane) centered at `base` and with randomized radius.
-     *
-     * @param  {THREE.Vector3} base
-     * @param  {Number} radius
-     * @param  {THREE.Vector3} radiusSpread
-     * @param  {THREE.Vector3} radiusScale
-     *
-     * @private
-     *
-     * @return {THREE.Vector3}
-     */
-    _randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale ) {
-
-        var t = 6.2832 * Math.random();
-		var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( this._randomFloat( radius, radiusSpread ) );
-
-		if ( radiusScale ) {
-			vec.multiply( radiusScale );
-		}
-
-		vec.add( base );
-
-		return vec ;
-    },
-
-    /**
-     * Create a new THREE.Vector3 instance, and given a sphere with center `base` and
-     * point `position` on sphere, set direction away from sphere center with random magnitude.
-     *
-     * @param  {THREE.Vector3} base
-     * @param  {THREE.Vector3} position
-     * @param  {Number} speed
-     * @param  {Number} speedSpread
-     * @param  {THREE.Vector3} scale
-     * @param  {Number} radius
-     *
-     * @private
-     *
-     * @return {THREE.Vector3}
-     */
-    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
-        var direction = new THREE.Vector3().subVectors( base, position );
-
-        direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
-
-        if( scale ) {
-            direction.multiply( scale );
-        }
-
-        return direction;
-    },
-
-
-    /**
-     * Given a base vector and a spread vector, randomise the given vector
-     * accordingly.
-     *
-     * @param  {THREE.Vector3} vector
-     * @param  {THREE.Vector3} base
-     * @param  {THREE.Vector3} spread
-     *
-     * @private
-     *
-     * @return {[type]}
-     */
-    _randomizeExistingVector3: function( vector, base, spread ) {
-        vector.set(
-            Math.random() * base.x - spread.x,
-            Math.random() * base.y - spread.y,
-            Math.random() * base.z - spread.z
-        );
-    },
-
-
     /**
      * Tells the age and alive attributes (and the geometry vertices)
      * that they need updating by THREE.js's internal tick functions.
@@ -324,7 +152,6 @@ ShaderParticleGroup.prototype = {
             opacityMiddle   = a.opacityMiddle.value;
             opacityEnd      = a.opacityEnd.value,
             particleMass    = a.particleMass.value,
-            planetMass      = a.planetMass.value,
             planetPosition  = a.planetPosition.value;
 
         emitter.particleIndex = parseFloat( start, 10 );
@@ -341,31 +168,30 @@ ShaderParticleGroup.prototype = {
                 velocity[i]     = that._randomVector3( emitter.velocity, emitter.velocitySpread );
             }
 
-            acceleration[i] = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
+            acceleration[i]     = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
-            sizeStart[i]    = that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread );
-            sizeEnd[i]      = emitter.sizeEnd;
+            sizeStart[i]        = that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread );
+            sizeEnd[i]          = emitter.sizeEnd;
 
 			if (that.angleAlignVelocity) {
-				angle[i]    = -Math.atan2( velocity[i].y, velocity[i].x );
+				angle[i]        = -Math.atan2( velocity[i].y, velocity[i].x );
 			}
 			else {
-				angle[i]    = that._randomFloat( emitter.angle, emitter.angleSpread );
+				angle[i]        = that._randomFloat( emitter.angle, emitter.angleSpread );
             }
 
             particleMass[i]     = emitter.particleMass;
-            planetMass[i]       = emitter.planetMass;
             planetPosition[i]   = emitter.planetPosition;
 
-            age[i]          = 0.0;
-            alive[i]        = emitter.static ? 1.0 : 0.0;
+            age[i]              = 0.0;
+            alive[i]            = emitter.static ? 1.0 : 0.0;
 
-            colorStart[i]    = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
-            colorMiddle[i]   = emitter.colorMiddle;
-            colorEnd[i]      = emitter.colorEnd;
-            opacityStart[i]  = emitter.opacityStart;
-            opacityMiddle[i] = emitter.opacityMiddle;
-            opacityEnd[i]    = emitter.opacityEnd;
+            colorStart[i]       = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
+            colorMiddle[i]      = emitter.colorMiddle;
+            colorEnd[i]         = emitter.colorEnd;
+            opacityStart[i]     = emitter.opacityStart;
+            opacityMiddle[i]    = emitter.opacityMiddle;
+            opacityEnd[i]       = emitter.opacityEnd;
         }
 
         // Cache properties on the emitter so we can access
@@ -545,6 +371,11 @@ ShaderParticleGroup.prototype = {
     }
 };
 
+// Extend ShaderParticleGroup's prototype with functions from utils object.
+for( var i in shaderParticleUtils ) {
+    ShaderParticleGroup.prototype[ '_' + i ] = shaderParticleUtils[i];
+}
+
 
 
 // The all-important shaders
@@ -552,6 +383,8 @@ ShaderParticleGroup.shaders = {
     vertex: [
         'uniform float duration;',
         'uniform int hasPerspective;',
+        'uniform int hasGravity;',
+
 
         'attribute vec3 colorStart;',
         'attribute vec3 colorMiddle;',
@@ -566,13 +399,14 @@ ShaderParticleGroup.shaders = {
         'attribute float age;',
         'attribute float sizeStart;',
         'attribute float sizeEnd;',
+        'attribute float angle;',
 
         'attribute float particleMass;',
-        'attribute float planetMass;',
         'attribute vec3 planetPosition;',
 
         // values to be passed to the fragment shader
         'varying vec4 vColor;',
+        'varying float vAngle;',
 
         'float G = 6.67384;',
 
@@ -651,7 +485,14 @@ ShaderParticleGroup.shaders = {
 
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
-                'vec4 pos = GetPosGravity();',
+                'vec4 pos = vec4(0.0, 0.0, 0.0, 0.0);',
+
+                'if( hasGravity == 1 ) {',
+                    'pos = GetPosGravity();',
+                '}',
+                'else {',
+                    'pos = GetPos();',
+                '}',
 
                 // Determine point size .
                 'float pointSize = mix( sizeStart, sizeEnd, positionInTime );',

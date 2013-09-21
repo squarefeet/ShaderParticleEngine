@@ -35,7 +35,7 @@ function ShaderParticleEmitter( options ) {
     that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0, 10 );
 
     that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 10.0, 10 );
-    that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0, 10 );
+    that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0.0, 10 );
     that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart, 10 );
 
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
@@ -62,7 +62,6 @@ function ShaderParticleEmitter( options ) {
     10 );
 
     that.particleMass           = parseFloat( typeof options.particleMass === 'number' ? options.particleMass : 10 );
-    that.planetMass             = parseFloat( typeof options.planetMass === 'number' ? options.planetMass : 10 );
     that.planetPosition         = options.planetPosition instanceof THREE.Vector3 ? options.planetPosition : new THREE.Vector3();
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
@@ -82,31 +81,6 @@ function ShaderParticleEmitter( options ) {
     that.particleIndex = 0.0;
 
     that.userData = {};
-
-    // A map of option names and their types that require attribute updates if changed.
-    // Used by ShaderParticleEmitter.prototype.setOption()
-    that.attributeUpdateNames = {
-        'acceleration': THREE.Vector3,
-        'velocity': THREE.Vector3,
-        'alive': Number,
-        'age': Number,
-        'size': Number,
-        'sizeEnd': Number,
-        'customColor': THREE.Color,
-        'customColorEnd': THREE.Color,
-        'opacity': Number,
-        'opacityMiddle': Number,
-        'opacityEnd': Number
-    };
-
-    that.nonAttributeUpdateNames = {
-        'particlesPerSecond': Number,
-        'type': String,
-        'position': THREE.Vector3,
-        'positionSpread': THREE.Vector3,
-        'velocitySpread': THREE.Vector3,
-        'accelerationSpread': THREE.Vector3
-    };
 }
 
 
@@ -150,104 +124,7 @@ ShaderParticleEmitter.prototype = {
 		if (that.angleAlignVelocity) {
 			that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
         }
-
     },
-
-	/**
-     * Create a random Number value based on an initial value and
-     * a spread range
-     *
-     * @private
-     *
-     * @param  {Number} base
-     * @param  {Number} spread
-     * @return {Number}
-     */
-    _randomFloat: function( base, spread ) {
-        return base + spread * (Math.random() - 0.5);
-    },
-
-    /**
-     * Given an existing particle vector, randomise it based on base and spread vectors
-     *
-     * @private
-     *
-     * @param  {THREE.Vector3} v
-     * @param  {THREE.Vector3} base
-     * @param  {THREE.Vector3} spread
-     */
-    _randomizeExistingVector3: function( v, base, spread ) {
-        var r = Math.random;
-
-        v.copy( base );
-
-        v.x += r() * spread.x - (spread.x/2);
-        v.y += r() * spread.y - (spread.y/2);
-        v.z += r() * spread.z - (spread.z/2);
-    },
-
-
-    /**
-     * Given an existing particle vector, project it onto a random point on a
-     * sphere with radius `radius` and position `base`.
-     *
-     * @private
-     *
-     * @param  {THREE.Vector3} v
-     * @param  {THREE.Vector3} base
-     * @param  {Number} radius
-     */
-    _randomizeExistingVector3OnSphere: function( v, base, radius, radiusSpread, radiusScale ) {
-        var rand = Math.random,
-            z = 2 * rand() - 1,
-            t = 6.2832 * rand(),
-            r = Math.sqrt( 1 - z*z ),
-            randomRadius = this._randomFloat( radius, radiusSpread );
-
-        v.set(
-            (r * Math.cos(t)) * randomRadius,
-            (r * Math.sin(t)) * randomRadius,
-            z * randomRadius
-        ).multiply( radiusScale );
-
-        v.add( base );
-    },
-
-    /**
-     * Given an existing particle vector, project it onto a random point
-     * on a disk (in the XY-plane) centered at `base` and with radius `radius`.
-     *
-     * @private
-     *
-     * @param  {THREE.Vector3} v
-     * @param  {THREE.Vector3} base
-     * @param  {Number} radius
-     */
-    _randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale ) {
-        var rand = Math.random,
-            t = 6.2832 * rand(),
-            randomRadius = this._randomFloat( radius, radiusSpread );
-
-        v.set(
-            Math.cos( t ),
-            Math.sin( t ),
-            0
-        ).multiplyScalar( randomRadius );
-
-		if ( radiusScale ) {
-			v.multiply( radiusScale );
-		}
-
-        v.add( base );
-    },
-
-	_randomizeExistingVelocityVector3OnSphere: function( v, base, position, speed, speedSpread ) {
-        v.copy(position)
-            .sub(base)
-            .normalize()
-            .multiplyScalar( this._randomFloat( speed, speedSpread ) );
-    },
-
 
     /**
      * Update this emitter's particle's positions. Called by the ShaderParticleGroup
@@ -381,40 +258,92 @@ ShaderParticleEmitter.prototype = {
     },
 
 
-    setOption: function( optionName, value ) {
-        var that = this,
-            attributeUpdateNames = that.attributeUpdateNames,
-            nonAttributeUpdateNames = that.nonAttributeUpdateNames,
-            attr, start, end, i, originalName;
 
-        if( attributeUpdateNames[ optionName ] && (value instanceof attributeUpdateNames[ optionName ]) ) {
-            attr = that.attributes[ optionName ];
-            start = that.verticesIndex;
+    _setRandomVector3Attribute: function( attr, base, spread ) {
+        var that = this,
+            start = that.verticesIndex,
             end = start + that.numParticles;
 
-            for( i = start; i < end; ++i ) {
-                that._randomizeExistingVector3( attr.value[ i ], that[ optionName ], that[ optionName + 'Spread' ] );
+        for( i = start; i < end; ++i ) {
+            that._randomizeExistingVector3( attr.value[ i ], base, spread );
+        }
+    },
+
+    _setRandomColorAttribute: function( attr, base, spread ) {
+        var that = this,
+            start = that.verticesIndex,
+            end = start + that.numParticles;
+
+        spread = spread || new THREE.Vector3();
+
+        for( i = start; i < end; ++i ) {
+            that._randomizeExistingColor( attr.value[ i ], base, spread );
+        }
+    },
+
+    _setRandomFloatAttribute: function( attr, base, spread ) {
+        var that = this,
+            start = that.verticesIndex,
+            end = start + that.numParticles;
+
+        spread = spread || 0;
+
+        for( i = start; i < end; ++i ) {
+            attr.value[ i ] = that._randomFloat( base, spread );
+        }
+    },
+
+
+    setOption: function( optionName, value ) {
+        var that = this,
+            attr, start, end, i, originalName;
+
+
+        if( typeof that.attributes[ optionName ] === 'undefined' && typeof that[ optionName ] === 'undefined' ) {
+            console.log( "Won't set", optionName + ".", "Invalid property." );
+            return;
+        }
+
+        if( that.attributes[ optionName ] ) {
+            if( typeof that[ optionName ] === 'number' ) {
+                that._setRandomFloatAttribute(
+                    that.attributes[ optionName ],
+                    that[ optionName ],
+                    that[ optionName + 'Spread' ]
+                );
+            }
+            else if( that[ optionName ] instanceof THREE.Vector3 ) {
+                that._setRandomVector3Attribute(
+                    that.attributes[ optionName ],
+                    that[ optionName ],
+                    that[ optionName + 'Spread' ]
+                );
+            }
+            else if( that[ optionName ] instanceof THREE.Color ) {
+                that._setRandomColorAttribute(
+                    that.attributes[ optionName ],
+                    that[ optionName ],
+                    that[ optionName + 'Spread' ]
+                );
             }
 
+            that[ optionName ] = value;
             that.attributes[ optionName ].needsUpdate = true;
         }
 
-        else if( nonAttributeUpdateNames[ optionName ] && ( value instanceof nonAttributeUpdateNames[ optionName ] ) ) {
-
+        else if( that[ optionName ] ) {
             that[ optionName ] = value;
 
-            if( optionName.indexOf('Spread') > -1 && optionName !== 'positionSpread' ) {
-                originalName = optionName.replace('Spread', '');
-                attr = that.attributes[ originalName ];
-                start = that.verticesIndex;
-                end = start + that.numParticles;
-
-                for( i = start; i < end; ++i ) {
-                    that._randomizeExistingVector3( attr.value[ i ], that[ originalName ], that[ optionName ] );
-                }
-
-                that.attributes[ originalName ].needsUpdate = true;
+            if( optionName.indexOf( 'Spread' ) > -1 ) {
+                var baseName = optionName.replace( 'Spread', '' );
+                that.setOption( baseName, that[ baseName ] );
             }
         }
+
     }
 };
+
+// Extend ShaderParticleEmitter's prototype with functions from utils object.
+for( var i in shaderParticleUtils ) {
+    ShaderParticleEmitter.prototype[ '_' + i ] = shaderParticleUtils[i];
+}

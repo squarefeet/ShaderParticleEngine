@@ -12,6 +12,7 @@
     <script type="text/javascript" src="./js/dat.gui.min.js"></script>
 
 	<!-- ShaderParticles -->
+    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
 	<script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
     <script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
 
@@ -47,11 +48,11 @@
         }
 
 
-        function makeAttributeGUI( folder, attributeName ) {
+        function makeAttributeGUI( folder, attributeName, min, max, step ) {
             for( var i in emitter[ attributeName ] ) {
                 if( i !== 'x' && i !== 'y' && i !== 'z' ) continue;
 
-                folder.add( emitter[ attributeName ], i, -100, 100 ).step(1).onChange( (function( prop ) {
+                folder.add( emitter[ attributeName ], i, min, max ).step( step ).onChange( (function( prop ) {
                     return function( value ) {
                         if( isNaN( value ) ) return;
                         emitter[ attributeName ][ prop ] = value;
@@ -62,45 +63,84 @@
         }
 
 
+        function makeStandardGUI( folder, name, min, max, step ) {
+            folder.add( emitter, name ).min( min ).max( max ).step( step ).onChange( function( value ) {
+                emitter[ name ] = value;
+                emitter.setOption( name, emitter[ name ] );
+            } );
+        }
+
+
+        function makeColorGUI( folder, name ) {
+            var obj = {};
+
+            obj[name] = {
+                r: emitter[ name ].r * 255,
+                g: emitter[ name ].g * 255,
+                b: emitter[ name ].b * 255
+            };
+
+            folder.addColor( obj, name ).onChange( function( value ) {
+                emitter[ name ].setRGB( value.r / 255, value.g / 255, value.b / 255 );
+                emitter.setOption( name, emitter[ name ] );
+            } );
+        }
+
+
         function initGUI() {
             gui = new dat.GUI();
 
-            var standard = gui.addFolder( 'Standard' );
+            var standard = gui.addFolder( 'Standard' ),
+                size = gui.addFolder( 'Size' ),
+                opacity = gui.addFolder( 'Opacity' ),
+                color = gui.addFolder( 'Color' );
+
             standard.add( emitter, 'particlesPerSecond' ).min(1).max( emitter.particlesPerSecond ).step(1);
 
-            var velocityObj = {};
+            makeStandardGUI( size, 'sizeStart',         0, 200, 1 );
+            makeStandardGUI( size, 'sizeStartSpread',   0, 200, 1 );
+            makeStandardGUI( size, 'sizeEnd',           0, 200, 1 );
 
+            makeStandardGUI( opacity, 'opacityStart',  0, 1, 0.1 );
+            makeStandardGUI( opacity, 'opacityMiddle', 0, 1, 0.1 );
+            makeStandardGUI( opacity, 'opacityEnd',    0, 1, 0.1 );
+
+
+            makeColorGUI( color, 'colorStart' );
+            makeColorGUI( color, 'colorMiddle' );
+            makeColorGUI( color, 'colorEnd' );
+            makeAttributeGUI( gui.addFolder( 'Color Start Spread' ), 'colorStartSpread', 0, 255, 1 );
 
 
             makeAttributeGUI( gui.addFolder( 'Position' ), 'position' );
             makeAttributeGUI( gui.addFolder( 'Position Spread' ), 'positionSpread' );
 
-            makeAttributeGUI( gui.addFolder( 'sizeStart' ), 'size' );
-
             makeAttributeGUI( gui.addFolder( 'Velocity' ), 'velocity' );
             makeAttributeGUI( gui.addFolder( 'Velocity Spread' ), 'velocitySpread' );
             makeAttributeGUI( gui.addFolder( 'Acceleration' ), 'acceleration' );
             makeAttributeGUI( gui.addFolder( 'Acceleration Spread' ), 'accelerationSpread' );
-
         }
 
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 2
+        		maxAge: 5
         	});
 
         	emitter = new ShaderParticleEmitter({
         		position: new THREE.Vector3(0, 0, 0),
+                positionSpread: new THREE.Vector3(30, 30, 30),
 
         		colorStart: new THREE.Color('white'),
         		colorEnd: new THREE.Color('blue'),
-        		size: 1,
+        		sizeStart: 1,
         		sizeEnd: 2,
 
         		particlesPerSecond: 1000
         	});
+
+            console.log( emitter.colorStart );
 
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
@@ -116,7 +156,6 @@
 
             // Use a fixed time-step here to avoid gaps
             render( deltaTime );
-
             stats.update();
         }
 
