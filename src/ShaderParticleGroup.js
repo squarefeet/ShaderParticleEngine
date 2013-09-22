@@ -520,10 +520,11 @@ ShaderParticleGroup.shaders = {
         'uniform int colorize;',
 
         'varying vec4 vColor;',
+        'varying float vAngle;',
 
         'void main() {',
-            'float c = cos(0.0);',
-            'float s = sin(0.0);',
+            'float c = cos(vAngle);',
+            'float s = sin(vAngle);',
 
             'vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,',
                                   'c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);',

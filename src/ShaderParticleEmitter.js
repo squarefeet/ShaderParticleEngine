@@ -93,37 +93,41 @@ ShaderParticleEmitter.prototype = {
      *
      * @param  {THREE.Vector3} p
      */
-    _resetParticle: function( p ) {
+     _resetParticle: function( i ) {
         var that = this;
+            type = that.type,
             spread = that.positionSpread,
-            type = that.type;
+            particlePosition = that.vertices[i],
+            particleVelocity = that.attributes.velocity.value[i];
 
         // Optimise for no position spread or radius
         if(
             ( type === 'cube' && spread.x === 0 && spread.y === 0 && spread.z === 0 ) ||
-            ( type === 'sphere' && that.radius === 0 )
+            ( type === 'sphere' && that.radius === 0 ) ||
+            ( type === 'disk' && that.radius === 0 )
         ) {
-            p.copy( that.position );
+            particlePosition.copy( that.position );
         }
 
         // If there is a position spread, then get a new position based on this spread.
         else if( type === 'cube' ) {
-            that._randomizeExistingVector3( p, that.position, spread );
+            that._randomizeExistingVector3( particlePosition, that.position, spread );
         }
 
         else if( type === 'sphere') {
             that._randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale );
-			that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+            that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
         else if( type === 'disk') {
             that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale );
-			that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+            that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
-		if (that.angleAlignVelocity) {
-			that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
+        if (that.angleAlignVelocity) {
+            that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
         }
+
     },
 
     /**
@@ -190,7 +194,7 @@ ShaderParticleEmitter.prototype = {
         for( i = pIndex | 0; i < n; ++i ) {
             if( alive[ i ] !== 1.0 ) {
                 alive[ i ] = 1.0;
-                that._resetParticle( that.vertices[ i ] );
+                that._resetParticle( i );
             }
         }
 

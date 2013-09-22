@@ -12,7 +12,9 @@
     <script type="text/javascript" src="./js/dat.gui.min.js"></script>
 
 	<!-- ShaderParticles -->
-    <script type="text/javascript" src="../build/ShaderParticles.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
+	<script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
 
 
 	<script type="text/javascript">
@@ -94,6 +96,7 @@
                 color = gui.addFolder( 'Color' );
 
             standard.add( emitter, 'particlesPerSecond' ).min(1).max( emitter.particlesPerSecond ).step(1);
+            standard.add( emitter, 'angleAlignVelocity' )
 
             makeStandardGUI( size, 'sizeStart',         0, 200, 1 );
             makeStandardGUI( size, 'sizeStartSpread',   0, 200, 1 );
@@ -122,20 +125,22 @@
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
-        		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
+        		texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
         		maxAge: 5
         	});
 
         	emitter = new ShaderParticleEmitter({
         		position: new THREE.Vector3(0, 0, 0),
-                positionSpread: new THREE.Vector3(30, 30, 30),
+
+                velocitySpread: new THREE.Vector3(10, 10, 10),
 
         		colorStart: new THREE.Color('white'),
         		colorEnd: new THREE.Color('blue'),
         		sizeStart: 1,
         		sizeEnd: 2,
 
-        		particlesPerSecond: 1000
+        		particlesPerSecond: 1000,
+                angleAlignVelocity: true
         	});
 
             console.log( emitter.colorStart );
