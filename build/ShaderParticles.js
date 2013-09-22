@@ -77,13 +77,19 @@ var shaderParticleUtils = {
      *
      * @return {THREE.Vector3}
      */
-    randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale ) {
+    randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var z = 2 * Math.random() - 1;
         var t = 6.2832 * Math.random();
         var r = Math.sqrt( 1 - z*z );
         var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
 
-        vec.multiplyScalar( this._randomFloat( radius, radiusSpread ) );
+        var rand = this._randomFloat( radius, radiusSpread );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+        vec.multiplyScalar( rand );
 
         if( radiusScale ) {
             vec.multiply( radiusScale );
@@ -107,9 +113,15 @@ var shaderParticleUtils = {
      *
      * @return {THREE.Vector3}
      */
-    randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale ) {
+    randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var t = 6.2832 * Math.random();
-		var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( this._randomFloat( radius, radiusSpread ) );
+        var rand = this._randomFloat( radius, radiusSpread );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+		var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( rand );
 
 		if ( radiusScale ) {
 			vec.multiply( radiusScale );
@@ -205,17 +217,21 @@ var shaderParticleUtils = {
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
      */
-    randomizeExistingVector3OnSphere: function( v, base, radius, radiusSpread, radiusScale ) {
+    randomizeExistingVector3OnSphere: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var rand = Math.random,
             z = 2 * rand() - 1,
             t = 6.2832 * rand(),
             r = Math.sqrt( 1 - z*z ),
-            randomRadius = this._randomFloat( radius, radiusSpread );
+            rand = this._randomFloat( radius, radiusSpread );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
 
         v.set(
-            (r * Math.cos(t)) * randomRadius,
-            (r * Math.sin(t)) * randomRadius,
-            z * randomRadius
+            (r * Math.cos(t)) * rand,
+            (r * Math.sin(t)) * rand,
+            z * rand
         ).multiply( radiusScale );
 
         v.add( base );
@@ -232,16 +248,20 @@ var shaderParticleUtils = {
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
      */
-    randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale ) {
+    randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var rand = Math.random,
             t = 6.2832 * rand(),
-            randomRadius = this._randomFloat( radius, radiusSpread );
+            rand = this._randomFloat( radius, radiusSpread );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
 
         v.set(
             Math.cos( t ),
             Math.sin( t ),
             0
-        ).multiplyScalar( randomRadius );
+        ).multiplyScalar( rand );
 
 		if ( radiusScale ) {
 			v.multiply( radiusScale );
@@ -420,8 +440,12 @@ ShaderParticleGroup.prototype = {
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
-                vertices[i]     = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
-                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale, emitter.radius );
+                vertices[i]     = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+            }
+            else if( emitter.type === 'disk' ) {
+                vertices[i]     = that._randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else {
                 vertices[i]     = that._randomVector3( emitter.position, emitter.positionSpread );
@@ -754,6 +778,8 @@ ShaderParticleGroup.shaders = {
                     'pos = GetPos();',
                 '}',
 
+                'vAngle = -atan(pos.y, pos.x);',
+
                 // Determine point size .
                 'float pointSize = mix( sizeStart, sizeEnd, positionInTime );',
 
@@ -819,14 +845,16 @@ function ShaderParticleEmitter( options ) {
 
 
     that.particlesPerSecond     = typeof options.particlesPerSecond === 'number' ? options.particlesPerSecond : 100;
-    that.type                   = (options.type === 'cube' || options.type === 'sphere') ? options.type : 'cube';
+    that.type                   = (options.type === 'cube' || options.type === 'sphere' || options.type === 'disk') ? options.type : 'cube';
 
     that.position               = options.position instanceof THREE.Vector3 ? options.position : new THREE.Vector3();
     that.positionSpread         = options.positionSpread instanceof THREE.Vector3 ? options.positionSpread : new THREE.Vector3();
 
     // These two properties are only used when this.type === 'sphere'
     that.radius                 = typeof options.radius === 'number' ? options.radius : 10;
+    that.radiusSpread           = typeof options.radiusSpread === 'number' ? options.radiusSpread : 0;
     that.radiusScale            = options.radiusScale instanceof THREE.Vector3 ? options.radiusScale : new THREE.Vector3(1, 1, 1);
+    that.radiusSpreadClamp      = typeof options.radiusSpreadClamp === 'number' ? options.radiusSpreadClamp : 0;
 
     that.acceleration           = options.acceleration instanceof THREE.Vector3 ? options.acceleration : new THREE.Vector3();
     that.accelerationSpread     = options.accelerationSpread instanceof THREE.Vector3 ? options.accelerationSpread : new THREE.Vector3();
@@ -838,20 +866,16 @@ function ShaderParticleEmitter( options ) {
     that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0, 10 );
     that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0, 10 );
 
-    that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 10.0, 10 );
+    that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 1.0, 10 );
     that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0.0, 10 );
     that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart, 10 );
-
-    that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
-    that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : new THREE.Color( 'blue' );
-    that.colorSpread            = options.colorSpread instanceof THREE.Vector3 ? options.colorSpread : new THREE.Vector3();
 
 	that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0, 10 );
     that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0, 10 );
     that.angleVelocity          = parseFloat( typeof options.angleVelocity === 'number' ? options.angleVelocity : 0, 10 );
     that.angleAlignVelocity     = options.angleAlignVelocity || false;
 
-    that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'blue' );
+    that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
     that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3(0,0,0);
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
 	that.colorMiddle			= options.colorMiddle instanceof THREE.Color ? options.colorMiddle :
@@ -919,19 +943,18 @@ ShaderParticleEmitter.prototype = {
         }
 
         else if( type === 'sphere') {
-            that._randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale );
+            that._randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
             that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
         else if( type === 'disk') {
-            that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale );
+            that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
             that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
-        if (that.angleAlignVelocity) {
-            that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
-        }
-
+        // if (that.angleAlignVelocity) {
+        //     that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
+        // }
     },
 
     /**

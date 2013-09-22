@@ -160,8 +160,12 @@ ShaderParticleGroup.prototype = {
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
-                vertices[i]     = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusScale );
-                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusScale, emitter.radius );
+                vertices[i]     = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+            }
+            else if( emitter.type === 'disk' ) {
+                vertices[i]     = that._randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[i]     = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else {
                 vertices[i]     = that._randomVector3( emitter.position, emitter.positionSpread );
@@ -493,6 +497,8 @@ ShaderParticleGroup.shaders = {
                 'else {',
                     'pos = GetPos();',
                 '}',
+
+                'vAngle = -atan(pos.y, pos.x);',
 
                 // Determine point size .
                 'float pointSize = mix( sizeStart, sizeEnd, positionInTime );',

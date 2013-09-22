@@ -77,13 +77,19 @@ var shaderParticleUtils = {
      *
      * @return {THREE.Vector3}
      */
-    randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale ) {
+    randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var z = 2 * Math.random() - 1;
         var t = 6.2832 * Math.random();
         var r = Math.sqrt( 1 - z*z );
         var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
 
-        vec.multiplyScalar( this._randomFloat( radius, radiusSpread ) );
+        var rand = this._randomFloat( radius, radiusSpread );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+        vec.multiplyScalar( rand );
 
         if( radiusScale ) {
             vec.multiply( radiusScale );
@@ -107,9 +113,15 @@ var shaderParticleUtils = {
      *
      * @return {THREE.Vector3}
      */
-    randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale ) {
+    randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var t = 6.2832 * Math.random();
-		var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( this._randomFloat( radius, radiusSpread ) );
+        var rand = this._randomFloat( radius, radiusSpread );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+		var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( rand );
 
 		if ( radiusScale ) {
 			vec.multiply( radiusScale );
@@ -205,17 +217,21 @@ var shaderParticleUtils = {
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
      */
-    randomizeExistingVector3OnSphere: function( v, base, radius, radiusSpread, radiusScale ) {
+    randomizeExistingVector3OnSphere: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var rand = Math.random,
             z = 2 * rand() - 1,
             t = 6.2832 * rand(),
             r = Math.sqrt( 1 - z*z ),
-            randomRadius = this._randomFloat( radius, radiusSpread );
+            rand = this._randomFloat( radius, radiusSpread );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
 
         v.set(
-            (r * Math.cos(t)) * randomRadius,
-            (r * Math.sin(t)) * randomRadius,
-            z * randomRadius
+            (r * Math.cos(t)) * rand,
+            (r * Math.sin(t)) * rand,
+            z * rand
         ).multiply( radiusScale );
 
         v.add( base );
@@ -232,16 +248,20 @@ var shaderParticleUtils = {
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
      */
-    randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale ) {
+    randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var rand = Math.random,
             t = 6.2832 * rand(),
-            randomRadius = this._randomFloat( radius, radiusSpread );
+            rand = this._randomFloat( radius, radiusSpread );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
 
         v.set(
             Math.cos( t ),
             Math.sin( t ),
             0
-        ).multiplyScalar( randomRadius );
+        ).multiplyScalar( rand );
 
 		if ( radiusScale ) {
 			v.multiply( radiusScale );
