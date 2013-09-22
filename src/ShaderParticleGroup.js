@@ -17,6 +17,7 @@ function ShaderParticleGroup( options ) {
     that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
     that.colorize               = parseInt( options.colorize || 1 );
     that.hasGravity             = parseInt( options.hasGravity || 0 );
+    that.planetPosition         = options.planetPosition instanceof THREE.Vector3 ? options.planetPosition : new THREE.Vector3();
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
@@ -27,34 +28,33 @@ function ShaderParticleGroup( options ) {
 
     // Create uniforms
     that.uniforms = {
-        duration:       { type: 'f', value: that.maxAge },
-        texture:        { type: 't', value: that.texture },
-        hasPerspective: { type: 'i', value: that.hasPerspective },
-        colorize:       { type: 'i', value: that.colorize },
-        hasGravity:     { type: 'i', value: that.hasGravity }
+        duration:       { type: 'f',    value: that.maxAge },
+        texture:        { type: 't',    value: that.texture },
+        hasPerspective: { type: 'i',    value: that.hasPerspective },
+        colorize:       { type: 'i',    value: that.colorize },
+        hasGravity:     { type: 'i',    value: that.hasGravity },
+        planetPosition: { type: 'v3',   value: that.planetPosition }
     };
 
     // Create a map of attributes that will hold values for each particle in this group.
     that.attributes = {
-        acceleration:   { type: 'v3', value: [] },
-        velocity:       { type: 'v3', value: [] },
-        alive:          { type: 'f', value: [] },
-        age:            { type: 'f', value: [] },
-        sizeStart:      { type: 'f', value: [] },
-        sizeEnd:        { type: 'f', value: [] },
+        acceleration:   { type: 'v3',   value: [] },
+        velocity:       { type: 'v3',   value: [] },
+        alive:          { type: 'f',    value: [] },
+        age:            { type: 'f',    value: [] },
 
-		angle:			{ type: 'f', value: [] },
-        particleMass:   { type: 'f', value: [] },
-        hasGravity:     { type: 'f', value: [] },
-        planetPosition: { type: 'v3', value: [] },
+        sizeStart:      { type: 'f',    value: [] },
+        sizeEnd:        { type: 'f',    value: [] },
+		angle:			{ type: 'f',    value: [] },
+        particleMass:   { type: 'f',    value: [] },
 
-        colorStart:  { type: 'c', value: [] },
-        colorMiddle: { type: 'c', value: [] },
-        colorEnd:    { type: 'c', value: [] },
+        colorStart:     { type: 'c',    value: [] },
+        colorMiddle:    { type: 'c',    value: [] },
+        colorEnd:       { type: 'c',    value: [] },
+        opacityStart:   { type: 'f',    value: [] },
 
-        opacityStart:   { type: 'f', value: [] },
-        opacityMiddle:  { type: 'f', value: [] },
-        opacityEnd:     { type: 'f', value: [] }
+        opacityMiddle:  { type: 'f',    value: [] },
+        opacityEnd:     { type: 'f',    value: [] }
     };
 
     // Emitters (that aren't static) will be added to this array for
@@ -151,8 +151,7 @@ ShaderParticleGroup.prototype = {
             opacityStart    = a.opacityStart.value,
             opacityMiddle   = a.opacityMiddle.value;
             opacityEnd      = a.opacityEnd.value,
-            particleMass    = a.particleMass.value,
-            planetPosition  = a.planetPosition.value;
+            particleMass    = a.particleMass.value;
 
         emitter.particleIndex = parseFloat( start, 10 );
 
@@ -185,7 +184,6 @@ ShaderParticleGroup.prototype = {
             }
 
             particleMass[i]     = emitter.particleMass;
-            planetPosition[i]   = emitter.planetPosition;
 
             age[i]              = 0.0;
             alive[i]            = emitter.static ? 1.0 : 0.0;
@@ -388,6 +386,7 @@ ShaderParticleGroup.shaders = {
         'uniform float duration;',
         'uniform int hasPerspective;',
         'uniform int hasGravity;',
+        'uniform vec3 planetPosition;',
 
 
         'attribute vec3 colorStart;',
@@ -406,7 +405,6 @@ ShaderParticleGroup.shaders = {
         'attribute float angle;',
 
         'attribute float particleMass;',
-        'attribute vec3 planetPosition;',
 
         // values to be passed to the fragment shader
         'varying vec4 vColor;',
@@ -424,7 +422,7 @@ ShaderParticleGroup.shaders = {
 
                 'r12 = normalize( r12 );',
 
-                'float c = -(G * particleMass / r12Sq);',
+                'float c = -(G * (particleMass/1000.0) / r12Sq);',
 
                 'vec3 a12 = r12 * c;',
 
@@ -491,7 +489,7 @@ ShaderParticleGroup.shaders = {
                 // when we calculate any perspective that might be required.
                 'vec4 pos = vec4(0.0, 0.0, 0.0, 0.0);',
 
-                'if( hasGravity == 1 ) {',
+                'if( hasGravity == 1 && particleMass > 0.0 ) {',
                     'pos = GetPosGravity();',
                 '}',
                 'else {',
