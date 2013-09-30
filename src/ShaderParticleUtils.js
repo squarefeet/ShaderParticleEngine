@@ -151,7 +151,7 @@ var shaderParticleUtils = {
     randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
         var direction = new THREE.Vector3().subVectors( base, position );
 
-        direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
+        direction.normalize().multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
 
         if( scale ) {
             direction.multiply( scale );
@@ -251,7 +251,7 @@ var shaderParticleUtils = {
     randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var rand = Math.random,
             t = 6.2832 * rand(),
-            rand = this._randomFloat( radius, radiusSpread );
+            rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
 
         if( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
@@ -274,6 +274,6 @@ var shaderParticleUtils = {
         v.copy(position)
             .sub(base)
             .normalize()
-            .multiplyScalar( this._randomFloat( speed, speedSpread ) );
+            .multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
     },
 };

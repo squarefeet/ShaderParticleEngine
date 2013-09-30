@@ -141,7 +141,7 @@
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
-        		texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
+        		texture: THREE.ImageUtils.loadTexture('./img/star.png'),
         		maxAge: 5,
                 hasGravity: 1
         	});
@@ -164,7 +164,7 @@
             requestAnimationFrame( animate );
 
             // Use a fixed time-step here to avoid gaps
-            render( deltaTime );
+            render( clock.getDelta() );
             stats.update();
         }
 
@@ -173,9 +173,9 @@
             particleGroup.tick( dt );
             renderer.render( scene, camera );
 
-            camera.position.x = Math.cos( Date.now() * 0.0005 ) * camDist;
-            camera.position.z = Math.sin( Date.now() * 0.0005 ) * camDist;
-            camera.lookAt( scene.position );
+            // camera.position.x = Math.cos( Date.now() * 0.0005 ) * camDist;
+            // camera.position.z = Math.sin( Date.now() * 0.0005 ) * camDist;
+            // camera.lookAt( scene.position );
         }
 
 

@@ -199,7 +199,7 @@ ShaderParticleGroup.prototype = {
         // Cache properties on the emitter so we can access
         // them from its tick function.
         emitter.verticesIndex   = parseFloat( start );
-        emitter.attributes      = that.attributes;
+        emitter.attributes      = a;
         emitter.vertices        = that.geometry.vertices;
         emitter.maxAge          = that.maxAge;
 
