@@ -151,7 +151,7 @@ var shaderParticleUtils = {
     randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
         var direction = new THREE.Vector3().subVectors( base, position );
 
-        direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
+        direction.normalize().multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
 
         if( scale ) {
             direction.multiply( scale );
@@ -251,7 +251,7 @@ var shaderParticleUtils = {
     randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var rand = Math.random,
             t = 6.2832 * rand(),
-            rand = this._randomFloat( radius, radiusSpread );
+            rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
 
         if( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
@@ -274,7 +274,7 @@ var shaderParticleUtils = {
         v.copy(position)
             .sub(base)
             .normalize()
-            .multiplyScalar( this._randomFloat( speed, speedSpread ) );
+            .multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
     },
 };;
 
@@ -479,7 +479,7 @@ ShaderParticleGroup.prototype = {
         // Cache properties on the emitter so we can access
         // them from its tick function.
         emitter.verticesIndex   = parseFloat( start );
-        emitter.attributes      = that.attributes;
+        emitter.attributes      = a;
         emitter.vertices        = that.geometry.vertices;
         emitter.maxAge          = that.maxAge;
 
@@ -887,7 +887,7 @@ function ShaderParticleEmitter( options ) {
         Math.abs(that.opacityEnd + that.opacityStart) / 2,
     10 );
 
-    that.particleMass           = parseFloat( typeof options.particleMass === 'number' ? options.particleMass : 1, 10 );
+    that.particleMass           = parseFloat( typeof options.particleMass === 'number' ? options.particleMass : 0, 10 );
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10);
@@ -923,7 +923,11 @@ ShaderParticleEmitter.prototype = {
             type = that.type,
             spread = that.positionSpread,
             particlePosition = that.vertices[i],
-            particleVelocity = that.attributes.velocity.value[i];
+            a = that.attributes,
+            particleVelocity = a.velocity.value[i],
+
+            vSpread = that.velocitySpread,
+            aSpread = that.accelerationSpread;
 
         // Optimise for no position spread or radius
         if(
@@ -932,11 +936,18 @@ ShaderParticleEmitter.prototype = {
             ( type === 'disk' && that.radius === 0 )
         ) {
             particlePosition.copy( that.position );
+            that._randomizeExistingVector3( particleVelocity, that.velocity, that.velocitySpread );
+
+            if( type === 'cube' ) {
+                that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, that.accelerationSpread );
+            }
         }
 
         // If there is a position spread, then get a new position based on this spread.
         else if( type === 'cube' ) {
             that._randomizeExistingVector3( particlePosition, that.position, spread );
+            that._randomizeExistingVector3( particleVelocity, that.velocity, that.velocitySpread );
+            that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, that.accelerationSpread );
         }
 
         else if( type === 'sphere') {
@@ -949,9 +960,44 @@ ShaderParticleEmitter.prototype = {
             that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
-        // if (that.angleAlignVelocity) {
-        //     that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
-        // }
+        that._checkValues( i );
+    },
+
+
+    _checkValues: function( i ) {
+        var that = this,
+            a = that.attributes;
+
+        // Size
+        if( that.sizeStartSpread !== 0.0 || a.sizeStart.value[ i ] !== that.sizeStart ) {
+            a.sizeStart.value[ i ] = that._randomFloat( that.sizeStart, that.sizeStartSpread );
+            a.sizeStart.needsUpdate = true;
+        }
+
+        if( a.sizeEnd.value[ i ] !== that.sizeEnd ) {
+            a.sizeEnd.value[ i ] = that.sizeEnd;
+            a.sizeEnd.needsUpdate = true;
+        }
+
+        // Opacity
+        if( a.opacityStart.value[ i ] !== that.opacityStart ) {
+            a.opacityStart.value[ i ] = that.opacityStart;
+            a.opacityStart.needsUpdate = true;
+        }
+        if( a.opacityMiddle.value[ i ] !== that.opacityMiddle ) {
+            a.opacityMiddle.value[ i ] = that.opacityMiddle;
+            a.opacityMiddle.needsUpdate = true;
+        }
+        if( a.opacityEnd.value[ i ] !== that.opacityEnd ) {
+            a.opacityEnd.value[ i ] = that.opacityEnd;
+            a.opacityEnd.needsUpdate = true;
+        }
+
+        // Mass
+        if( a.particleMass.value[ i ] !== that.particleMass ) {
+            a.particleMass.value[ i ] = that.particleMass;
+            a.particleMass.needsUpdate = true;
+        }
     },
 
     /**
@@ -1086,21 +1132,26 @@ ShaderParticleEmitter.prototype = {
     },
 
 
-
     _setRandomVector3Attribute: function( attr, base, spread ) {
         var that = this,
             start = that.verticesIndex,
-            end = start + that.numParticles;
+            end = start + that.numParticles,
+            alive = that.attributes.alive.value;
+
+        spread = spread || new THREE.Vector3();
 
         for( i = start; i < end; ++i ) {
-            that._randomizeExistingVector3( attr.value[ i ], base, spread );
+            if( alive[ i ] === 0.0 ) {
+                that._randomizeExistingVector3( attr.value[ i ], base, spread );
+            }
         }
     },
 
     _setRandomColorAttribute: function( attr, base, spread ) {
         var that = this,
             start = that.verticesIndex,
-            end = start + that.numParticles;
+            end = start + that.numParticles,
+            alive = that.attributes.alive.value;
 
         spread = spread || new THREE.Vector3();
 
@@ -1112,12 +1163,15 @@ ShaderParticleEmitter.prototype = {
     _setRandomFloatAttribute: function( attr, base, spread ) {
         var that = this,
             start = that.verticesIndex,
-            end = start + that.numParticles;
+            end = start + that.numParticles,
+            alive = that.attributes.alive.value;
 
         spread = spread || 0;
 
         for( i = start; i < end; ++i ) {
-            attr.value[ i ] = that._randomFloat( base, spread );
+            if( alive[ i ] === 0.0 ) {
+                attr.value[ i ] = that._randomFloat( base, spread );
+            }
         }
     },
 
@@ -1162,7 +1216,7 @@ ShaderParticleEmitter.prototype = {
         else if( that[ optionName ] ) {
             that[ optionName ] = value;
 
-            if( optionName.indexOf( 'Spread' ) > -1 ) {
+            if( optionName.indexOf( 'Spread' ) > -1 && that.type === 'cube' ) {
                 var baseName = optionName.replace( 'Spread', '' );
                 that.setOption( baseName, that[ baseName ] );
             }
