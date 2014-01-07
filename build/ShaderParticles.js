@@ -316,6 +316,7 @@ ShaderParticleGroup.prototype = {
             opacity[i]          = emitter.opacityStart;
             opacityMiddle[i]    = emitter.opacityMiddle;
             opacityEnd[i]       = emitter.opacityEnd;
+            rotation[i]         = that._randomFloat( emitter.particleRotation, emitter.particleRotationSpread );
         }
 
         // Cache properties on the emitter so we can access
@@ -505,6 +506,7 @@ ShaderParticleGroup.shaders = {
 
         'attribute vec3 customColor;',
         'attribute vec3 customColorEnd;',
+        'attribute float rotation;',
         'attribute float opacity;',
         'attribute float opacityMiddle;',
         'attribute float opacityEnd;',
@@ -517,6 +519,7 @@ ShaderParticleGroup.shaders = {
         'attribute float sizeEnd;',
 
         'varying vec4 vColor;',
+        'varying float vRotation;',
 
         // Linearly lerp a float
         'float Lerp( float start, float end, float amount ) {',
@@ -551,6 +554,8 @@ ShaderParticleGroup.shaders = {
 
 
         'void main() {',
+
+            'vRotation = rotation;',
 
             'float positionInTime = (age / duration);',
             'float halfDuration = (duration / 2.0);',
@@ -610,10 +615,11 @@ ShaderParticleGroup.shaders = {
         'uniform int colorize;',
 
         'varying vec4 vColor;',
+        'varying float vRotation;',
 
         'void main() {',
-            'float c = cos(0.0);',
-            'float s = sin(0.0);',
+            'float c = cos( vRotation );',
+            'float s = sin( vRotation );',
 
             'vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,',
                                   'c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);',

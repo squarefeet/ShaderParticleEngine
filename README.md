@@ -186,6 +186,11 @@ var particleEmitter = new ShaderParticleEmitter({
 	// [OPTIONAL] Particle end size.
 	sizeEnd: 10,
 
+	// [OPTIONAL] Particle start rotation.
+	particleRotation: 0
+
+	// [OPTIONAL] Particle rotation variance ( in radians ).
+	particleRotationSpread: 0
 
 	// [OPTIONAL] Particle start colour.
 	colorStart: new THREE.Color( 'white' ),
