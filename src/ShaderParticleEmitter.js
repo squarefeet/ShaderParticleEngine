@@ -42,6 +42,9 @@ function ShaderParticleEmitter( options ) {
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : new THREE.Color( 'blue' );
     that.colorSpread            = options.colorSpread instanceof THREE.Vector3 ? options.colorSpread : new THREE.Vector3();
 
+    that.particleRotation       = parseFloat( typeof options.particleRotation === 'number' ? options.particleRotation : 0, 10 );
+    that.particleRotationSpread = parseFloat( typeof options.particleRotationSpread === 'number' ? options.particleRotationSpread : 0, 10 );
+
     that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1, 10 );
     that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0, 10 );
     that.opacityMiddle          = parseFloat( 
