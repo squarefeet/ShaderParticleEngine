@@ -9,13 +9,13 @@
 function ShaderParticleGroup( options ) {
     var that = this;
 
-    that.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016, 10 );
+    that.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016 );
 
     // Uniform properties ( applied to all particles )
     that.maxAge                 = parseFloat( options.maxAge || 3 );
     that.texture                = options.texture || null;
-    that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
-    that.colorize               = parseInt( options.colorize || 1 );
+    that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1, 10 );
+    that.colorize               = parseInt( options.colorize || 1, 10 );
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
@@ -40,13 +40,13 @@ function ShaderParticleGroup( options ) {
         age:            { type: 'f', value: [] },
         sizeStart:      { type: 'f', value: [] },
         sizeEnd:        { type: 'f', value: [] },
-	angle:		{ type: 'f', value: [] },
+        angle:        { type: 'f', value: [] },
         particleMass:   { type: 'f', value: [] },
         planetMass:     { type: 'f', value: [] },
         planetPosition: { type: 'v3', value: [] },
 
         colorStart:  { type: 'c', value: [] },
-	colorMiddle: { type: 'c', value: [] },
+        colorMiddle: { type: 'c', value: [] },
         colorEnd:    { type: 'c', value: [] },
 
         opacityStart:   { type: 'f', value: [] },
@@ -140,7 +140,6 @@ ShaderParticleGroup.prototype = {
         return v;
     },
 
-
     /**
      * Create a random Number value based on an initial value and
      * a spread range
@@ -154,7 +153,6 @@ ShaderParticleGroup.prototype = {
     _randomFloat: function( base, spread ) {
         return base + spread * (Math.random() - 0.5);
     },
-
 
     /**
      * Create a new THREE.Vector3 instance and project it onto a random point
@@ -202,15 +200,15 @@ ShaderParticleGroup.prototype = {
     _randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale ) {
 
         var t = 6.2832 * Math.random();
-		var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( this._randomFloat( radius, radiusSpread ) );
+        var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( this._randomFloat( radius, radiusSpread ) );
 
-		if ( radiusScale ) {
-			vec.multiply( radiusScale );
-		}
+        if ( radiusScale ) {
+            vec.multiply( radiusScale );
+        }
 
-		vec.add( base );
+        vec.add( base );
 
-		return vec ;
+        return vec ;
     },
 
     /**
@@ -271,7 +269,7 @@ ShaderParticleGroup.prototype = {
         // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
         that.attributes.age.needsUpdate = true;
         that.attributes.alive.needsUpdate = true;
-		that.attributes.angle.needsUpdate = true;
+        that.attributes.angle.needsUpdate = true;
         that.attributes.velocity.needsUpdate = true;
         that.geometry.verticesNeedUpdate = true;
 
@@ -308,18 +306,18 @@ ShaderParticleGroup.prototype = {
             age           = a.age.value,
             sizeStart     = a.sizeStart.value,
             sizeEnd       = a.sizeEnd.value,
-	    angle         = a.angle.value,
+            angle         = a.angle.value,
             colorStart    = a.colorStart.value,
             colorMiddle   = a.colorMiddle.value,
             colorEnd      = a.colorEnd.value,
             opacityStart  = a.opacityStart.value,
-            opacityMiddle = a.opacityMiddle.value;
+            opacityMiddle = a.opacityMiddle.value,
             opacityEnd    = a.opacityEnd.value,
             particleMass = a.particleMass.value,
             planetMass = a.planetMass.value,
             planetPosition = a.planetPosition.value;
 
-        emitter.particleIndex = parseFloat( start, 10 );
+        emitter.particleIndex = parseFloat( start );
 
         // Create the values
         for( var i = start; i < end; ++i ) {
@@ -342,18 +340,18 @@ ShaderParticleGroup.prototype = {
             sizeStart[i]    = that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread );
             sizeEnd[i]      = emitter.sizeEnd;
 
-	    if (that.angleAlignVelocity) {
-		angle[i]    = -Math.atan2( velocity[i].y, velocity[i].x );
-	    }
-	    else {
-		angle[i]    = that._randomFloat( emitter.angle, emitter.angleSpread );
+            if (that.angleAlignVelocity) {
+                angle[i]    = -Math.atan2( velocity[i].y, velocity[i].x );
+            }
+            else {
+                angle[i]    = that._randomFloat( emitter.angle, emitter.angleSpread );
             }
 
             particleMass[i]     = emitter.particleMass;
             planetMass[i]       = emitter.planetMass;
             planetPosition[i]   = emitter.planetPosition;
 
-	    age[i]          = 0.0;
+            age[i]          = 0.0;
             alive[i]        = emitter.static ? 1.0 : 0.0;
 
             colorStart[i]    = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
@@ -393,7 +391,9 @@ ShaderParticleGroup.prototype = {
 
         dt = dt || that.fixedTimeStep;
 
-        if( numEmitters === 0 ) return;
+        if( numEmitters === 0 ) {
+            return;
+        }
 
         for( var i = 0; i < numEmitters; ++i ) {
             emitters[i].tick( dt );
@@ -541,8 +541,6 @@ ShaderParticleGroup.prototype = {
     }
 };
 
-
-
 // The all-important shaders
 ShaderParticleGroup.shaders = {
     vertex: [
@@ -564,8 +562,8 @@ ShaderParticleGroup.shaders = {
         'attribute float sizeEnd;',
         'attribute float angle;',
 
-        'attribute float particleMass;',  
-        'attribute float planetMass;',    
+        'attribute float particleMass;',
+        'attribute float planetMass;',
         'attribute vec3 planetPosition;',
 
         // values to be passed to the fragment shader
@@ -632,20 +630,20 @@ ShaderParticleGroup.shaders = {
         'void main() {',
 
             'float positionInTime = (age / duration);',
-			'float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
-			'float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
-			'float halfDuration = duration / 2.0;',
-			'vAngle = angle;',
+            'float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
+            'float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
+            'float halfDuration = duration / 2.0;',
+            'vAngle = angle;',
 
             'if( alive > 0.5 ) {',
-			
-				// lerp the color and opacity
-				'if( positionInTime < 0.5) {',
-					'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacityStart, opacityMiddle, lerpAmount1) );',
-				'}',
-				'else {',
-					'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacityMiddle, opacityEnd, lerpAmount2) );',
-				'}',
+
+                // lerp the color and opacity
+                'if( positionInTime < 0.5) {',
+                    'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacityStart, opacityMiddle, lerpAmount1) );',
+                '}',
+                'else {',
+                    'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacityMiddle, opacityEnd, lerpAmount2) );',
+                '}',
 
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
