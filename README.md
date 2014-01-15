@@ -6,7 +6,7 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome.
 
 
-Version 0.5.0
+Version 0.5.1
 =============
 Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
 That said, it ain't gonna be long until it's at 1.0.0.
@@ -14,6 +14,9 @@ That said, it ain't gonna be long until it's at 1.0.0.
 
 Changelog
 =========
+**Version 0.5.1**
+* Fixed some issues with parseFloat and accidental globals. Thanks to [DelvarWorld](https://github.com/DelvarWorld) for noticing these.
+
 **Version 0.5.0**
 * The latest update sees the addition of the ```ShaderParticleGroup.addPool()``` method. This allows for much easier control of emitter pools. See [the pool example](http://squarefeet.github.io/ShaderParticleEngine/examples/pool.html) for an example.
 * There are also quite a few bug fixes courtesy of [Stemkoski](https://github.com/stemkoski/).

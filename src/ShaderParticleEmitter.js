@@ -1,5 +1,5 @@
 // ShaderParticleEmitter 0.5.0
-// 
+//
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //     Based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
@@ -31,24 +31,24 @@ function ShaderParticleEmitter( options ) {
     that.velocitySpread         = options.velocitySpread instanceof THREE.Vector3 ? options.velocitySpread : new THREE.Vector3();
 
     // And again here; only used when this.type === 'sphere'
-    that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0, 10 );
-    that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0, 10 );
+    that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0 );
+    that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0 );
 
-    that.size                   = parseFloat( typeof options.size === 'number' ? options.size : 10.0, 10 );
-    that.sizeSpread             = parseFloat( typeof options.sizeSpread === 'number' ? options.sizeSpread : 0, 10 );
-    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : 10.0, 10 );
+    that.size                   = parseFloat( typeof options.size === 'number' ? options.size : 10.0 );
+    that.sizeSpread             = parseFloat( typeof options.sizeSpread === 'number' ? options.sizeSpread : 0 );
+    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : 10.0 );
 
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : new THREE.Color( 'blue' );
     that.colorSpread            = options.colorSpread instanceof THREE.Vector3 ? options.colorSpread : new THREE.Vector3();
 
-    that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1, 10 );
-    that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0, 10 );
-    that.opacityMiddle          = parseFloat( 
-        typeof options.opacityMiddle !== 'undefined' ? 
-        options.opacityMiddle : 
-        Math.abs(that.opacityEnd + that.opacityStart) / 2, 
-    10 );
+    that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1 );
+    that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0 );
+    that.opacityMiddle          = parseFloat(
+        typeof options.opacityMiddle !== 'undefined' ?
+        options.opacityMiddle :
+        Math.abs(that.opacityEnd + that.opacityStart) / 2
+    );
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10);
@@ -76,11 +76,11 @@ ShaderParticleEmitter.prototype = {
      * Reset a particle's position. Accounts for emitter type and spreads.
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} p
      */
     _resetParticle: function( p ) {
-        var that = this;
+        var that = this,
             spread = that.positionSpread,
             type = that.type;
 
@@ -107,7 +107,7 @@ ShaderParticleEmitter.prototype = {
      * Given an existing particle vector, randomise it based on base and spread vectors
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} v
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} spread
@@ -124,11 +124,11 @@ ShaderParticleEmitter.prototype = {
 
 
     /**
-     * Given an existing particle vector, project it onto a random point on a 
+     * Given an existing particle vector, project it onto a random point on a
      * sphere with radius `radius` and position `base`.
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} v
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
@@ -142,20 +142,20 @@ ShaderParticleEmitter.prototype = {
 
         var x = ((r * Math.cos(t)) * radius);
         var y = ((r * Math.sin(t)) * radius);
-        var z = (z * radius); 
+        z *= radius;
 
         v.set(x, y, z).multiply( this.radiusScale );
-        
+
         v.add( base );
     },
 
 
-    // This function is called by the instance of `ShaderParticleEmitter` that 
+    // This function is called by the instance of `ShaderParticleEmitter` that
     // this emitter has been added to.
     /**
      * Update this emitter's particle's positions. Called by the ShaderParticleGroup
      * that this emitter belongs to.
-     * 
+     *
      * @param  {Number} dt
      */
     tick: function( dt ) {
@@ -195,7 +195,7 @@ ShaderParticleEmitter.prototype = {
         }
 
         // If the emitter is dead, reset any particles that are in
-        // the recycled vertices array and reset the age of the 
+        // the recycled vertices array and reset the age of the
         // emitter to zero ready to go again if required, then
         // exit this function.
         if( that.alive === 0 ) {
@@ -234,7 +234,7 @@ ShaderParticleEmitter.prototype = {
      * Reset this emitter back to its starting position.
      * If `force` is truthy, then reset all particles in this
      * emitter as well, even if they're currently alive.
-     * 
+     *
      * @param  {Boolean} force
      * @return {this}
      */

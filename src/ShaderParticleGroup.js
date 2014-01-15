@@ -9,13 +9,13 @@
 function ShaderParticleGroup( options ) {
     var that = this;
 
-    that.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016, 10 );
+    that.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016 );
 
     // Uniform properties ( applied to all particles )
     that.maxAge                 = parseFloat( options.maxAge || 3 );
     that.texture                = options.texture || null;
-    that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1 );
-    that.colorize               = parseInt( options.colorize || 1 );
+    that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1, 10 );
+    that.colorize               = parseInt( options.colorize || 1, 10 );
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
@@ -49,7 +49,7 @@ function ShaderParticleGroup( options ) {
         opacityEnd:     { type: 'f', value: [] }
     };
 
-    // Emitters (that aren't static) will be added to this array for 
+    // Emitters (that aren't static) will be added to this array for
     // processing during the `tick()` function.
     that.emitters = [];
 
@@ -74,7 +74,7 @@ function ShaderParticleGroup( options ) {
         transparent:    that.transparent,
         alphaTest:      that.alphaTest,
         depthWrite:     that.depthWrite,
-        depthTest:      that.depthTest,
+        depthTest:      that.depthTest
     });
 
     // And finally create the ParticleSystem. It's got its `dynamic` property
@@ -90,7 +90,7 @@ ShaderParticleGroup.prototype = {
      * a new THREE.Vector3 instance with randomised values.
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} spread
      * @return {THREE.Vector3}
@@ -108,13 +108,13 @@ ShaderParticleGroup.prototype = {
     },
 
     /**
-     * Create a new THREE.Color instance and given a base vector and 
+     * Create a new THREE.Color instance and given a base vector and
      * spread range vector, assign random values.
      *
      * Note that THREE.Color RGB values are in the range of 0 - 1, not 0 - 255.
      *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} spread
      * @return {THREE.Color}
@@ -137,11 +137,11 @@ ShaderParticleGroup.prototype = {
 
 
     /**
-     * Create a random Number value based on an initial value and 
+     * Create a random Number value based on an initial value and
      * a spread range
      *
      * @private
-     * 
+     *
      * @param  {Number} base
      * @param  {Number} spread
      * @return {Number}
@@ -154,13 +154,13 @@ ShaderParticleGroup.prototype = {
     /**
      * Create a new THREE.Vector3 instance and project it onto a random point
      * on a sphere with radius `radius`.
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {Number} radius
      * @param  {THREE.Vector3} scale
      *
      * @private
-     * 
+     *
      * @return {THREE.Vector3}
      */
     _randomVector3OnSphere: function( base, radius, scale ) {
@@ -170,7 +170,7 @@ ShaderParticleGroup.prototype = {
         var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
 
         vec.multiplyScalar( radius );
-        
+
         if( scale ) {
             vec.multiply( scale );
         }
@@ -184,19 +184,18 @@ ShaderParticleGroup.prototype = {
     /**
      * Create a new THREE.Vector3 instance, and given a base position, and various
      * other values, project it onto a random point on a sphere with radius `radius`.
-     * 
+     *
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} position
      * @param  {Number} speed
      * @param  {Number} speedSpread
      * @param  {THREE.Vector3} scale
-     * @param  {Number} radius
      *
      * @private
-     * 
+     *
      * @return {THREE.Vector3}
      */
-    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale, radius ) {
+    _randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale ) {
         var direction = new THREE.Vector3().subVectors( base, position );
 
         direction.normalize().multiplyScalar( this._randomFloat( speed, speedSpread ) );
@@ -212,13 +211,13 @@ ShaderParticleGroup.prototype = {
     /**
      * Given a base vector and a spread vector, randomise the given vector
      * accordingly.
-     * 
+     *
      * @param  {THREE.Vector3} vector
      * @param  {THREE.Vector3} base
      * @param  {THREE.Vector3} spread
      *
      * @private
-     * 
+     *
      * @return {[type]}
      */
     _randomizeExistingVector3: function( vector, base, spread ) {
@@ -231,11 +230,11 @@ ShaderParticleGroup.prototype = {
 
 
     /**
-     * Tells the age and alive attributes (and the geometry vertices) 
+     * Tells the age and alive attributes (and the geometry vertices)
      * that they need updating by THREE.js's internal tick functions.
-     * 
+     *
      * @private
-     * 
+     *
      * @return {this}
      */
     _flagUpdate: function() {
@@ -254,7 +253,7 @@ ShaderParticleGroup.prototype = {
     /**
      * Add an emitter to this particle group. Once added, an emitter will be automatically
      * updated when ShaderParticleGroup#tick() is called.
-     * 
+     *
      * @param {ShaderParticleEmitter} emitter
      * @return {this}
      */
@@ -283,10 +282,10 @@ ShaderParticleGroup.prototype = {
             customColor = a.customColor.value,
             customColorEnd = a.customColorEnd.value,
             opacity = a.opacity.value,
-            opacityMiddle = a.opacityMiddle.value;
+            opacityMiddle = a.opacityMiddle.value,
             opacityEnd = a.opacityEnd.value;
 
-        emitter.particleIndex = parseFloat( start, 10 );
+        emitter.particleIndex = parseFloat( start );
 
         // Create the values
         for( var i = start; i < end; ++i ) {
@@ -336,7 +335,7 @@ ShaderParticleGroup.prototype = {
 
     /**
      * The main particle group update function. Call this once per frame.
-     * 
+     *
      * @param  {Number} dt
      * @return {this}
      */
@@ -360,9 +359,9 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Fetch a single emitter instance from the pool.
-     * If there are no objects in the pool, a new emitter will be 
+     * If there are no objects in the pool, a new emitter will be
      * created if specified.
-     * 
+     *
      * @return {ShaderParticleEmitter | null}
      */
     getFromPool: function() {
@@ -376,14 +375,14 @@ ShaderParticleGroup.prototype = {
         else if( createNew ) {
             return new ShaderParticleEmitter( that._poolCreationSettings );
         }
-        
+
         return null;
     },
 
 
     /**
      * Release an emitter into the pool.
-     * 
+     *
      * @param  {ShaderParticleEmitter} emitter
      * @return {this}
      */
@@ -402,7 +401,7 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Get the pool array
-     * 
+     *
      * @return {Array}
      */
     getPool: function() {
@@ -412,7 +411,7 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Add a pool of emitters to this particle group
-     * 
+     *
      * @param {Number} numEmitters      The number of emitters to add to the pool.
      * @param {Object} emitterSettings  An object describing the settings to pass to each emitter.
      * @param {Boolean} createNew       Should a new emitter be created if the pool runs out?
@@ -420,7 +419,6 @@ ShaderParticleGroup.prototype = {
      */
     addPool: function( numEmitters, emitterSettings, createNew ) {
         var that = this,
-            pool = that._pool,
             emitter;
 
         // Save relevant settings and flags.
@@ -440,9 +438,9 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Internal method. Sets a single emitter to be alive
-     * 
+     *
      * @private
-     * 
+     *
      * @param  {THREE.Vector3} pos
      * @return {this}
      */
@@ -459,7 +457,7 @@ ShaderParticleGroup.prototype = {
         if( pos ) {
             emitter.position.copy( pos );
         }
-            
+
         emitter.enable();
 
         setTimeout( function() {
@@ -474,7 +472,7 @@ ShaderParticleGroup.prototype = {
     /**
      * Set a given number of emitters as alive, with an optional position
      * vector3 to move them to.
-     * 
+     *
      * @param  {Number} numEmitters
      * @param  {THREE.Vector3} position
      * @return {this}
