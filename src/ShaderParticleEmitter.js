@@ -40,7 +40,6 @@ function ShaderParticleEmitter( options ) {
 
     that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0 );
     that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0 );
-    that.angleVelocity          = parseFloat( typeof options.angleVelocity === 'number' ? options.angleVelocity : 0 );
     that.angleAlignVelocity     = options.angleAlignVelocity || false;
 
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'blue' );
@@ -48,18 +47,14 @@ function ShaderParticleEmitter( options ) {
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
     that.colorMiddle            = options.colorMiddle instanceof THREE.Color ? options.colorMiddle :
         new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
-        
+
     that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1 );
     that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0 );
     that.opacityMiddle          = parseFloat(
         typeof options.opacityMiddle !== 'undefined' ?
         options.opacityMiddle :
-        Math.abs(that.opacityEnd + that.opacityStart) / 2,
-    10 );
-
-    that.particleMass           = parseFloat( typeof options.particleMass === 'number' ? options.particleMass : 10 );
-    that.planetMass             = parseFloat( typeof options.planetMass === 'number' ? options.planetMass : 10 );
-    that.planetPosition         = options.planetPosition instanceof THREE.Vector3 ? options.planetPosition : new THREE.Vector3();
+        Math.abs(that.opacityEnd + that.opacityStart) / 2
+    );
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10);
@@ -123,7 +118,6 @@ ShaderParticleEmitter.prototype = {
         if (that.angleAlignVelocity) {
             that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
         }
-
     },
 
     /**

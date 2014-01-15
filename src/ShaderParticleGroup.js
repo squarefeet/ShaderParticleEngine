@@ -41,9 +41,6 @@ function ShaderParticleGroup( options ) {
         sizeStart:      { type: 'f', value: [] },
         sizeEnd:        { type: 'f', value: [] },
         angle:        { type: 'f', value: [] },
-        particleMass:   { type: 'f', value: [] },
-        planetMass:     { type: 'f', value: [] },
-        planetPosition: { type: 'v3', value: [] },
 
         colorStart:  { type: 'c', value: [] },
         colorMiddle: { type: 'c', value: [] },
@@ -79,7 +76,7 @@ function ShaderParticleGroup( options ) {
         transparent:    that.transparent,
         alphaTest:      that.alphaTest,
         depthWrite:     that.depthWrite,
-        depthTest:      that.depthTest,
+        depthTest:      that.depthTest
     });
 
     // And finally create the ParticleSystem. It's got its `dynamic` property
@@ -312,10 +309,7 @@ ShaderParticleGroup.prototype = {
             colorEnd      = a.colorEnd.value,
             opacityStart  = a.opacityStart.value,
             opacityMiddle = a.opacityMiddle.value,
-            opacityEnd    = a.opacityEnd.value,
-            particleMass = a.particleMass.value,
-            planetMass = a.planetMass.value,
-            planetPosition = a.planetPosition.value;
+            opacityEnd    = a.opacityEnd.value;
 
         emitter.particleIndex = parseFloat( start );
 
@@ -346,10 +340,6 @@ ShaderParticleGroup.prototype = {
             else {
                 angle[i]    = that._randomFloat( emitter.angle, emitter.angleSpread );
             }
-
-            particleMass[i]     = emitter.particleMass;
-            planetMass[i]       = emitter.planetMass;
-            planetPosition[i]   = emitter.planetPosition;
 
             age[i]          = 0.0;
             alive[i]        = emitter.static ? 1.0 : 0.0;
@@ -466,7 +456,6 @@ ShaderParticleGroup.prototype = {
      */
     addPool: function( numEmitters, emitterSettings, createNew ) {
         var that = this,
-            pool = that._pool,
             emitter;
 
         // Save relevant settings and flags.
@@ -562,48 +551,10 @@ ShaderParticleGroup.shaders = {
         'attribute float sizeEnd;',
         'attribute float angle;',
 
-        'attribute float particleMass;',
-        'attribute float planetMass;',
-        'attribute vec3 planetPosition;',
-
         // values to be passed to the fragment shader
         'varying vec4 vColor;',
         'varying float vAngle;',
 
-        'float G = 6.67384;',
-
-        'vec3 CalculatePosition( vec3 pos, vec3 v, float incr ) {',
-
-            'for( float i = 0.0; i < 500.0; i += 0.016 ) {',
-                'if( i >= age ) { break; }',
-
-                'vec3 r12 = vec3( pos - planetPosition );',
-
-                'float r12Sq = (r12.x * r12.x) + (r12.y * r12.y) + (r12.z * r12.z);',
-                
-                'r12 = normalize( r12 );',
-
-                'float c = -(G * particleMass / r12Sq);',
-
-                'vec3 a12 = r12 * c;',
-
-                'v += a12;',
-                'pos += v;',
-            '}',
-
-            'return pos;',
-        '}',
-
-        'vec4 GetPosGravity() {',
-            'vec3 newPos = vec3( position );',
-
-            'vec3 v = velocity;',
-
-            'newPos = CalculatePosition( newPos, v, 0.016 );',
-            'vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );',
-
-            'return mvPosition;',
-        '}',
 
         // Integrate acceleration into velocity and apply it to the particle's position
         'vec4 GetPos() {',
@@ -647,7 +598,7 @@ ShaderParticleGroup.shaders = {
 
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
-                'vec4 pos = GetPosGravity();',
+                'vec4 pos = GetPos();',
 
                 // Determine point size .
                 'float pointSize = mix( sizeStart, sizeEnd, positionInTime );',

@@ -60,7 +60,7 @@
 
         		colorStart: new THREE.Color('white'),
         		colorEnd: new THREE.Color('blue'),
-        		size: 1,
+        		sizeStart: 1,
         		sizeEnd: 2,
 
         		particlesPerSecond: 1000
@@ -69,18 +69,18 @@
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + emitter.numParticles;
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );
 
             // Use a fixed time-step here to avoid gaps
             render( clock.getDelta() );
-            
+
             stats.update();
         }
 

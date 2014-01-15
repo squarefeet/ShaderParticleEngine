@@ -31,7 +31,7 @@
                 positionSpread: new THREE.Vector3(10, 10, 10),
                 radius: 1,
                 speed: 100,
-                size: 30,
+                sizeStart: 30,
                 sizeSpread: 30,
                 sizeEnd: 0,
                 opacityStart: 1,
@@ -53,8 +53,8 @@
 
             var referenceCube = new THREE.Mesh(
                 new THREE.CubeGeometry(300, 300, 300),
-                new THREE.MeshBasicMaterial({ 
-                    wireframe: true, 
+                new THREE.MeshBasicMaterial({
+                    wireframe: true,
                     opacity: 0.1,
                     transparent: true,
                     color: 0xffffff
