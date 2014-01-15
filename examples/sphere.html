@@ -45,7 +45,7 @@
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
-        		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
+        		texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
         		maxAge: 2
         	});
 
@@ -60,24 +60,25 @@
         		colorStart: new THREE.Color('white'),
                 colorSpread: new THREE.Vector3(10, 10, 10),
         		colorEnd: new THREE.Color('white'),
-        		size: 5,
+        		sizeStart: 5,
         		sizeEnd: 0,
 
                 opacityStart: 0,
                 opacityMiddle: 1,
                 opacityEnd: 0,
 
-        		particlesPerSecond: 5000
+        		particlesPerSecond: 5000,
+                angleAlignVelocity: 1
         	});
 
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + emitter.numParticles;
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );

@@ -33,38 +33,40 @@ function ShaderParticleEmitter( options ) {
     that.velocitySpread         = options.velocitySpread instanceof THREE.Vector3 ? options.velocitySpread : new THREE.Vector3();
 
     // And again here; only used when this.type === 'sphere'
-    that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0, 10 );
-    that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0, 10 );
+    that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0.0 );
+    that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0.0 );
 
-    that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 1.0, 10 );
-    that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0.0, 10 );
-    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart, 10 );
+    that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 1.0 );
+    that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0.0 );
+    that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart );
 
-	that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0, 10 );
-    that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0, 10 );
-    that.angleVelocity          = parseFloat( typeof options.angleVelocity === 'number' ? options.angleVelocity : 0, 10 );
+    that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0 );
+    that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0 );
+    that.angleVelocity          = parseFloat( typeof options.angleVelocity === 'number' ? options.angleVelocity : 0 );
     that.angleAlignVelocity     = options.angleAlignVelocity || false;
 
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
     that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3(0,0,0);
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
-	that.colorMiddle			= options.colorMiddle instanceof THREE.Color ? options.colorMiddle :
-		new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
+    that.colorMiddle            = options.colorMiddle instanceof THREE.Color ? options.colorMiddle :
+        new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
 
-    that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1, 10 );
-    that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0, 10 );
+    that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1 );
+    that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0 );
     that.opacityMiddle          = parseFloat(
         typeof options.opacityMiddle !== 'undefined' ?
         options.opacityMiddle :
-        Math.abs(that.opacityEnd + that.opacityStart) / 2,
-    10 );
+        Math.abs(that.opacityEnd + that.opacityStart) / 2
+    );
 
-    that.particleMass           = parseFloat( typeof options.particleMass === 'number' ? options.particleMass : 0, 10 );
+    that.particleMass           = parseFloat( typeof options.particleMass === 'number' ? options.particleMass : 0 );
 
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
-    that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10);
+    that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10 );
 
-    that.static                 = typeof options.static === 'number' ? options.static : 0;
+    that.isStatic               = typeof options.isStatic === 'number' ? options.isStatic : 0;
+
+    that.isDynamic = options.dynamic || false;
 
     // The following properties are used internally, and mostly set when this emitter
     // is added to a particle group.
@@ -76,6 +78,8 @@ function ShaderParticleEmitter( options ) {
     that.maxAge                 = 0.0;
 
     that.particleIndex = 0.0;
+
+    that.__id = null;
 
     that.userData = {};
 }
@@ -91,7 +95,7 @@ ShaderParticleEmitter.prototype = {
      * @param  {THREE.Vector3} p
      */
      _resetParticle: function( i ) {
-        var that = this;
+        var that = this,
             type = that.type,
             spread = that.positionSpread,
             particlePosition = that.vertices[i],
@@ -108,18 +112,18 @@ ShaderParticleEmitter.prototype = {
             ( type === 'disk' && that.radius === 0 )
         ) {
             particlePosition.copy( that.position );
-            that._randomizeExistingVector3( particleVelocity, that.velocity, that.velocitySpread );
+            that._randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
 
             if( type === 'cube' ) {
-                that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, that.accelerationSpread );
+                that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
             }
         }
 
         // If there is a position spread, then get a new position based on this spread.
         else if( type === 'cube' ) {
             that._randomizeExistingVector3( particlePosition, that.position, spread );
-            that._randomizeExistingVector3( particleVelocity, that.velocity, that.velocitySpread );
-            that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, that.accelerationSpread );
+            that._randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
+            that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
         }
 
         else if( type === 'sphere') {
@@ -132,7 +136,9 @@ ShaderParticleEmitter.prototype = {
             that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
-        that._checkValues( i );
+        if( that.isDynamic ) {
+            that._checkValues( i );
+        }
     },
 
 
@@ -165,10 +171,14 @@ ShaderParticleEmitter.prototype = {
             a.opacityEnd.needsUpdate = true;
         }
 
-        // Mass
-        if( a.particleMass.value[ i ] !== that.particleMass ) {
-            a.particleMass.value[ i ] = that.particleMass;
-            a.particleMass.needsUpdate = true;
+        // Angle
+        if( a.angleAlignVelocity.value[ i ] !== that.angleAlignVelocity ) {
+            a.angleAlignVelocity.value[ i ] = that.angleAlignVelocity ? 1.0 : 0.0;
+            a.angleAlignVelocity.needsUpdate = true;
+        }
+        else if( !that.angleAlignVelocity && a.angle.value[ i ] !== that.angle ) {
+            a.angle.value[ i ] = that.angle;
+            a.angle.needsUpdate = true;
         }
     },
 
@@ -180,7 +190,7 @@ ShaderParticleEmitter.prototype = {
      */
     tick: function( dt ) {
 
-        if( this.static ) {
+        if( this.isStatic ) {
             return;
         }
 
@@ -201,8 +211,7 @@ ShaderParticleEmitter.prototype = {
 
         // Loop through all the particles in this emitter and
         // determine whether they're still alive and need advancing
-        // or if they should be dead and therefore marked as such
-        // and pushed into the recycled vertices array for reuse.
+        // or if they should be dead and therefore marked as such.
         for( var i = start; i < end; ++i ) {
             if( alive[ i ] === 1.0 ) {
                 age[ i ] += dt;
@@ -322,8 +331,7 @@ ShaderParticleEmitter.prototype = {
     _setRandomColorAttribute: function( attr, base, spread ) {
         var that = this,
             start = that.verticesIndex,
-            end = start + that.numParticles,
-            alive = that.attributes.alive.value;
+            end = start + that.numParticles;
 
         spread = spread || new THREE.Vector3();
 
@@ -349,8 +357,7 @@ ShaderParticleEmitter.prototype = {
 
 
     setOption: function( optionName, value ) {
-        var that = this,
-            attr, start, end, i, originalName;
+        var that = this;
 
 
         if( typeof that.attributes[ optionName ] === 'undefined' && typeof that[ optionName ] === 'undefined' ) {
@@ -359,6 +366,8 @@ ShaderParticleEmitter.prototype = {
         }
 
         if( that.attributes[ optionName ] ) {
+            that[ optionName ] = value;
+
             if( typeof that[ optionName ] === 'number' ) {
                 that._setRandomFloatAttribute(
                     that.attributes[ optionName ],
@@ -381,7 +390,6 @@ ShaderParticleEmitter.prototype = {
                 );
             }
 
-            that[ optionName ] = value;
             that.attributes[ optionName ].needsUpdate = true;
         }
 

@@ -60,19 +60,19 @@
                     radius: 5 + i,
                     radiusScale: new THREE.Vector3(1, 1 - (i/numEmitters), 1),
 
-            		position: new THREE.Vector3( 0, 0, 0 ),                
+            		position: new THREE.Vector3( 0, 0, 0 ),
 
                     colorStart: (new THREE.Color()).setRGB(
                         getRandomNumber( 1 ),
                         getRandomNumber( 1 ),
                         getRandomNumber( 1 )
                     ),
-            		size: 1.75,
+            		sizeStart: 1.75,
 
             		particlesPerSecond: 400,
 
                     opacityStart: 1,
-                    static: 1
+                    isStatic: 1
             	});
 
             	particleGroup.addEmitter( emitter );
@@ -80,11 +80,11 @@
 
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + (emitter.numParticles * numEmitters);
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );

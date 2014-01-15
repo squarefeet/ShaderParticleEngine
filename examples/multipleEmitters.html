@@ -60,7 +60,7 @@
                         getRandomNumber(window.innerHeight/5),
                         getRandomNumber(200)
                     ),
-                    
+
             		accelerationSpread: new THREE.Vector3(
                         getRandomNumber(-10),
                         getRandomNumber(-10),
@@ -71,19 +71,19 @@
                         getRandomNumber(20),
                         getRandomNumber(20),
                         getRandomNumber(20)
-                    ),                    
+                    ),
 
                     colorStart: (new THREE.Color()).setRGB(
-                        Math.random(), 
-                        Math.random(), 
+                        Math.random(),
+                        Math.random(),
                         Math.random()
                     ),
                     colorEnd: (new THREE.Color()).setRGB(
-                        Math.random(), 
-                        Math.random(), 
+                        Math.random(),
+                        Math.random(),
                         Math.random()
                     ),
-            		size: 2,
+            		sizeStart: 2,
             		sizeEnd: 2,
 
             		particlesPerSecond: 250,
@@ -98,11 +98,11 @@
 
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + (emitter.numParticles * numEmitters);
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );

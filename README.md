@@ -226,7 +226,7 @@ var particleEmitter = new ShaderParticleEmitter({
 	// take the start values for color, opacity, and size (with spreads applied),
 	// not add the emitter from its group's tick function, and so will be static.
 	// See the static.html file in the examples directory for more.
-	static: 0
+	isStatic: 0
 });
 ```
 

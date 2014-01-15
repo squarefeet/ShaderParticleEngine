@@ -30,8 +30,8 @@
 
             var referenceCube = new THREE.Mesh(
                 new THREE.CubeGeometry(30, 30, 30),
-                new THREE.MeshBasicMaterial({ 
-                    wireframe: true, 
+                new THREE.MeshBasicMaterial({
+                    wireframe: true,
                     opacity: 0.1,
                     transparent: true,
                     color: 0xffffff
@@ -71,7 +71,7 @@
 
         		colorStart: new THREE.Color('yellow'),
         		colorEnd: new THREE.Color('red'),
-        		size: 2,
+        		sizeStart: 2,
                 // sizeSpread: 30,
         		sizeEnd: 0,
 
@@ -84,11 +84,11 @@
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + emitter.numParticles;
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );

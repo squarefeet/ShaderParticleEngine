@@ -59,7 +59,7 @@
 
         		colorStart: new THREE.Color('white'),
         		colorEnd: new THREE.Color('white'),
-        		size: 2,
+        		sizeStart: 2,
         		sizeEnd: 2,
                 opacityStart: 0,
                 opacityMiddle: 1,
@@ -71,11 +71,11 @@
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + emitter.numParticles;
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );
