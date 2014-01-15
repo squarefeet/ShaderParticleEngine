@@ -690,7 +690,6 @@ function ShaderParticleEmitter( options ) {
 
     that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0 );
     that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0 );
-    that.angleVelocity          = parseFloat( typeof options.angleVelocity === 'number' ? options.angleVelocity : 0 );
     that.angleAlignVelocity     = options.angleAlignVelocity || false;
 
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'blue' );
@@ -769,7 +768,6 @@ ShaderParticleEmitter.prototype = {
         if (that.angleAlignVelocity) {
             that.attributes.angle.value[i] = -Math.atan2(particleVelocity.y, particleVelocity.x);
         }
-
     },
 
     /**
