@@ -6,7 +6,7 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome.
 
 
-Version 0.6.0
+Version 0.7.0
 =============
 Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
 That said, it ain't gonna be long until it's at 1.0.0.
@@ -14,6 +14,13 @@ That said, it ain't gonna be long until it's at 1.0.0.
 
 Changelog
 =========
+**Version 0.7.0**
+* Dev: new ShaderParticleUtils object (alpha) to share functions between the Group and Emitter constructors.
+* Dev: ShaderParticleGroup.removeEmitter() 
+* Dev: ShaderParticleEmitter.angle
+* Dev: ShaderParticleEmitter.angleAlignVelocity
+* Dev: ShaderParticleEmitter.setOption()
+
 **Version 0.6.0**
 * To adjust particle sizes, please use `sizeStart` instead of the old `size` property.
 * Particle angles are now supported, thanks to [Stemkoski](https://github.com/stemkoski/).
@@ -235,7 +242,7 @@ var particleEmitter = new ShaderParticleEmitter({
 	// take the start values for color, opacity, and size (with spreads applied),
 	// not add the emitter from its group's tick function, and so will be static.
 	// See the static.html file in the examples directory for more.
-	static: 0
+	isStatic: 0
 });
 ```
 
