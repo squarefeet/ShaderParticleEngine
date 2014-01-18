@@ -6,7 +6,7 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome.
 
 
-Version 0.5.0
+Version 0.7.0
 =============
 Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
 That said, it ain't gonna be long until it's at 1.0.0.
