@@ -97,7 +97,10 @@
             standard = gui.addFolder( 'Standard' );
             standard.add( emitter, 'particlesPerSecond' ).min(1).max( emitter.particlesPerSecond ).step(1);
             standard.add( emitter, 'type', ['cube', 'sphere', 'disk']);
-            makeStandardGUI( standard, 'particleMass', 0, 1000, 0.1 );
+
+            radius = gui.addFolder( 'Angle' );
+            radius.add( emitter, 'angle' );
+            radius.add( emitter, 'angleAlignVelocity' );
 
             radius = gui.addFolder( 'Radius (disk/sphere)' );
             radius.add( emitter, 'radius' );
@@ -141,14 +144,15 @@
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new ShaderParticleGroup({
-        		texture: THREE.ImageUtils.loadTexture('./img/star.png'),
+        		texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
         		maxAge: 5,
                 hasGravity: 1
         	});
 
         	emitter = new ShaderParticleEmitter({
                 type: 'sphere',
-        		particlesPerSecond: 5000
+        		particlesPerSecond: 5000,
+                dynamic: true
         	});
 
         	particleGroup.addEmitter( emitter );
@@ -173,9 +177,9 @@
             particleGroup.tick( dt );
             renderer.render( scene, camera );
 
-            // camera.position.x = Math.cos( Date.now() * 0.0005 ) * camDist;
-            // camera.position.z = Math.sin( Date.now() * 0.0005 ) * camDist;
-            // camera.lookAt( scene.position );
+            camera.position.x = Math.cos( Date.now() * 0.0005 ) * camDist;
+            camera.position.z = Math.sin( Date.now() * 0.0005 ) * camDist;
+            camera.lookAt( scene.position );
         }
 
 
