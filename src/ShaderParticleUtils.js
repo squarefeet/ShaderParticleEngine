@@ -1,4 +1,6 @@
-var shaderParticleUtils = {
+(function() {
+
+this.shaderParticleUtils = {
 
     /**
      * Given a base vector and a spread range vector, create
@@ -247,8 +249,7 @@ var shaderParticleUtils = {
      * @param  {Number} radius
      */
     randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
-        var rand = Math.random,
-            t = 6.2832 * rand(),
+        var t = 6.2832 * Math.random(),
             rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
 
         if( radiusSpreadClamp ) {
@@ -288,3 +289,5 @@ var shaderParticleUtils = {
         return str;
     }
 };
+
+}());
