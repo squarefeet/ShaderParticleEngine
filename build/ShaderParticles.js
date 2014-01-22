@@ -342,6 +342,7 @@ function ShaderParticleGroup( options ) {
         sizeEnd:                { type: 'f',    value: [] },
 
         angle:                  { type: 'f',    value: [] },
+        angularVelocity:        { type: 'f',    value: [] },
         angleAlignVelocity:     { type: 'f',    value: [] },
 
         colorStart:             { type: 'c',    value: [] },
@@ -444,6 +445,7 @@ ShaderParticleGroup.prototype = {
             sizeStart           = a.sizeStart.value,
             sizeEnd             = a.sizeEnd.value,
             angle               = a.angle.value,
+            angularVelocity     = a.angularVelocity.value,
             angleAlignVelocity  = a.angleAlignVelocity.value,
             colorStart          = a.colorStart.value,
             colorMiddle         = a.colorMiddle.value,
@@ -477,6 +479,7 @@ ShaderParticleGroup.prototype = {
             sizeEnd[i]              = emitter.sizeEnd;
 
             angle[i]                = that._randomFloat( emitter.angle, emitter.angleSpread );
+            angularVelocity[i]      = that._randomFloat( emitter.angularVelocity, emitter.angularVelocitySpread );
             angleAlignVelocity[i]   = emitter.angleAlignVelocity ? 1.0 : 0.0;
 
             age[i]                  = 0.0;
@@ -723,6 +726,7 @@ ShaderParticleGroup.shaders = {
         'attribute float sizeStart;',
         'attribute float sizeEnd;',
         'attribute float angle;',
+        'attribute float angularVelocity;',
         'attribute float angleAlignVelocity;',
 
         // values to be passed to the fragment shader
@@ -779,7 +783,7 @@ ShaderParticleGroup.shaders = {
                     'vAngle = -atan(pos.y, pos.x);',
                 '}',
                 'else {',
-                    'vAngle = 0.0;',
+                    'vAngle = angle + ( angularVelocity * age );',
                 '}',
 
                 // Determine point size .
@@ -879,6 +883,9 @@ function ShaderParticleEmitter( options ) {
     that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0 );
     that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0 );
     that.angleAlignVelocity     = options.angleAlignVelocity || false;
+
+    that.angularVelocity        = parseFloat( typeof options.angularVelocity === 'number' ? options.angularVelocity : 0 );
+    that.angularVelocitySpread  = parseFloat( typeof options.angularVelocitySpread === 'number' ? options.angularVelocitySpread : 0 );
 
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
     that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3(0,0,0);
