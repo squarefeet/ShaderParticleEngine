@@ -321,7 +321,7 @@ ShaderParticleEmitter.prototype = {
 
         spread = spread || new THREE.Vector3();
 
-        for( i = start; i < end; ++i ) {
+        for( var i = start; i < end; ++i ) {
             if( alive[ i ] === 0.0 ) {
                 that._randomizeExistingVector3( attr.value[ i ], base, spread );
             }
@@ -335,7 +335,7 @@ ShaderParticleEmitter.prototype = {
 
         spread = spread || new THREE.Vector3();
 
-        for( i = start; i < end; ++i ) {
+        for( var i = start; i < end; ++i ) {
             that._randomizeExistingColor( attr.value[ i ], base, spread );
         }
     },
@@ -348,7 +348,7 @@ ShaderParticleEmitter.prototype = {
 
         spread = spread || 0;
 
-        for( i = start; i < end; ++i ) {
+        for( var i = start; i < end; ++i ) {
             if( alive[ i ] === 0.0 ) {
                 attr.value[ i ] = that._randomFloat( base, spread );
             }
