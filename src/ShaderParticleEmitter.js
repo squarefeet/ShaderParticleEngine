@@ -18,16 +18,17 @@ function ShaderParticleEmitter( options ) {
 
 
     that.particlesPerSecond     = typeof options.particlesPerSecond === 'number' ? options.particlesPerSecond : 100;
-    that.type                   = (options.type === 'cube' || options.type === 'sphere' || options.type === 'disk') ? options.type : 'cube';
+    that.type                   = (options.type === 'cube' || options.type === 'sphere' || options.type === 'disk' || options.type == 'spiral') ? options.type : 'cube';
 
     that.position               = options.position instanceof THREE.Vector3 ? options.position : new THREE.Vector3();
     that.positionSpread         = options.positionSpread instanceof THREE.Vector3 ? options.positionSpread : new THREE.Vector3();
 
-    // These two properties are only used when this.type === 'sphere' or 'disk'
+    // These properties are only used when this.type === 'sphere', 'disk', or 'spiral'
     that.radius                 = typeof options.radius === 'number' ? options.radius : 10;
     that.radiusSpread           = typeof options.radiusSpread === 'number' ? options.radiusSpread : 0;
     that.radiusScale            = options.radiusScale instanceof THREE.Vector3 ? options.radiusScale : new THREE.Vector3(1, 1, 1);
     that.radiusSpreadClamp      = typeof options.radiusSpreadClamp === 'number' ? options.radiusSpreadClamp : 0;
+    that.radiusMax              = that.radius + that.radiusSpread;
 
     that.acceleration           = options.acceleration instanceof THREE.Vector3 ? options.acceleration : new THREE.Vector3();
     that.accelerationSpread     = options.accelerationSpread instanceof THREE.Vector3 ? options.accelerationSpread : new THREE.Vector3();
@@ -36,9 +37,13 @@ function ShaderParticleEmitter( options ) {
     that.velocitySpread         = options.velocitySpread instanceof THREE.Vector3 ? options.velocitySpread : new THREE.Vector3();
 
 
-    // And again here; only used when this.type === 'sphere' or 'disk'
+    // And again here; only used when this.type === 'sphere', 'disk', or 'spiral'
     that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0.0 );
     that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0.0 );
+
+    /// These properties are only used when this.type === 'spiral'
+    that.spiralSkew             = parseFloat( typeof options.spiralSkew === 'number' ? options.spiralSkew : 1.0 );
+    that.spiralRotation         = parseFloat( typeof options.spiralRotation === 'number' ? options.spiralRotation : 1.0 );
 
     that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 1.0 );
     that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0.0 );
@@ -109,7 +114,8 @@ ShaderParticleEmitter.prototype = {
         if(
             ( type === 'cube' && spread.x === 0 && spread.y === 0 && spread.z === 0 ) ||
             ( type === 'sphere' && that.radius === 0 ) ||
-            ( type === 'disk' && that.radius === 0 )
+            ( type === 'disk' && that.radius === 0 ) ||
+            ( type === 'spiral' && that.radius === 0 )
         ) {
             particlePosition.copy( that.position );
             that._randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
@@ -134,6 +140,13 @@ ShaderParticleEmitter.prototype = {
         else if( type === 'disk') {
             that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
             that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+        }
+        else if( type === 'spiral') {
+            that._randomizeExistingVector3OnSpiral( particlePosition, that.position, that.radius,
+                                                    that.radiusSpread, that.radiusScale, that.radiusSpreadClamp,
+                                                    that.radiusMax, that.spiralSkew, that.spiralRotation );
+            that._randomizeExistingVelocityVector3OnSpiral( particleVelocity, that.position, particlePosition,
+                                                            that.speed, that.speedSpread, that.radiusMax );
         }
 
         if( that.isDynamic ) {
