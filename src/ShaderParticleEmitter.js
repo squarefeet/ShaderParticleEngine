@@ -48,6 +48,9 @@ function ShaderParticleEmitter( options ) {
     that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0 );
     that.angleAlignVelocity     = options.angleAlignVelocity || false;
 
+    that.angularVelocity        = parseFloat( typeof options.angularVelocity === 'number' ? options.angularVelocity : 0 );
+    that.angularVelocitySpread  = parseFloat( typeof options.angularVelocitySpread === 'number' ? options.angularVelocitySpread : 0 );
+
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
     that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3(0,0,0);
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();

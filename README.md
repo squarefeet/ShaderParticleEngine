@@ -172,6 +172,18 @@ var particleEmitter = new ShaderParticleEmitter({
 	// [OPTIONAL] Acceleration variance.
 	accelerationSpread: new THREE.Vector3(0, 0, 0),
 
+	// [OPTIONAL] The intial angle of each particle
+	angle: 0,
+
+	// [OPTIONAL] How fast each particle is spinning
+	angularVelocity: 0,
+
+	// [OPTIONAL] Particle spin velocity variance
+	angularVelocitySpread: 0,
+
+	// [OPTIONAL] Align the particles in the direciton they are moving
+	angleAlignVelocity: true
+
 
 	// [OPTIONAL] Velocity base vector.
 	velocity: new THREE.Vector3(0, 0, 0),
