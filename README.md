@@ -114,6 +114,11 @@ var particleGroup = new ShaderParticleGroup({
 	// Use 0 for false and 1 for true.
 	hasPerspective: 1,
 
+  // [OPTIONAL] Factor by which to fade particles with distance from center
+  // 0 to disable, else the distance at which particles should be
+  // completely black
+  fadeFactor: 1,
+
 	// [OPTIONAL] Should the particles in this group have a color applied?
 	// Use 0 for false and 1 for true
 	colorize: 1,

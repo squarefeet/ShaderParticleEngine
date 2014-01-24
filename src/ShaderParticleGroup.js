@@ -19,6 +19,7 @@ function ShaderParticleGroup( options ) {
     that.texture                = options.texture || null;
     that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1, 10 );
     that.colorize               = parseInt( options.colorize || 1, 10 );
+    that.fadeFactor             = parseFloat( typeof options.fadeFactor === 'number' ? options.fadeFactor : 0.0 );
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
@@ -32,6 +33,7 @@ function ShaderParticleGroup( options ) {
         duration:       { type: 'f',    value: that.maxAge },
         texture:        { type: 't',    value: that.texture },
         hasPerspective: { type: 'i',    value: that.hasPerspective },
+        fadeFactor:     { type: 'f',    value: that.fadeFactor },
         colorize:       { type: 'i',    value: that.colorize }
     };
 
@@ -414,6 +416,7 @@ ShaderParticleGroup.shaders = {
         'uniform float duration;',
         'uniform int hasPerspective;',
         'uniform int hasGravity;',
+        'uniform float fadeFactor;',
         'uniform vec3 planetPosition;',
 
 
@@ -483,6 +486,12 @@ ShaderParticleGroup.shaders = {
                 // when we calculate any perspective that might be required.
                 'vec4 pos = vec4(0.0, 0.0, 0.0, 0.0);',
                 'pos = GetPos();',
+
+                // optional fade w/ distance
+                'if( fadeFactor != 0.0 ) {',
+                    // TODO should be exponential / logrithmic, not linear ?
+                    'vColor = mix( vColor, vec4(0.0, 0.0, 0.0, 0.0), length ( pos.xyz ) / fadeFactor );',
+                '}',
 
                 'if( angleAlignVelocity == 1.0 ) {',
                     'vAngle = -atan(pos.y, pos.x);',
