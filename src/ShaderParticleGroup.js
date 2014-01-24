@@ -413,9 +413,6 @@ ShaderParticleGroup.shaders = {
     vertex: [
         'uniform float duration;',
         'uniform int hasPerspective;',
-        'uniform int hasGravity;',
-        'uniform vec3 planetPosition;',
-
 
         'attribute vec3 colorStart;',
         'attribute vec3 colorMiddle;',
@@ -481,8 +478,7 @@ ShaderParticleGroup.shaders = {
 
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
-                'vec4 pos = vec4(0.0, 0.0, 0.0, 0.0);',
-                'pos = GetPos();',
+                'vec4 pos = GetPos();',
 
                 'if( angleAlignVelocity == 1.0 ) {',
                     'vAngle = -atan(pos.y, pos.x);',
