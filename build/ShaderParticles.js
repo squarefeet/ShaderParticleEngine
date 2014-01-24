@@ -1,4 +1,6 @@
-var shaderParticleUtils = {
+(function() {
+
+this.shaderParticleUtils = {
 
     /**
      * Given a base vector and a spread range vector, create
@@ -247,8 +249,7 @@ var shaderParticleUtils = {
      * @param  {Number} radius
      */
     randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
-        var rand = Math.random,
-            t = 6.2832 * rand(),
+        var t = 6.2832 * Math.random(),
             rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
 
         if( radiusSpreadClamp ) {
@@ -287,7 +288,10 @@ var shaderParticleUtils = {
 
         return str;
     }
-};;
+};
+
+}());
+;
 
 // ShaderParticleGroup 0.7.0
 //
@@ -823,7 +827,8 @@ ShaderParticleGroup.shaders = {
             '}',
         '}'
     ].join('\n')
-};;
+};
+;
 
 // ShaderParticleEmitter 0.7.0
 //
@@ -1148,7 +1153,7 @@ ShaderParticleEmitter.prototype = {
 
         spread = spread || new THREE.Vector3();
 
-        for( i = start; i < end; ++i ) {
+        for( var i = start; i < end; ++i ) {
             if( alive[ i ] === 0.0 ) {
                 that._randomizeExistingVector3( attr.value[ i ], base, spread );
             }
@@ -1162,7 +1167,7 @@ ShaderParticleEmitter.prototype = {
 
         spread = spread || new THREE.Vector3();
 
-        for( i = start; i < end; ++i ) {
+        for( var i = start; i < end; ++i ) {
             that._randomizeExistingColor( attr.value[ i ], base, spread );
         }
     },
@@ -1175,7 +1180,7 @@ ShaderParticleEmitter.prototype = {
 
         spread = spread || 0;
 
-        for( i = start; i < end; ++i ) {
+        for( var i = start; i < end; ++i ) {
             if( alive[ i ] === 0.0 ) {
                 attr.value[ i ] = that._randomFloat( base, spread );
             }
