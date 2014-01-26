@@ -48,12 +48,12 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
         		maxAge: 3
         	});
 
-        	emitter = new ShaderParticleEmitter({
+        	emitter = new SPE.Emitter({
         		position: new THREE.Vector3(0, 0, 0),
                 // positionSpread: new THREE.Vector3(2, 2, 2),
 

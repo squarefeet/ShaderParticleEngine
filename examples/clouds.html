@@ -48,12 +48,12 @@
             texture.magFilter = THREE.LinearMipMapLinearFilter;
             texture.minFilter = THREE.LinearMipMapLinearFilter;
 
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: texture,
         		maxAge: 5
         	});
 
-        	emitter = new ShaderParticleEmitter({
+        	emitter = new SPE.Emitter({
         		position: new THREE.Vector3(0, 0, 0),
                 positionSpread: new THREE.Vector3(100, 50, 100),
 

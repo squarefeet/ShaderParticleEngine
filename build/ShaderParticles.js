@@ -1,6 +1,6 @@
-(function() {
+var SPE = SPE || {};
 
-this.shaderParticleUtils = {
+SPE.utils = {
 
     /**
      * Given a base vector and a spread range vector, create
@@ -288,10 +288,7 @@ this.shaderParticleUtils = {
 
         return str;
     }
-};
-
-}());
-;
+};;
 
 // ShaderParticleGroup 0.7.1
 //
@@ -303,8 +300,9 @@ this.shaderParticleUtils = {
 //
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
+var SPE = SPE || {};
 
-function ShaderParticleGroup( options ) {
+SPE.Group = function( options ) {
     var that = this;
 
     that.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016 );
@@ -367,8 +365,8 @@ function ShaderParticleGroup( options ) {
     that.material = new THREE.ShaderMaterial({
         uniforms:       that.uniforms,
         attributes:     that.attributes,
-        vertexShader:   ShaderParticleGroup.shaders.vertex,
-        fragmentShader: ShaderParticleGroup.shaders.fragment,
+        vertexShader:   SPE.shaders.vertex,
+        fragmentShader: SPE.shaders.fragment,
         blending:       that.blending,
         transparent:    that.transparent,
         alphaTest:      that.alphaTest,
@@ -382,7 +380,7 @@ function ShaderParticleGroup( options ) {
     that.mesh.dynamic = true;
 }
 
-ShaderParticleGroup.prototype = {
+SPE.Group.prototype = {
 
     /**
      * Tells the age and alive attributes (and the geometry vertices)
@@ -411,9 +409,9 @@ ShaderParticleGroup.prototype = {
 
     /**
      * Add an emitter to this particle group. Once added, an emitter will be automatically
-     * updated when ShaderParticleGroup#tick() is called.
+     * updated when SPE.Group#tick() is called.
      *
-     * @param {ShaderParticleEmitter} emitter
+     * @param {SPE.Emitter} emitter
      * @return {this}
      */
     addEmitter: function( emitter ) {
@@ -507,14 +505,14 @@ ShaderParticleGroup.prototype = {
         var id,
             emitters = this.emitters;
 
-        if( emitter instanceof ShaderParticleEmitter ) {
+        if( emitter instanceof SPE.Emitter ) {
             id = emitter.__id;
         }
         else if( typeof emitter === 'string' ) {
             id = emitter;
         }
         else {
-            console.warn('Invalid emitter or emitter ID passed to ShaderParticleGroup#removeEmitter.' );
+            console.warn('Invalid emitter or emitter ID passed to SPE.Group#removeEmitter.' );
             return;
         }
 
@@ -570,7 +568,7 @@ ShaderParticleGroup.prototype = {
             return pool.pop();
         }
         else if( createNew ) {
-            return new ShaderParticleEmitter( that._poolCreationSettings );
+            return new SPE.Emitter( that._poolCreationSettings );
         }
 
         return null;
@@ -584,7 +582,7 @@ ShaderParticleGroup.prototype = {
      * @return {this}
      */
     releaseIntoPool: function( emitter ) {
-        if( !(emitter instanceof ShaderParticleEmitter) ) {
+        if( !(emitter instanceof SPE.Emitter) ) {
             console.error( 'Will not add non-emitter to particle group pool:', emitter );
             return;
         }
@@ -624,7 +622,7 @@ ShaderParticleGroup.prototype = {
 
         // Create the emitters, add them to this group and the pool.
         for( var i = 0; i < numEmitters; ++i ) {
-            emitter = new ShaderParticleEmitter( emitterSettings );
+            emitter = new SPE.Emitter( emitterSettings );
             that.addEmitter( emitter );
             that.releaseIntoPool( emitter );
         }
@@ -646,7 +644,7 @@ ShaderParticleGroup.prototype = {
             emitter = that.getFromPool();
 
         if( emitter === null ) {
-            console.log('ShaderParticleGroup pool ran out.');
+            console.log('SPE.Group pool ran out.');
             return;
         }
 
@@ -692,13 +690,13 @@ ShaderParticleGroup.prototype = {
 
 
 // Extend ShaderParticleGroup's prototype with functions from utils object.
-for( var i in shaderParticleUtils ) {
-    ShaderParticleGroup.prototype[ '_' + i ] = shaderParticleUtils[i];
+for( var i in SPE.utils ) {
+    SPE.Group.prototype[ '_' + i ] = SPE.utils[i];
 }
 
 
 // The all-important shaders
-ShaderParticleGroup.shaders = {
+SPE.shaders = {
     vertex: [
         'uniform float duration;',
         'uniform int hasPerspective;',
@@ -838,7 +836,9 @@ ShaderParticleGroup.shaders = {
 //
 // ShaderParticleEmitter may be freely distributed under the MIT license (See LICENSE.txt)
 
-function ShaderParticleEmitter( options ) {
+var SPE = SPE || {};
+
+SPE.Emitter = function( options ) {
     // If no options are provided, fallback to an empty object.
     options = options || {};
 
@@ -920,7 +920,7 @@ function ShaderParticleEmitter( options ) {
     that.userData = {};
 }
 
-ShaderParticleEmitter.prototype = {
+SPE.Emitter.prototype = {
 
     /**
      * Reset a particle's position. Accounts for emitter type and spreads.
@@ -1018,7 +1018,7 @@ ShaderParticleEmitter.prototype = {
     },
 
     /**
-     * Update this emitter's particle's positions. Called by the ShaderParticleGroup
+     * Update this emitter's particle's positions. Called by the SPE.Group
      * that this emitter belongs to.
      *
      * @param  {Number} dt
@@ -1240,7 +1240,7 @@ ShaderParticleEmitter.prototype = {
     }
 };
 
-// Extend ShaderParticleEmitter's prototype with functions from utils object.
-for( var i in shaderParticleUtils ) {
-    ShaderParticleEmitter.prototype[ '_' + i ] = shaderParticleUtils[i];
+// Extend SPE.Emitter's prototype with functions from utils object.
+for( var i in SPE.utils ) {
+    SPE.Emitter.prototype[ '_' + i ] = SPE.utils[i];
 }

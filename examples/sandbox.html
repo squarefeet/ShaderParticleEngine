@@ -12,6 +12,7 @@
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
+    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
 	<script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
     <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
 
@@ -46,13 +47,13 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
         		maxAge: 1,
                 blending: THREE.NormalBlending
         	});
 
-        	emitter = new ShaderParticleEmitter({
+        	emitter = new SPE.Emitter({
                 type: 'disk',
                 position: new THREE.Vector3(0, 0, 0),
                 radius: 50,
