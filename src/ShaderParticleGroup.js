@@ -43,7 +43,7 @@ function ShaderParticleGroup( options ) {
         alive:                  { type: 'f',    value: [] },
         age:                    { type: 'f',    value: [] },
 
-        size:                   { type: 'v2',   value: [] },
+        size:                   { type: 'v3',   value: [] },
         angle:                  { type: 'v2',   value: [] },
 
         colorStart:             { type: 'c',    value: [] },
@@ -168,7 +168,11 @@ ShaderParticleGroup.prototype = {
 
             acceleration[i]         = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
-            size[i]                 = new THREE.Vector2( that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ), emitter.sizeEnd );
+            size[i]                 = new THREE.Vector3(
+                that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ),
+                emitter.sizeMiddle,
+                emitter.sizeEnd
+            );
 
             angle[i]                = new THREE.Vector2(
                 that._randomFloat( emitter.angle, emitter.angleSpread ),
@@ -414,7 +418,7 @@ ShaderParticleGroup.shaders = {
         'attribute float alive;',
         'attribute float age;',
 
-        'attribute vec2 size;',
+        'attribute vec3 size;',
         'attribute vec2 angle;',
 
         // values to be passed to the fragment shader
@@ -451,6 +455,7 @@ ShaderParticleGroup.shaders = {
             'float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
             'float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
             'float halfDuration = duration / 2.0;',
+            'float pointSize = 0.0;',
 
             'vAngle = angle.x;',
 
@@ -475,8 +480,13 @@ ShaderParticleGroup.shaders = {
                     'vAngle = 0.0;',
                 '}',
 
-                // Determine point size .
-                'float pointSize = mix( size.x, size.y, positionInTime );',
+                // Determine point size.
+                'if( positionInTime < 0.5) {',
+                    'pointSize = mix( size.x, size.y, lerpAmount1 );',
+                '}',
+                'else {',
+                    'pointSize = mix( size.y, size.z, lerpAmount2 );',
+                '}',
 
                 'if( hasPerspective == 1 ) {',
                     'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
