@@ -295,10 +295,10 @@ this.shaderParticleUtils = {
 
 // ShaderParticleGroup 0.7.0
 //
-// (c) 2013 Luke Moody (http://www.github.com/squarefeet) 
+// (c) 2013 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-// 
-// Based on Lee Stemkoski's original work: 
+//
+// Based on Lee Stemkoski's original work:
 //    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
@@ -338,19 +338,16 @@ function ShaderParticleGroup( options ) {
         alive:                  { type: 'f',    value: [] },
         age:                    { type: 'f',    value: [] },
 
-        sizeStart:              { type: 'f',    value: [] },
-        sizeEnd:                { type: 'f',    value: [] },
-
+        size:                   { type: 'v2',   value: [] },
         angle:                  { type: 'f',    value: [] },
         angleAlignVelocity:     { type: 'f',    value: [] },
 
         colorStart:             { type: 'c',    value: [] },
         colorMiddle:            { type: 'c',    value: [] },
         colorEnd:               { type: 'c',    value: [] },
+        // color:                  { type: 'm3',   value: [] },
 
-        opacityStart:           { type: 'f',    value: [] },
-        opacityMiddle:          { type: 'f',    value: [] },
-        opacityEnd:             { type: 'f',    value: [] }
+        opacity:                { type: 'v3',   value: [] }
     };
 
     // Emitters (that aren't static) will be added to this array for
@@ -441,18 +438,19 @@ ShaderParticleGroup.prototype = {
             velocity            = a.velocity.value,
             alive               = a.alive.value,
             age                 = a.age.value,
-            sizeStart           = a.sizeStart.value,
-            sizeEnd             = a.sizeEnd.value,
+            size                = a.size.value,
             angle               = a.angle.value,
             angleAlignVelocity  = a.angleAlignVelocity.value,
             colorStart          = a.colorStart.value,
             colorMiddle         = a.colorMiddle.value,
             colorEnd            = a.colorEnd.value,
-            opacityStart        = a.opacityStart.value,
-            opacityMiddle       = a.opacityMiddle.value,
-            opacityEnd          = a.opacityEnd.value;
+            // color               = a.color.value,
+            opacity             = a.opacity.value,
+            colorStart          = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
 
         emitter.particleIndex = parseFloat( start );
+
+        console.log( colorStart );
 
         // Create the values
         for( var i = start; i < end; ++i ) {
@@ -472,9 +470,7 @@ ShaderParticleGroup.prototype = {
 
             acceleration[i]         = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
-
-            sizeStart[i]            = that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread );
-            sizeEnd[i]              = emitter.sizeEnd;
+            size[i]                 = new THREE.Vector2( that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ), emitter.sizeEnd );
 
             angle[i]                = that._randomFloat( emitter.angle, emitter.angleSpread );
             angleAlignVelocity[i]   = emitter.angleAlignVelocity ? 1.0 : 0.0;
@@ -485,9 +481,14 @@ ShaderParticleGroup.prototype = {
             colorStart[i]           = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
             colorMiddle[i]          = emitter.colorMiddle;
             colorEnd[i]             = emitter.colorEnd;
-            opacityStart[i]         = emitter.opacityStart;
-            opacityMiddle[i]        = emitter.opacityMiddle;
-            opacityEnd[i]           = emitter.opacityEnd;
+
+            // color[ i ]              = new THREE.Matrix3(
+            //     colorStart.r, colorStart.g, colorStart.b,
+            //     emitter.colorMiddle.r, emitter.colorMiddle.g, emitter.colorMiddle.b,
+            //     emitter.colorEnd.r, emitter.colorEnd.g, emitter.colorEnd.b
+            // );
+
+            opacity[i]              = new THREE.Vector3( emitter.opacityStart, emitter.opacityMiddle, emitter.opacityEnd );
         }
 
         // Cache properties on the emitter so we can access
@@ -712,16 +713,16 @@ ShaderParticleGroup.shaders = {
         'attribute vec3 colorStart;',
         'attribute vec3 colorMiddle;',
         'attribute vec3 colorEnd;',
-        'attribute float opacityStart;',
-        'attribute float opacityMiddle;',
-        'attribute float opacityEnd;',
+        // 'attribute mat3 color;',
+        'attribute vec3 opacity;',
 
         'attribute vec3 acceleration;',
         'attribute vec3 velocity;',
         'attribute float alive;',
         'attribute float age;',
-        'attribute float sizeStart;',
-        'attribute float sizeEnd;',
+        // 'attribute float sizeStart;',
+        // 'attribute float sizeEnd;',
+        'attribute vec2 size;',
         'attribute float angle;',
         'attribute float angleAlignVelocity;',
 
@@ -759,16 +760,21 @@ ShaderParticleGroup.shaders = {
             'float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
             'float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
             'float halfDuration = duration / 2.0;',
+
+            // 'vec3 colorStart    = vec3(color[0][0], color[1][0], color[2][0]);',
+            // 'vec3 colorMiddle   = vec3(color[0][1], color[1][1], color[2][1]);',
+            // 'vec3 colorEnd      = vec3(color[0][2], color[1][2], color[2][2]);',
+
             'vAngle = angle;',
 
             'if( alive > 0.5 ) {',
 
                 // lerp the color and opacity
                 'if( positionInTime < 0.5) {',
-                    'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacityStart, opacityMiddle, lerpAmount1) );',
+                    'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacity.x, opacity.y, lerpAmount1) );',
                 '}',
                 'else {',
-                    'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacityMiddle, opacityEnd, lerpAmount2) );',
+                    'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacity.y, opacity.z, lerpAmount2) );',
                 '}',
 
                 // Get the position of this particle so we can use it
@@ -783,7 +789,7 @@ ShaderParticleGroup.shaders = {
                 '}',
 
                 // Determine point size .
-                'float pointSize = mix( sizeStart, sizeEnd, positionInTime );',
+                'float pointSize = mix( size.x, size.y, positionInTime );',
 
                 'if( hasPerspective == 1 ) {',
                     'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
