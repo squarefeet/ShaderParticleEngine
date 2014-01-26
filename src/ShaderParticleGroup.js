@@ -50,7 +50,8 @@ function ShaderParticleGroup( options ) {
         colorStart:             { type: 'c',    value: [] },
         colorMiddle:            { type: 'c',    value: [] },
         colorEnd:               { type: 'c',    value: [] },
-        // color:                  { type: 'm3',   value: [] },
+
+        colorMain:              { type: 'fv1',  value: [] },
 
         opacity:                { type: 'v3',   value: [] }
     };
@@ -149,13 +150,10 @@ ShaderParticleGroup.prototype = {
             colorStart          = a.colorStart.value,
             colorMiddle         = a.colorMiddle.value,
             colorEnd            = a.colorEnd.value,
-            // color               = a.color.value,
-            opacity             = a.opacity.value,
-            colorStart          = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
+            colorMain           = a.colorMain.value,
+            opacity             = a.opacity.value;
 
         emitter.particleIndex = parseFloat( start );
-
-        console.log( colorStart );
 
         // Create the values
         for( var i = start; i < end; ++i ) {
@@ -187,11 +185,11 @@ ShaderParticleGroup.prototype = {
             colorMiddle[i]          = emitter.colorMiddle;
             colorEnd[i]             = emitter.colorEnd;
 
-            // color[ i ]              = new THREE.Matrix3(
-            //     colorStart.r, colorStart.g, colorStart.b,
-            //     emitter.colorMiddle.r, emitter.colorMiddle.g, emitter.colorMiddle.b,
-            //     emitter.colorEnd.r, emitter.colorEnd.g, emitter.colorEnd.b
-            // );
+            colorMain[i]            = new THREE.Matrix3(
+                1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0
+            );
 
             opacity[i]              = new THREE.Vector3( emitter.opacityStart, emitter.opacityMiddle, emitter.opacityEnd );
         }
@@ -418,15 +416,14 @@ ShaderParticleGroup.shaders = {
         'attribute vec3 colorStart;',
         'attribute vec3 colorMiddle;',
         'attribute vec3 colorEnd;',
-        // 'attribute mat3 color;',
         'attribute vec3 opacity;',
+        'attribute mat3 colorMain;',
 
         'attribute vec3 acceleration;',
         'attribute vec3 velocity;',
         'attribute float alive;',
         'attribute float age;',
-        // 'attribute float sizeStart;',
-        // 'attribute float sizeEnd;',
+
         'attribute vec2 size;',
         'attribute float angle;',
         'attribute float angleAlignVelocity;',
@@ -466,10 +463,6 @@ ShaderParticleGroup.shaders = {
             'float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
             'float halfDuration = duration / 2.0;',
 
-            // 'vec3 colorStart    = vec3(color[0][0], color[1][0], color[2][0]);',
-            // 'vec3 colorMiddle   = vec3(color[0][1], color[1][1], color[2][1]);',
-            // 'vec3 colorEnd      = vec3(color[0][2], color[1][2], color[2][2]);',
-
             'vAngle = angle;',
 
             'if( alive > 0.5 ) {',
@@ -481,6 +474,9 @@ ShaderParticleGroup.shaders = {
                 'else {',
                     'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacity.y, opacity.z, lerpAmount2) );',
                 '}',
+
+                // FIXME: Why does colormain[0][0] !== 1.0?!
+                'vColor = vec4( colorMain[0][0], 0.0, 1.0, 0.5 );',
 
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
