@@ -339,14 +339,11 @@ function ShaderParticleGroup( options ) {
         age:                    { type: 'f',    value: [] },
 
         size:                   { type: 'v2',   value: [] },
-        angle:                  { type: 'f',    value: [] },
-        angleAlignVelocity:     { type: 'f',    value: [] },
+        angle:                  { type: 'v2',   value: [] },
 
         colorStart:             { type: 'c',    value: [] },
         colorMiddle:            { type: 'c',    value: [] },
         colorEnd:               { type: 'c',    value: [] },
-
-        colorMain:              { type: 'fv1',  value: [] },
 
         opacity:                { type: 'v3',   value: [] }
     };
@@ -403,7 +400,7 @@ ShaderParticleGroup.prototype = {
         that.attributes.age.needsUpdate = true;
         that.attributes.alive.needsUpdate = true;
         that.attributes.angle.needsUpdate = true;
-        that.attributes.angleAlignVelocity.needsUpdate = true;
+        // that.attributes.angleAlignVelocity.needsUpdate = true;
         that.attributes.velocity.needsUpdate = true;
         that.attributes.acceleration.needsUpdate = true;
         that.geometry.verticesNeedUpdate = true;
@@ -441,11 +438,9 @@ ShaderParticleGroup.prototype = {
             age                 = a.age.value,
             size                = a.size.value,
             angle               = a.angle.value,
-            angleAlignVelocity  = a.angleAlignVelocity.value,
             colorStart          = a.colorStart.value,
             colorMiddle         = a.colorMiddle.value,
             colorEnd            = a.colorEnd.value,
-            colorMain           = a.colorMain.value,
             opacity             = a.opacity.value;
 
         emitter.particleIndex = parseFloat( start );
@@ -470,8 +465,10 @@ ShaderParticleGroup.prototype = {
 
             size[i]                 = new THREE.Vector2( that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ), emitter.sizeEnd );
 
-            angle[i]                = that._randomFloat( emitter.angle, emitter.angleSpread );
-            angleAlignVelocity[i]   = emitter.angleAlignVelocity ? 1.0 : 0.0;
+            angle[i]                = new THREE.Vector2(
+                that._randomFloat( emitter.angle, emitter.angleSpread ),
+                emitter.angleAlignVelocity ? 1.0 : 0.0
+            );
 
             age[i]                  = 0.0;
             alive[i]                = emitter.isStatic ? 1.0 : 0.0;
@@ -479,12 +476,6 @@ ShaderParticleGroup.prototype = {
             colorStart[i]           = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
             colorMiddle[i]          = emitter.colorMiddle;
             colorEnd[i]             = emitter.colorEnd;
-
-            colorMain[i]            = new THREE.Matrix3(
-                1.0, 1.0, 1.0,
-                1.0, 1.0, 1.0,
-                1.0, 1.0, 1.0
-            );
 
             opacity[i]              = new THREE.Vector3( emitter.opacityStart, emitter.opacityMiddle, emitter.opacityEnd );
         }
@@ -712,7 +703,6 @@ ShaderParticleGroup.shaders = {
         'attribute vec3 colorMiddle;',
         'attribute vec3 colorEnd;',
         'attribute vec3 opacity;',
-        'attribute mat3 colorMain;',
 
         'attribute vec3 acceleration;',
         'attribute vec3 velocity;',
@@ -720,8 +710,7 @@ ShaderParticleGroup.shaders = {
         'attribute float age;',
 
         'attribute vec2 size;',
-        'attribute float angle;',
-        'attribute float angleAlignVelocity;',
+        'attribute vec2 angle;',
 
         // values to be passed to the fragment shader
         'varying vec4 vColor;',
@@ -758,7 +747,7 @@ ShaderParticleGroup.shaders = {
             'float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
             'float halfDuration = duration / 2.0;',
 
-            'vAngle = angle;',
+            'vAngle = angle.x;',
 
             'if( alive > 0.5 ) {',
 
@@ -770,14 +759,11 @@ ShaderParticleGroup.shaders = {
                     'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacity.y, opacity.z, lerpAmount2) );',
                 '}',
 
-                // FIXME: Why does colormain[0][0] !== 1.0?!
-                'vColor = vec4( colorMain[0][0], 0.0, 1.0, 0.5 );',
-
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
                 'vec4 pos = GetPos();',
 
-                'if( angleAlignVelocity == 1.0 ) {',
+                'if( angle.y == 1.0 ) {',
                     'vAngle = -atan(pos.y, pos.x);',
                 '}',
                 'else {',
