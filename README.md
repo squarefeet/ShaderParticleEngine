@@ -6,7 +6,7 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome.
 
 
-Version 0.7.0
+Version 0.7.1
 =============
 Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
 That said, it ain't gonna be long until it's at 1.0.0.
@@ -15,8 +15,12 @@ That said, it ain't gonna be long until it's at 1.0.0.
 Changelog
 =========
 **Version 0.7.0**
+* Dev: Changed the attribute model. Size attributes, opacity attributes, and angle attributes are all squashed into shared attributes using various vector types.
+* Dev: Added ```sizeMiddle``` functionality.
+
+**Version 0.7.0**
 * Dev: new ShaderParticleUtils object (alpha) to share functions between the Group and Emitter constructors.
-* Dev: ShaderParticleGroup.removeEmitter() 
+* Dev: ShaderParticleGroup.removeEmitter()
 * Dev: ShaderParticleEmitter.angle
 * Dev: ShaderParticleEmitter.angleAlignVelocity
 * Dev: ShaderParticleEmitter.setOption()
