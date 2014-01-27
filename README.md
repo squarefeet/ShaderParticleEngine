@@ -14,6 +14,14 @@ That said, it ain't gonna be long until it's at 1.0.0.
 
 Changelog
 =========
+**Version 0.7.3**
+* Dev: Added the following properties:
+	* ```sizeEndSpread```, ```opacityEndSpread```, ```colorEndSpread```
+	* ```sizeMiddleSpread```, ```opacityMiddleSpread```, ```colorMiddleSpread```
+	* ```angleStart``` (replaces ```angle```), ```angleStartSpread```,
+	* ```angleMiddle```, ```angleMiddleSpread```,
+	* ```angleEnd```, ```angleEndSpread```
+
 **Version 0.7.2**
 * Dev: Moved ```ShaderParticleGroup```, ```ShaderParticleEmitter```, and ```shaderParticleUtils``` to a shared object. ```SPE.Group```, ```SPE.Emitter```, and ```SPE.utils```
 
