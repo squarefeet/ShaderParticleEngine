@@ -65,7 +65,7 @@ SPE.Emitter = function( options ) {
     that.angleEnd               = parseFloat( typeof options.angleEnd === 'number' ? options.angleEnd : options.angleStart );
     that.angleEndSpread         = parseFloat( typeof options.angleEndSpread === 'number' ? options.angleEndSpread : 0 );
 
-    that.angleMiddle            = = parseFloat(
+    that.angleMiddle            = parseFloat(
         typeof options.angleMiddle !== 'undefined' ?
         options.angleMiddle :
         Math.abs(that.angleEnd + that.angleStart) / 2
@@ -77,16 +77,17 @@ SPE.Emitter = function( options ) {
 
     // Colors
     that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
-    that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3(0,0,0);
+    that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3();
 
     that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
-    that.colorEndSpread         = options.colorEndSpread instanceof THREE.Vector3 ? options.colorEndSpread : 0;
+    that.colorEndSpread         = options.colorEndSpread instanceof THREE.Vector3 ? options.colorEndSpread : new THREE.Vector3();
 
     that.colorMiddle            =
         options.colorMiddle instanceof THREE.Color ?
         options.colorMiddle :
         new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
-    that.colorMiddleSpread      = parseFloat( typeof options.colorMiddleSpread === 'number' ? options.colorMiddleSpread : 0 );
+    that.colorMiddleSpread      = options.colorMiddleSpread instanceof THREE.Vector3 ? options.colorMiddleSpread : new THREE.Vector3();
+
 
 
     // Opacities

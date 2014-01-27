@@ -45,7 +45,7 @@ SPE.Group = function( options ) {
         age:                    { type: 'f',    value: [] },
 
         size:                   { type: 'v3',   value: [] },
-        angle:                  { type: 'v2',   value: [] },
+        angle:                  { type: 'v4',   value: [] },
 
         colorStart:             { type: 'c',    value: [] },
         colorMiddle:            { type: 'c',    value: [] },
@@ -171,23 +171,29 @@ SPE.Group.prototype = {
 
             size[i]                 = new THREE.Vector3(
                 that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ),
-                emitter.sizeMiddle,
-                emitter.sizeEnd
+                that._randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ),
+                that._randomFloat( emitter.sizeEnd, emitter.sizeEndSpread )
             );
 
-            angle[i]                = new THREE.Vector2(
-                that._randomFloat( emitter.angle, emitter.angleSpread ),
+            angle[i]                = new THREE.Vector4(
+                that._randomFloat( emitter.angleStart, emitter.angleStartSpread ),
+                that._randomFloat( emitter.angleMiddle, emitter.angleMiddleSpread ),
+                that._randomFloat( emitter.angleEnd, emitter.angleEndSpread ),
                 emitter.angleAlignVelocity ? 1.0 : 0.0
             );
 
             age[i]                  = 0.0;
             alive[i]                = emitter.isStatic ? 1.0 : 0.0;
 
-            colorStart[i]           = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
-            colorMiddle[i]          = emitter.colorMiddle;
-            colorEnd[i]             = emitter.colorEnd;
+            colorStart[i]           = that._randomColor( emitter.colorStart,    emitter.colorStartSpread );
+            colorMiddle[i]          = that._randomColor( emitter.colorMiddle,   emitter.colorMiddleSpread );
+            colorEnd[i]             = that._randomColor( emitter.colorEnd,      emitter.colorEndSpread );
 
-            opacity[i]              = new THREE.Vector3( emitter.opacityStart, emitter.opacityMiddle, emitter.opacityEnd );
+            opacity[i]              = new THREE.Vector3(
+                that._randomFloat( emitter.opacityStart, emitter.opacityStartSpread ),
+                that._randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ),
+                that._randomFloat( emitter.opacityEnd, emitter.opacityEndSpread )
+            );
         }
 
         // Cache properties on the emitter so we can access
@@ -420,7 +426,7 @@ SPE.shaders = {
         'attribute float age;',
 
         'attribute vec3 size;',
-        'attribute vec2 angle;',
+        'attribute vec4 angle;',
 
         // values to be passed to the fragment shader
         'varying vec4 vColor;',
@@ -463,7 +469,7 @@ SPE.shaders = {
             'if( alive > 0.5 ) {',
 
                 // lerp the color and opacity
-                'if( positionInTime < 0.5) {',
+                'if( positionInTime < 0.5 ) {',
                     'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacity.x, opacity.y, lerpAmount1) );',
                 '}',
                 'else {',
@@ -474,11 +480,15 @@ SPE.shaders = {
                 // when we calculate any perspective that might be required.
                 'vec4 pos = GetPos();',
 
-                'if( angle.y == 1.0 ) {',
+                // Determine the angle we should use for this particle.
+                'if( angle[3] == 1.0 ) {',
                     'vAngle = -atan(pos.y, pos.x);',
                 '}',
+                'else if( positionInTime < 0.5 ) {',
+                    'vAngle = mix( angle.x, angle.y, lerpAmount1 );',
+                '}',
                 'else {',
-                    'vAngle = 0.0;',
+                    'vAngle = mix( angle.y, angle.z, lerpAmount2 );',
                 '}',
 
                 // Determine point size.

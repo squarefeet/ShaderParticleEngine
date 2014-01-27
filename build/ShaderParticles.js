@@ -337,7 +337,7 @@ SPE.Group = function( options ) {
         age:                    { type: 'f',    value: [] },
 
         size:                   { type: 'v3',   value: [] },
-        angle:                  { type: 'v2',   value: [] },
+        angle:                  { type: 'v4',   value: [] },
 
         colorStart:             { type: 'c',    value: [] },
         colorMiddle:            { type: 'c',    value: [] },
@@ -463,23 +463,29 @@ SPE.Group.prototype = {
 
             size[i]                 = new THREE.Vector3(
                 that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ),
-                emitter.sizeMiddle,
-                emitter.sizeEnd
+                that._randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ),
+                that._randomFloat( emitter.sizeEnd, emitter.sizeEndSpread )
             );
 
-            angle[i]                = new THREE.Vector2(
-                that._randomFloat( emitter.angle, emitter.angleSpread ),
+            angle[i]                = new THREE.Vector4(
+                that._randomFloat( emitter.angleStart, emitter.angleStartSpread ),
+                that._randomFloat( emitter.angleMiddle, emitter.angleMiddleSpread ),
+                that._randomFloat( emitter.angleEnd, emitter.angleEndSpread ),
                 emitter.angleAlignVelocity ? 1.0 : 0.0
             );
 
             age[i]                  = 0.0;
             alive[i]                = emitter.isStatic ? 1.0 : 0.0;
 
-            colorStart[i]           = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
-            colorMiddle[i]          = emitter.colorMiddle;
-            colorEnd[i]             = emitter.colorEnd;
+            colorStart[i]           = that._randomColor( emitter.colorStart,    emitter.colorStartSpread );
+            colorMiddle[i]          = that._randomColor( emitter.colorMiddle,   emitter.colorMiddleSpread );
+            colorEnd[i]             = that._randomColor( emitter.colorEnd,      emitter.colorEndSpread );
 
-            opacity[i]              = new THREE.Vector3( emitter.opacityStart, emitter.opacityMiddle, emitter.opacityEnd );
+            opacity[i]              = new THREE.Vector3(
+                that._randomFloat( emitter.opacityStart, emitter.opacityStartSpread ),
+                that._randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ),
+                that._randomFloat( emitter.opacityEnd, emitter.opacityEndSpread )
+            );
         }
 
         // Cache properties on the emitter so we can access
@@ -712,7 +718,7 @@ SPE.shaders = {
         'attribute float age;',
 
         'attribute vec3 size;',
-        'attribute vec2 angle;',
+        'attribute vec4 angle;',
 
         // values to be passed to the fragment shader
         'varying vec4 vColor;',
@@ -755,7 +761,7 @@ SPE.shaders = {
             'if( alive > 0.5 ) {',
 
                 // lerp the color and opacity
-                'if( positionInTime < 0.5) {',
+                'if( positionInTime < 0.5 ) {',
                     'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacity.x, opacity.y, lerpAmount1) );',
                 '}',
                 'else {',
@@ -766,11 +772,15 @@ SPE.shaders = {
                 // when we calculate any perspective that might be required.
                 'vec4 pos = GetPos();',
 
-                'if( angle.y == 1.0 ) {',
+                // Determine the angle we should use for this particle.
+                'if( angle[3] == 1.0 ) {',
                     'vAngle = -atan(pos.y, pos.x);',
                 '}',
+                'else if( positionInTime < 0.5 ) {',
+                    'vAngle = mix( angle.x, angle.y, lerpAmount1 );',
+                '}',
                 'else {',
-                    'vAngle = 0.0;',
+                    'vAngle = mix( angle.y, angle.z, lerpAmount2 );',
                 '}',
 
                 // Determine point size.
@@ -870,33 +880,70 @@ SPE.Emitter = function( options ) {
     that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0.0 );
     that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0.0 );
 
+
+    // Sizes
     that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 1.0 );
     that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0.0 );
+
     that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart );
+    that.sizeEndSpread          = parseFloat( typeof options.sizeEndSpread === 'number' ? options.sizeEndSpread : 0.0 );
+
     that.sizeMiddle             = parseFloat(
         typeof options.sizeMiddle !== 'undefined' ?
         options.sizeMiddle :
         Math.abs(that.sizeEnd + that.sizeStart) / 2
     );
+    that.sizeMiddleSpread       = parseFloat( typeof options.sizeMiddleSpread === 'number' ? options.sizeMiddleSpread : 0 );
 
-    that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0 );
-    that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0 );
+
+    // Angles
+    that.angleStart             = parseFloat( typeof options.angleStart === 'number' ? options.angleStart : 0 );
+    that.angleStartSpread       = parseFloat( typeof options.angleStartSpread === 'number' ? options.angleStartSpread : 0 );
+
+    that.angleEnd               = parseFloat( typeof options.angleEnd === 'number' ? options.angleEnd : options.angleStart );
+    that.angleEndSpread         = parseFloat( typeof options.angleEndSpread === 'number' ? options.angleEndSpread : 0 );
+
+    that.angleMiddle            = parseFloat(
+        typeof options.angleMiddle !== 'undefined' ?
+        options.angleMiddle :
+        Math.abs(that.angleEnd + that.angleStart) / 2
+    );
+    that.angleMiddleSpread      = parseFloat( typeof options.angleMiddleSpread === 'number' ? options.angleMiddleSpread : 0 );
+
     that.angleAlignVelocity     = options.angleAlignVelocity || false;
 
-    that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
-    that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3(0,0,0);
-    that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
-    that.colorMiddle            = options.colorMiddle instanceof THREE.Color ? options.colorMiddle :
-        new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
 
+    // Colors
+    that.colorStart             = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
+    that.colorStartSpread       = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3();
+
+    that.colorEnd               = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
+    that.colorEndSpread         = options.colorEndSpread instanceof THREE.Vector3 ? options.colorEndSpread : new THREE.Vector3();
+
+    that.colorMiddle            =
+        options.colorMiddle instanceof THREE.Color ?
+        options.colorMiddle :
+        new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
+    that.colorMiddleSpread      = options.colorMiddleSpread instanceof THREE.Vector3 ? options.colorMiddleSpread : new THREE.Vector3();
+
+
+
+    // Opacities
     that.opacityStart           = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1 );
+    that.opacityStartSpread     = parseFloat( typeof options.opacityStartSpread !== 'undefined' ? options.opacityStartSpread : 0 );
+
     that.opacityEnd             = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0 );
+    that.opacityEndSpread       = parseFloat( typeof options.opacityEndSpread !== 'undefined' ? options.opacityEndSpread : 0 );
+
     that.opacityMiddle          = parseFloat(
         typeof options.opacityMiddle !== 'undefined' ?
         options.opacityMiddle :
         Math.abs(that.opacityEnd + that.opacityStart) / 2
     );
+    that.opacityMiddleSpread      = parseFloat( typeof options.opacityMiddleSpread === 'number' ? options.opacityMiddleSpread : 0 );
 
+
+    // Generic
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10 );
 
