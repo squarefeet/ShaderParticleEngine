@@ -19,7 +19,7 @@ SPE.Emitter = function( options ) {
     var that = this;
 
 
-    that.particlesPerSecond     = typeof options.particlesPerSecond === 'number' ? options.particlesPerSecond : 100;
+    that.particleCount          = typeof options.particleCount === 'number' ? options.particleCount : 100;
     that.type                   = (options.type === 'cube' || options.type === 'sphere' || options.type === 'disk') ? options.type : 'cube';
 
     that.position               = options.position instanceof THREE.Vector3 ? options.position : new THREE.Vector3();
@@ -106,13 +106,13 @@ SPE.Emitter = function( options ) {
 
 
     // Generic
-    that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
+    that.duration               = typeof options.duration === 'number' ? options.duration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10 );
     that.isStatic               = typeof options.isStatic === 'number' ? options.isStatic : 0;
 
     // The following properties are used internally, and mostly set when this emitter
     // is added to a particle group.
-    that.numParticles           = 0;
+    that.particlesPerSecond     = 0;
     that.attributes             = null;
     that.vertices               = null;
     that.verticesIndex          = 0;
@@ -196,13 +196,13 @@ SPE.Emitter.prototype = {
             alive = a.alive.value,
             age = a.age.value,
             start = that.verticesIndex,
-            numParticles = that.numParticles,
-            end = start + numParticles,
+            particleCount = that.particleCount,
+            end = start + particleCount,
             pps = that.particlesPerSecond,
             ppsdt = pps * dt,
             m = that.maxAge,
             emitterAge = that.age,
-            duration = that.emitterDuration,
+            duration = that.duration,
             pIndex = that.particleIndex;
 
         // Loop through all the particles in this emitter and
@@ -251,7 +251,7 @@ SPE.Emitter.prototype = {
             that.particleIndex = 0.0;
         }
 
-        if( pIndex >= start + that.numParticles ) {
+        if( pIndex >= start + particleCount ) {
             that.particleIndex = parseFloat( start );
         }
 
@@ -279,7 +279,7 @@ SPE.Emitter.prototype = {
 
         if( force ) {
             var start = that.verticesIndex,
-                end = that.verticesIndex + that.numParticles,
+                end = that.verticesIndex + that.particleCount,
                 a = that.attributes,
                 alive = a.alive.value,
                 age = a.age.value;

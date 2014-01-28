@@ -125,17 +125,15 @@ SPE.Group.prototype = {
         var that = this;
 
         if( emitter.duration ) {
-            emitter.numParticles = emitter.particlesPerSecond * (that.maxAge < emitter.emitterDuration ? that.maxAge : emitter.emitterDuration) | 0;
+            emitter.particlesPerSecond = emitter.particleCount / (that.maxAge < emitter.duration ? that.maxAge : emitter.duration) | 0;
         }
         else {
-            emitter.numParticles = emitter.particlesPerSecond * that.maxAge | 0;
+            emitter.particlesPerSecond = emitter.particleCount / that.maxAge | 0
         }
-
-        emitter.numParticles = Math.ceil(emitter.numParticles);
 
         var vertices            = that.geometry.vertices,
             start               = vertices.length,
-            end                 = emitter.numParticles + start,
+            end                 = emitter.particleCount + start,
             a                   = that.attributes,
             acceleration        = a.acceleration.value,
             velocity            = a.velocity.value,
