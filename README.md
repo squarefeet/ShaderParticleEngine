@@ -14,7 +14,7 @@ That said, it ain't gonna be long until it's at 1.0.0.
 
 Changelog
 =========
-**Version 0.7.0**
+**Version 0.7.1**
 * Dev: Changed the attribute model. Size attributes, opacity attributes, and angle attributes are all squashed into shared attributes using various vector types.
 * Dev: Added ```sizeMiddle``` functionality.
 
