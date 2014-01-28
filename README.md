@@ -14,6 +14,11 @@ That said, it ain't gonna be long until it's at 1.0.0.
 
 Breaking Changes
 ================
+* **Version 0.7.4** There's a change in the way the total number of particles an emitter has is calculated, and one emitter option rename:
+	* ```SPE.Emitter#particlesPerSecond``` is now ```SPE.Emitter#particleCount```.
+		* Rather than specifying how many particles an emitter will produce per second, you now specify the total number of particles yourself.
+	* Renamed ```SPE.Emitter#emitterDuration``` to ```SPE.Emitter#duration```.
+
 * **Version 0.7.3** has renamed and added a lot of emitter options. Opacity, color, size, and angle are now consistent. They all have *Start, *Middle, and *End varients, as well as *StartSpread, *MiddleSpread, and *EndSpread varients. As an example:
 	* ```opacityStart```, ```opacityStartSpread```,
 	* ```opacityMiddle```, ```opacityMiddleSpread```,
@@ -27,6 +32,8 @@ Breaking Changes
 Changelog
 =========
 **Version 0.7.4**
+* Dev: Deprecated ```SPE.Emitter#particlesPerSecond``` in favour of ```SPE.Emitter#particleCount```.
+* Dev: Renamed ```SPE.Emitter#emitterDuration``` to ```SPE.Emitter#duration```.
 * Dev: Removed pre-alpha ```SPE.Emitter#setOption```. It's far from ready for even dev inclusion.
 
 **Version 0.7.3**
