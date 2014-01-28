@@ -8,8 +8,14 @@ Pull requests and issue reports welcome. Please see the notes on pull requests a
 
 Version 0.7.4
 =============
+The latest release has jumped from 0.5.1 to 0.7.4. There are no release versions in between - the party was all on the dev branch. A full log of the changes between these versions is available in the changelog towards the end of this document. There have been a lot of changes since 0.5.1, so if you're updating, please check the Breaking Changes and Changelog to play catchup.
+
+In between 0.5.1 and 0.7.4, there have been some contributions from the community to the library:
+
+* @DelvarWorld has kindly brought this library into a much fitter state than it was before, and feature contributions from @stemkoski have been combined into the 0.7.4 release.
+
+
 Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
-That said, it ain't gonna be long until it's at 1.0.0.
 
 
 Breaking Changes
@@ -25,52 +31,8 @@ Breaking Changes
 	* ```opacityEnd```, ```opacityEndSpread```.
 
 * **Version 0.7.2** packages up the emitter objects (Group, Emitter, utils) into one namespace: ```SPE```.
-	* To create a particle group from **v0.7.2+**: ```new SPE.Group( ... )```
-	* To create a particle emitter from **v0.7.2+**: ```new SPE.Emitter( ... )```
-
-
-Changelog
-=========
-**Version 0.7.4**
-* Dev: Deprecated ```SPE.Emitter#particlesPerSecond``` in favour of ```SPE.Emitter#particleCount```.
-* Dev: Renamed ```SPE.Emitter#emitterDuration``` to ```SPE.Emitter#duration```.
-* Dev: Removed pre-alpha ```SPE.Emitter#setOption```. It's far from ready for even dev inclusion.
-
-**Version 0.7.3**
-* Dev: Added the following properties:
-	* ```sizeEndSpread```, ```opacityEndSpread```, ```colorEndSpread```
-	* ```sizeMiddleSpread```, ```opacityMiddleSpread```, ```colorMiddleSpread```
-	* ```angleStart``` (replaces ```angle```), ```angleStartSpread```,
-	* ```angleMiddle```, ```angleMiddleSpread```,
-	* ```angleEnd```, ```angleEndSpread```
-
-**Version 0.7.2**
-* Dev: Moved ```ShaderParticleGroup```, ```ShaderParticleEmitter```, and ```shaderParticleUtils``` to a shared object. ```SPE.Group```, ```SPE.Emitter```, and ```SPE.utils``` respectively.
-
-**Version 0.7.1**
-* Dev: Changed the attribute model. Size attributes, opacity attributes, and angle attributes are all squashed into shared attributes using various vector types.
-* Dev: Added ```sizeMiddle``` functionality.
-
-**Version 0.7.0**
-* Dev: new ShaderParticleUtils object (alpha) to share functions between the Group and Emitter constructors.
-* Dev: ShaderParticleGroup.removeEmitter()
-* Dev: ShaderParticleEmitter.angle
-* Dev: ShaderParticleEmitter.angleAlignVelocity
-* Dev: ShaderParticleEmitter.setOption() (**DEPRECATED** See ```dynamicOptionSetting``` branch for this code.)
-
-**Version 0.6.0**
-* To adjust particle sizes, please use `sizeStart` instead of the old `size` property.
-* Particle angles are now supported, thanks to [Stemkoski](https://github.com/stemkoski/).
-
-
-**Version 0.5.1**
-* Fixed some issues with parseFloat and accidental globals. Thanks to [DelvarWorld](https://github.com/DelvarWorld) for noticing these.
-
-
-**Version 0.5.0**
-* The latest update sees the addition of the ```ShaderParticleGroup.addPool()``` method. This allows for much easier control of emitter pools. See [the pool example](http://squarefeet.github.io/ShaderParticleEngine/examples/pool.html) for an example.
-* There are also quite a few bug fixes courtesy of [Stemkoski](https://github.com/stemkoski/).
-* I've also added quite a few more comments to the source-code, so it should be easier to get your head around should you want/need to dig into the internals.
+	* To create a particle group from **v0.7.2+**: ```new SPE.Group( ... )```.
+	* To create a particle emitter from **v0.7.2+**: ```new SPE.Emitter( ... )```.
 
 
 
@@ -354,9 +316,52 @@ Automatically create a pool of emitters for easy triggering in the future.
 Turn on a given number of emitters that live in a pool created using the method above. You can also pass a ```THREE.Vector3``` instance to dictate where this emitter will sit.
 
 
+Changelog
+=========
+**Version 0.7.4**
+* Deprecated ```SPE.Emitter#particlesPerSecond``` in favour of ```SPE.Emitter#particleCount```.
+* Renamed ```SPE.Emitter#emitterDuration``` to ```SPE.Emitter#duration```.
+
+**Version 0.7.3**
+* Added the following properties:
+	* ```sizeEndSpread```, ```opacityEndSpread```, ```colorEndSpread```
+	* ```sizeMiddleSpread```, ```opacityMiddleSpread```, ```colorMiddleSpread```
+	* ```angleStart``` (replaces ```angle```), ```angleStartSpread```,
+	* ```angleMiddle```, ```angleMiddleSpread```,
+	* ```angleEnd```, ```angleEndSpread```
+
+**Version 0.7.2**
+* Moved ```ShaderParticleGroup```, ```ShaderParticleEmitter```, and ```shaderParticleUtils``` to a shared object. ```SPE.Group```, ```SPE.Emitter```, and ```SPE.utils``` respectively.
+
+**Version 0.7.1**
+* Changed the attribute model. Size attributes, opacity attributes, and angle attributes are all squashed into shared attributes using various vector types.
+* Added ```sizeMiddle``` functionality.
+
+**Version 0.7.0**
+* new ShaderParticleUtils object (alpha) to share functions between the Group and Emitter constructors.
+* ShaderParticleGroup.removeEmitter()
+* ShaderParticleEmitter.angle
+* ShaderParticleEmitter.angleAlignVelocity
+
+**Version 0.6.0**
+* To adjust particle sizes, please use `sizeStart` instead of the old `size` property.
+* Particle angles are now supported, thanks to [Stemkoski](https://github.com/stemkoski/).
+
+
+**Version 0.5.1**
+* Fixed some issues with parseFloat and accidental globals. Thanks to [DelvarWorld](https://github.com/DelvarWorld) for noticing these.
+
+
+**Version 0.5.0**
+* The latest update sees the addition of the ```ShaderParticleGroup.addPool()``` method. This allows for much easier control of emitter pools. See [the pool example](http://squarefeet.github.io/ShaderParticleEngine/examples/pool.html) for an example.
+* There are also quite a few bug fixes courtesy of [Stemkoski](https://github.com/stemkoski/).
+* I've also added quite a few more comments to the source-code, so it should be easier to get your head around should you want/need to dig into the internals.
+
+
+
 Building
 ========
-This project uses [Grunt](http://gruntjs.com/) to create the distributions (one dev build and one production build.). If you make changes and want to build it, follow these steps:
+This project uses [Grunt](http://gruntjs.com/) to create the distributions, one dev build (not minimized) and one production build (minimized). If you make changes and want to build it, follow these steps:
 
 If you don't have grunt installed, first make sure you've got [NodeJS](http://nodejs.org/) and NPM installed, then install Grunt CLI. You might have to do this as root:
 ```npm install -g grunt-cli```
