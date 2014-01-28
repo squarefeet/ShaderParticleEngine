@@ -3,13 +3,20 @@ ShaderParticleEngine
 A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle engine](https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 
 
-Pull requests and issue reports welcome.
+Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
 
-Version 0.7.2
+Version 0.7.3
 =============
 Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
 That said, it ain't gonna be long until it's at 1.0.0.
+
+
+Breaking Changes
+================
+* **Version 0.7.2** packages up the emitter objects (Group, Emitter, utils) into one namespace: ```SPE```.
+	* To create a particle group from **v0.7.2+**: ```new SPE.Group( ... )```
+	* To create a particle emitter from **v0.7.2+**: ```new SPE.Emitter( ... )```
 
 
 Changelog
@@ -23,7 +30,7 @@ Changelog
 	* ```angleEnd```, ```angleEndSpread```
 
 **Version 0.7.2**
-* Dev: Moved ```ShaderParticleGroup```, ```ShaderParticleEmitter```, and ```shaderParticleUtils``` to a shared object. ```SPE.Group```, ```SPE.Emitter```, and ```SPE.utils```
+* Dev: Moved ```ShaderParticleGroup```, ```ShaderParticleEmitter```, and ```shaderParticleUtils``` to a shared object. ```SPE.Group```, ```SPE.Emitter```, and ```SPE.utils``` respectively.
 
 **Version 0.7.1**
 * Dev: Changed the attribute model. Size attributes, opacity attributes, and angle attributes are all squashed into shared attributes using various vector types.
@@ -214,22 +221,42 @@ var particleEmitter = new SPE.Emitter({
 	// [OPTIONAL] Particle start size variance.
 	sizeStartSpread: 0,
 
-	// [OPTIONAL] Particle start size.
+	// [OPTIONAL] Particle middle size.
 	// If not specified, it will be set to halfway between the 
 	// `sizeStart` and `sizeEnd` values.
 	sizeMiddle: 10,
 
+	// [OPTIONAL] Particle middle size variance.
+	sizeMiddleSpread: 0,
+
 	// [OPTIONAL] Particle end size.
 	sizeEnd: 10,
 
+	// [OPTIONAL] Particle end size variance.
+	sizeEndSpread: 0,
 
-	// [OPTIONAL] Particle rotation angle (radians).
-	angle: 0,
 
-	// [OPTIONAL] Particle rotation angle spread (radians).
-	angleSpread: 0,
+	// [OPTIONAL] Particle rotation start angle (radians).
+	angleStart: 0,
+
+	// [OPTIONAL] Particle rotation start angle spread (radians).
+	angleStartSpread: 0,
+
+	// [OPTIONAL] Particle rotation middle angle (radians).
+	angleMiddle: 0,
+
+	// [OPTIONAL] Particle rotation middle angle spread (radians).
+	angleMiddleSpread: 0,
+
+	// [OPTIONAL] Particle rotation end angle (radians).
+	angleEnd: 0,
+
+	// [OPTIONAL] Particle rotation end angle spread (radians).
+	angleEndSpread: 0,
 
 	// [OPTIONAL] Align particle angle along its velocity vector
+	// If this property is set to `true`, then all other angle properties 
+	// are ignored.
 	angleAlignVelocity: false,
 
 
@@ -244,22 +271,37 @@ var particleEmitter = new SPE.Emitter({
 	// `colorStart` and `colorEnd` values.
 	colorMiddle: new THREE.Color( 'white' ),
 
+	// [OPTIONAL] Particle middle colour variance.
+	colorMiddleSpread: new THREE.Vector3(0, 0, 0),
+
 	// [OPTIONAL] Particle end colour.
 	colorEnd: new THREE.Color( 'blue' ),
+
+	// [OPTIONAL] Particle end colour variance.
+	colorEndSpread: new THREE.Vector3(0, 0, 0),
 
 
 
 	// [OPTIONAL] Particle start opacity.
 	opacityStart: 1,
 
+	// [OPTIONAL] Particle start opacity variance.
+	opacityStartSpread: 0,
+
 	// [OPTIONAL] Particle middle opacity.
 	// The opacity value at half a particle's lifecycle.
 	// If not specified, it will be set to halfway between the
 	// `opacityStart` and `opacityEnd` values.
-	opacityMiddle: 0.5
+	opacityMiddle: 0.5,
+
+	// [OPTIONAL] Particle middle opacity variance.
+	opacityMiddleSpread: 0,
 
 	// [OPTIONAL] Particle end opacity.
 	opacityEnd: 0,
+
+	// [OPTIONAL] Particle end opacity variance.
+	opacityEndSpread: 0,
 
 
 	// [OPTIONAL] The number of particles emitted per second.
@@ -297,9 +339,40 @@ Automatically create a pool of emitters for easy triggering in the future.
 Turn on a given number of emitters that live in a pool created using the method above. You can also pass a ```THREE.Vector3``` instance to dictate where this emitter will sit.
 
 
+Building
+========
+This project uses [Grunt](http://gruntjs.com/) to create the distributions (one dev build and one production build.). If you make changes and want to build it, follow these steps:
+
+If you don't have grunt installed, first make sure you've got [NodeJS](http://nodejs.org/) and NPM installed, then install Grunt CLI. You might have to do this as root:
+```npm install -g grunt-cli```
+
+Now you can install the local grunt package
+```cd [projectFolder]```
+
+```npm install```
+
+```grunt```
+
+The output of grunt will sit in the `build` folder.
+
+
+
 Known Bugs
 ==========
 See the [issues page](https://github.com/squarefeet/ShaderParticleEngine/issues) for any known bugs. Please open an issue if you find anything not behaving properly.
+
+
+Submitting Pull Requests
+========================
+Just a couple of notes about submitting pull requests:
+* **Indentation**: 4 spaces.
+* **Whitespace**: No trailing whitespace.
+* **JSHint**: If you can, please run JSHint over your forked copy before submitting to make sure there are no common mistakes.
+* **Description**: Please provide a full description of your changes.
+* **Comments**: Follow existing commenting conventions.
+
+Thanks :)
+
 
 
 
