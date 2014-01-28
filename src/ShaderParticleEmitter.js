@@ -127,7 +127,7 @@ SPE.Emitter = function( options ) {
     that.__id = null;
 
     that.userData = {};
-}
+};
 
 SPE.Emitter.prototype = {
 
@@ -405,7 +405,7 @@ SPE.Emitter.prototype = {
 
 
         if( typeof that.attributes[ optionName ] === 'undefined' && typeof that[ optionName ] === 'undefined' ) {
-            console.log( "Won't set", optionName + ".", "Invalid property." );
+            console.log( 'Won\'t set', optionName + '.', 'Invalid property.' );
             return;
         }
 

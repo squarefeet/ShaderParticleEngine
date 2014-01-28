@@ -86,7 +86,7 @@ SPE.Group = function( options ) {
     // set so that THREE.js knows to update it on each frame.
     that.mesh = new THREE.ParticleSystem( that.geometry, that.material );
     that.mesh.dynamic = true;
-}
+};
 
 SPE.Group.prototype = {
 
