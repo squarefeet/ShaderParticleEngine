@@ -48,12 +48,12 @@
         function initParticles() {
         	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 10
+        		maxAge: 2
         	});
 
         	emitter = new SPE.Emitter({
         		position: new THREE.Vector3(0, 0, 0),
-                positionSpread: new THREE.Vector3( 100, 0, 0 ),
+                positionSpread: new THREE.Vector3( 0, 0, 0 ),
 
         		acceleration: new THREE.Vector3(0, -10, 0),
         		accelerationSpread: new THREE.Vector3( 10, 0, 10 ),
@@ -63,21 +63,11 @@
 
         		colorStart: new THREE.Color('white'),
         		colorEnd: new THREE.Color('red'),
-                // colorEndSpread: new THREE.Vector3(255, 255, 255),
 
         		sizeStart: 1,
-                // sizeStartSpread: 0,
-                // sizeMiddle: 1,
-                // sizeMiddleSpread: 10,
         		sizeEnd: 1,
-                // sizeEndSpread: 0,
 
-                opacityStart: 0,
-                opacityMiddle: 1,
-                opacityEnd: 0,
-
-        		particleCount: 20000,
-                duration: 1
+        		particleCount: 2000
         	});
 
         	particleGroup.addEmitter( emitter );
