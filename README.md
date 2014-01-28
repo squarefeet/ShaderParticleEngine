@@ -21,6 +21,9 @@ Breaking Changes
 
 Changelog
 =========
+**Version 0.7.4**
+* Dev: Removed pre-alpha ```SPE.Emitter#setOption```. It's far from ready for even dev inclusion.
+
 **Version 0.7.3**
 * Dev: Added the following properties:
 	* ```sizeEndSpread```, ```opacityEndSpread```, ```colorEndSpread```

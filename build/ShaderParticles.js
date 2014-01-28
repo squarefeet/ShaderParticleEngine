@@ -1,3 +1,13 @@
+// ShaderParticleGroup 0.7.4
+//
+// (c) 2013 Luke Moody (http://www.github.com/squarefeet)
+//     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
+//
+// Based on Lee Stemkoski's original work:
+//    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
+//
+// ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
+
 var SPE = SPE || {};
 
 SPE.utils = {
@@ -290,7 +300,7 @@ SPE.utils = {
     }
 };;
 
-// ShaderParticleGroup 0.7.1
+// ShaderParticleGroup 0.7.4
 //
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -838,7 +848,7 @@ SPE.shaders = {
 };
 ;
 
-// ShaderParticleEmitter 0.7.1
+// ShaderParticleEmitter 0.7.4
 //
 // (c) 2013 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -951,8 +961,6 @@ SPE.Emitter = function( options ) {
 
     that.isStatic               = typeof options.isStatic === 'number' ? options.isStatic : 0;
 
-    that.isDynamic = options.dynamic || false;
-
     // The following properties are used internally, and mostly set when this emitter
     // is added to a particle group.
     that.numParticles           = 0;
@@ -1018,51 +1026,6 @@ SPE.Emitter.prototype = {
         else if( type === 'disk') {
             that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
             that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
-        }
-
-        if( that.isDynamic ) {
-            that._checkValues( i );
-        }
-    },
-
-
-    _checkValues: function( i ) {
-        var that = this,
-            a = that.attributes;
-
-        // Size
-        if( that.sizeStartSpread !== 0.0 || a.sizeStart.value[ i ] !== that.sizeStart ) {
-            a.sizeStart.value[ i ] = that._randomFloat( that.sizeStart, that.sizeStartSpread );
-            a.sizeStart.needsUpdate = true;
-        }
-
-        if( a.sizeEnd.value[ i ] !== that.sizeEnd ) {
-            a.sizeEnd.value[ i ] = that.sizeEnd;
-            a.sizeEnd.needsUpdate = true;
-        }
-
-        // Opacity
-        if( a.opacityStart.value[ i ] !== that.opacityStart ) {
-            a.opacityStart.value[ i ] = that.opacityStart;
-            a.opacityStart.needsUpdate = true;
-        }
-        if( a.opacityMiddle.value[ i ] !== that.opacityMiddle ) {
-            a.opacityMiddle.value[ i ] = that.opacityMiddle;
-            a.opacityMiddle.needsUpdate = true;
-        }
-        if( a.opacityEnd.value[ i ] !== that.opacityEnd ) {
-            a.opacityEnd.value[ i ] = that.opacityEnd;
-            a.opacityEnd.needsUpdate = true;
-        }
-
-        // Angle
-        if( a.angleAlignVelocity.value[ i ] !== that.angleAlignVelocity ) {
-            a.angleAlignVelocity.value[ i ] = that.angleAlignVelocity ? 1.0 : 0.0;
-            a.angleAlignVelocity.needsUpdate = true;
-        }
-        else if( !that.angleAlignVelocity && a.angle.value[ i ] !== that.angle ) {
-            a.angle.value[ i ] = that.angle;
-            a.angle.needsUpdate = true;
         }
     },
 
@@ -1194,98 +1157,6 @@ SPE.Emitter.prototype = {
      */
     disable: function() {
         this.alive = 0;
-    },
-
-
-    _setRandomVector3Attribute: function( attr, base, spread ) {
-        var that = this,
-            start = that.verticesIndex,
-            end = start + that.numParticles,
-            alive = that.attributes.alive.value;
-
-        spread = spread || new THREE.Vector3();
-
-        for( var i = start; i < end; ++i ) {
-            if( alive[ i ] === 0.0 ) {
-                that._randomizeExistingVector3( attr.value[ i ], base, spread );
-            }
-        }
-    },
-
-    _setRandomColorAttribute: function( attr, base, spread ) {
-        var that = this,
-            start = that.verticesIndex,
-            end = start + that.numParticles;
-
-        spread = spread || new THREE.Vector3();
-
-        for( var i = start; i < end; ++i ) {
-            that._randomizeExistingColor( attr.value[ i ], base, spread );
-        }
-    },
-
-    _setRandomFloatAttribute: function( attr, base, spread ) {
-        var that = this,
-            start = that.verticesIndex,
-            end = start + that.numParticles,
-            alive = that.attributes.alive.value;
-
-        spread = spread || 0;
-
-        for( var i = start; i < end; ++i ) {
-            if( alive[ i ] === 0.0 ) {
-                attr.value[ i ] = that._randomFloat( base, spread );
-            }
-        }
-    },
-
-
-    setOption: function( optionName, value ) {
-        var that = this;
-
-
-        if( typeof that.attributes[ optionName ] === 'undefined' && typeof that[ optionName ] === 'undefined' ) {
-            console.log( 'Won\'t set', optionName + '.', 'Invalid property.' );
-            return;
-        }
-
-        if( that.attributes[ optionName ] ) {
-            that[ optionName ] = value;
-
-            if( typeof that[ optionName ] === 'number' ) {
-                that._setRandomFloatAttribute(
-                    that.attributes[ optionName ],
-                    that[ optionName ],
-                    that[ optionName + 'Spread' ]
-                );
-            }
-            else if( that[ optionName ] instanceof THREE.Vector3 ) {
-                that._setRandomVector3Attribute(
-                    that.attributes[ optionName ],
-                    that[ optionName ],
-                    that[ optionName + 'Spread' ]
-                );
-            }
-            else if( that[ optionName ] instanceof THREE.Color ) {
-                that._setRandomColorAttribute(
-                    that.attributes[ optionName ],
-                    that[ optionName ],
-                    that[ optionName + 'Spread' ]
-                );
-            }
-
-            that.attributes[ optionName ].needsUpdate = true;
-        }
-
-        else if( that[ optionName ] ) {
-            that[ optionName ] = value;
-
-            if( optionName.indexOf( 'Spread' ) > -1 && that.type === 'cube' ) {
-                var baseName = optionName.replace( 'Spread', '' );
-                that.setOption( baseName, that[ baseName ] );
-            }
-        }
-
     }
 };
 
