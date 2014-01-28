@@ -70,7 +70,7 @@ Assuming you have a basic scene set up using THREE.js and have added the JS to y
 
 ```javascript
 // Create a particle group to add the emitter to.
-var particleGroup = new ShaderParticleGroup({
+var particleGroup = new SPE.Group({
 	// Give the particles in this group a texture
 	texture: THREE.ImageUtils.loadTexture('path/to/your/texture.file'),
 
@@ -79,7 +79,7 @@ var particleGroup = new ShaderParticleGroup({
 });
 
 // Create a single emitter
-var particleEmitter = new ShaderParticleEmitter({
+var particleEmitter = new SPE.Emitter({
 	type: 'cube',
 	position: new THREE.Vector3(0, 0, 0),
 	acceleration: new THREE.Vector3(0, 10, 0),
@@ -112,12 +112,12 @@ particleGroup.tick( dt );
 API
 ===
 
-####```ShaderParticleGroup``` settings:####
+####```SPE.Group``` options:####
 
 ```javascript
-// All possible parameters for the ShaderParticleGroup constructor.
+// All possible parameters for the SPE.Group constructor.
 // - Default values for each key are as given below if the key is [OPTIONAL].
-var particleGroup = new ShaderParticleGroup({
+var particleGroup = new SPE.Group({
 
 	// [REQUIRED] Give the particles in this group a texture.
 	texture: THREE.ImageUtils.loadTexture('path/to/your/texture.file'),
@@ -160,16 +160,16 @@ var particleGroup = new ShaderParticleGroup({
 ```
 
 
-####```ShaderParticleEmitter``` settings:
+####```SPE.Emitter``` settings:
 
 ```javascript
-// All possible parameters for the ShaderParticleEmitter constructor
+// All possible parameters for the SPE.Emitter constructor
 // - Default values for each key are as given below if the key is [OPTIONAL]
-var particleEmitter = new ShaderParticleEmitter({
+var particleEmitter = new SPE.Emitter({
 
 	// [OPTIONAL] Emitter shape.
-	// 	'cube' or 'sphere'.
-	// 		When using 'sphere' shape, use `radius` and `speed` parameters.
+	// 	'cube', 'sphere', or 'disk'
+	// 		When using 'sphere' or 'disk' shape, use `radius` and `speed` parameters.
 	// 		When using 'cube' shape, use `acceleration` and `velocity` parameters.
 	type: 'cube',
 
@@ -212,26 +212,47 @@ var particleEmitter = new ShaderParticleEmitter({
 	sizeStart: 10,
 
 	// [OPTIONAL] Particle start size variance.
-	sizeSpread: 0,
+	sizeStartSpread: 0,
+
+	// [OPTIONAL] Particle start size.
+	// If not specified, it will be set to halfway between the 
+	// `sizeStart` and `sizeEnd` values.
+	sizeMiddle: 10,
 
 	// [OPTIONAL] Particle end size.
 	sizeEnd: 10,
+
+
+	// [OPTIONAL] Particle rotation angle (radians).
+	angle: 0,
+
+	// [OPTIONAL] Particle rotation angle spread (radians).
+	angleSpread: 0,
+
+	// [OPTIONAL] Align particle angle along its velocity vector
+	angleAlignVelocity: false,
 
 
 	// [OPTIONAL] Particle start colour.
 	colorStart: new THREE.Color( 'white' ),
 
 	// [OPTIONAL] Particle start colour variance.
-	colorSpread: new THREE.Vector3(0, 0, 0),
+	colorStartSpread: new THREE.Vector3(0, 0, 0),
+
+	// [OPTIONAL] Particle middle colour.
+	// If not specified, it will be set to halfway between the 
+	// `colorStart` and `colorEnd` values.
+	colorMiddle: new THREE.Color( 'white' ),
 
 	// [OPTIONAL] Particle end colour.
 	colorEnd: new THREE.Color( 'blue' ),
 
 
+
 	// [OPTIONAL] Particle start opacity.
 	opacityStart: 1,
 
-	// [OPTIONAL] New in v0.4.0. Particle middle opacity.
+	// [OPTIONAL] Particle middle opacity.
 	// The opacity value at half a particle's lifecycle.
 	// If not specified, it will be set to halfway between the
 	// `opacityStart` and `opacityEnd` values.
@@ -261,13 +282,13 @@ var particleEmitter = new ShaderParticleEmitter({
 });
 ```
 
-####"Public" Methods for ```ShaderParticleGroup```:####
+####"Public" Methods for ```SPE.Group```:####
 
 **- ```.addEmitter( emitter )```**
-Adds an instance of ```ShaderParticleEmitter``` to the particle group.
+Adds an instance of ```SPE.Emitter``` to the particle group.
 
 **- ```.tick( dt )```**
-Call this function once per frame. If no ```dt``` argument is given, the ```ShaderParticleGroup``` instance will use its ```.fixedTimeStep``` value as ```dt```.
+Call this function once per frame. If no ```dt``` argument is given, the ```SPE.Group``` instance will use its ```.fixedTimeStep``` value as ```dt```.
 
 **- ```.addPool( numEmitters, emitterSettings, createNewEmitterIfPoolRunsOut )```**
 Automatically create a pool of emitters for easy triggering in the future.
