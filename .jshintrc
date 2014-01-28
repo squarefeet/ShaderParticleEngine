@@ -49,7 +49,7 @@
     "regexp" : false, // Prohibit `.` and `[^...]` in regular expressions.
     "regexdash" : false, // Tolerate unescaped last dash i.e. `[-...]`.
     "scripturl" : true, // Tolerate script-targeted URLs.
-    "shadow" : false, // Allows re-define variables later in code e.g. `var x=1; x=2;`.
+    "shadow" : true, // Allows re-define variables later in code e.g. `var x=1; x=2;`.
     "supernew" : false, // Tolerate `new function () { ... };` and `new Object;`.
     "undef" : true, // Require all non-global variables be declared before they are used.
 
