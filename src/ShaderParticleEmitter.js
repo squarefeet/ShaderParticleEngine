@@ -1,9 +1,9 @@
-// ShaderParticleEmitter 0.7.0
+// ShaderParticleEmitter 0.7.1
 //
-// (c) 2013 Luke Moody (http://www.github.com/squarefeet) 
+// (c) 2013 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-// 
-// Based on Lee Stemkoski's original work: 
+//
+// Based on Lee Stemkoski's original work:
 //    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
 // ShaderParticleEmitter may be freely distributed under the MIT license (See LICENSE.txt)
@@ -43,6 +43,11 @@ function ShaderParticleEmitter( options ) {
     that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 1.0 );
     that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0.0 );
     that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart );
+    that.sizeMiddle             = parseFloat(
+        typeof options.sizeMiddle !== 'undefined' ?
+        options.sizeMiddle :
+        Math.abs(that.sizeEnd + that.sizeStart) / 2
+    );
 
     that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0 );
     that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0 );

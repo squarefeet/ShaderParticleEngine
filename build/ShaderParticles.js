@@ -293,12 +293,12 @@ this.shaderParticleUtils = {
 }());
 ;
 
-// ShaderParticleGroup 0.7.0
+// ShaderParticleGroup 0.7.1
 //
-// (c) 2013 Luke Moody (http://www.github.com/squarefeet) 
+// (c) 2013 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-// 
-// Based on Lee Stemkoski's original work: 
+//
+// Based on Lee Stemkoski's original work:
 //    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
@@ -338,19 +338,14 @@ function ShaderParticleGroup( options ) {
         alive:                  { type: 'f',    value: [] },
         age:                    { type: 'f',    value: [] },
 
-        sizeStart:              { type: 'f',    value: [] },
-        sizeEnd:                { type: 'f',    value: [] },
-
-        angle:                  { type: 'f',    value: [] },
-        angleAlignVelocity:     { type: 'f',    value: [] },
+        size:                   { type: 'v3',   value: [] },
+        angle:                  { type: 'v2',   value: [] },
 
         colorStart:             { type: 'c',    value: [] },
         colorMiddle:            { type: 'c',    value: [] },
         colorEnd:               { type: 'c',    value: [] },
 
-        opacityStart:           { type: 'f',    value: [] },
-        opacityMiddle:          { type: 'f',    value: [] },
-        opacityEnd:             { type: 'f',    value: [] }
+        opacity:                { type: 'v3',   value: [] }
     };
 
     // Emitters (that aren't static) will be added to this array for
@@ -405,7 +400,7 @@ ShaderParticleGroup.prototype = {
         that.attributes.age.needsUpdate = true;
         that.attributes.alive.needsUpdate = true;
         that.attributes.angle.needsUpdate = true;
-        that.attributes.angleAlignVelocity.needsUpdate = true;
+        // that.attributes.angleAlignVelocity.needsUpdate = true;
         that.attributes.velocity.needsUpdate = true;
         that.attributes.acceleration.needsUpdate = true;
         that.geometry.verticesNeedUpdate = true;
@@ -441,16 +436,12 @@ ShaderParticleGroup.prototype = {
             velocity            = a.velocity.value,
             alive               = a.alive.value,
             age                 = a.age.value,
-            sizeStart           = a.sizeStart.value,
-            sizeEnd             = a.sizeEnd.value,
+            size                = a.size.value,
             angle               = a.angle.value,
-            angleAlignVelocity  = a.angleAlignVelocity.value,
             colorStart          = a.colorStart.value,
             colorMiddle         = a.colorMiddle.value,
             colorEnd            = a.colorEnd.value,
-            opacityStart        = a.opacityStart.value,
-            opacityMiddle       = a.opacityMiddle.value,
-            opacityEnd          = a.opacityEnd.value;
+            opacity             = a.opacity.value;
 
         emitter.particleIndex = parseFloat( start );
 
@@ -472,12 +463,16 @@ ShaderParticleGroup.prototype = {
 
             acceleration[i]         = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
+            size[i]                 = new THREE.Vector3(
+                that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ),
+                emitter.sizeMiddle,
+                emitter.sizeEnd
+            );
 
-            sizeStart[i]            = that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread );
-            sizeEnd[i]              = emitter.sizeEnd;
-
-            angle[i]                = that._randomFloat( emitter.angle, emitter.angleSpread );
-            angleAlignVelocity[i]   = emitter.angleAlignVelocity ? 1.0 : 0.0;
+            angle[i]                = new THREE.Vector2(
+                that._randomFloat( emitter.angle, emitter.angleSpread ),
+                emitter.angleAlignVelocity ? 1.0 : 0.0
+            );
 
             age[i]                  = 0.0;
             alive[i]                = emitter.isStatic ? 1.0 : 0.0;
@@ -485,9 +480,8 @@ ShaderParticleGroup.prototype = {
             colorStart[i]           = that._randomColor( emitter.colorStart, emitter.colorStartSpread );
             colorMiddle[i]          = emitter.colorMiddle;
             colorEnd[i]             = emitter.colorEnd;
-            opacityStart[i]         = emitter.opacityStart;
-            opacityMiddle[i]        = emitter.opacityMiddle;
-            opacityEnd[i]           = emitter.opacityEnd;
+
+            opacity[i]              = new THREE.Vector3( emitter.opacityStart, emitter.opacityMiddle, emitter.opacityEnd );
         }
 
         // Cache properties on the emitter so we can access
@@ -712,18 +706,15 @@ ShaderParticleGroup.shaders = {
         'attribute vec3 colorStart;',
         'attribute vec3 colorMiddle;',
         'attribute vec3 colorEnd;',
-        'attribute float opacityStart;',
-        'attribute float opacityMiddle;',
-        'attribute float opacityEnd;',
+        'attribute vec3 opacity;',
 
         'attribute vec3 acceleration;',
         'attribute vec3 velocity;',
         'attribute float alive;',
         'attribute float age;',
-        'attribute float sizeStart;',
-        'attribute float sizeEnd;',
-        'attribute float angle;',
-        'attribute float angleAlignVelocity;',
+
+        'attribute vec3 size;',
+        'attribute vec2 angle;',
 
         // values to be passed to the fragment shader
         'varying vec4 vColor;',
@@ -759,31 +750,38 @@ ShaderParticleGroup.shaders = {
             'float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
             'float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
             'float halfDuration = duration / 2.0;',
-            'vAngle = angle;',
+            'float pointSize = 0.0;',
+
+            'vAngle = angle.x;',
 
             'if( alive > 0.5 ) {',
 
                 // lerp the color and opacity
                 'if( positionInTime < 0.5) {',
-                    'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacityStart, opacityMiddle, lerpAmount1) );',
+                    'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacity.x, opacity.y, lerpAmount1) );',
                 '}',
                 'else {',
-                    'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacityMiddle, opacityEnd, lerpAmount2) );',
+                    'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacity.y, opacity.z, lerpAmount2) );',
                 '}',
 
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
                 'vec4 pos = GetPos();',
 
-                'if( angleAlignVelocity == 1.0 ) {',
+                'if( angle.y == 1.0 ) {',
                     'vAngle = -atan(pos.y, pos.x);',
                 '}',
                 'else {',
                     'vAngle = 0.0;',
                 '}',
 
-                // Determine point size .
-                'float pointSize = mix( sizeStart, sizeEnd, positionInTime );',
+                // Determine point size.
+                'if( positionInTime < 0.5) {',
+                    'pointSize = mix( size.x, size.y, lerpAmount1 );',
+                '}',
+                'else {',
+                    'pointSize = mix( size.y, size.z, lerpAmount2 );',
+                '}',
 
                 'if( hasPerspective == 1 ) {',
                     'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
@@ -830,12 +828,12 @@ ShaderParticleGroup.shaders = {
 };
 ;
 
-// ShaderParticleEmitter 0.7.0
+// ShaderParticleEmitter 0.7.1
 //
-// (c) 2013 Luke Moody (http://www.github.com/squarefeet) 
+// (c) 2013 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-// 
-// Based on Lee Stemkoski's original work: 
+//
+// Based on Lee Stemkoski's original work:
 //    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
 //
 // ShaderParticleEmitter may be freely distributed under the MIT license (See LICENSE.txt)
@@ -875,6 +873,11 @@ function ShaderParticleEmitter( options ) {
     that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 1.0 );
     that.sizeStartSpread        = parseFloat( typeof options.sizeStartSpread === 'number' ? options.sizeStartSpread : 0.0 );
     that.sizeEnd                = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart );
+    that.sizeMiddle             = parseFloat(
+        typeof options.sizeMiddle !== 'undefined' ?
+        options.sizeMiddle :
+        Math.abs(that.sizeEnd + that.sizeStart) / 2
+    );
 
     that.angle                  = parseFloat( typeof options.angle === 'number' ? options.angle : 0 );
     that.angleSpread            = parseFloat( typeof options.angleSpread === 'number' ? options.angleSpread : 0 );
