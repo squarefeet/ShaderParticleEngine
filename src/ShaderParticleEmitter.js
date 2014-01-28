@@ -108,7 +108,6 @@ SPE.Emitter = function( options ) {
     // Generic
     that.emitterDuration        = typeof options.emitterDuration === 'number' ? options.emitterDuration : null;
     that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10 );
-
     that.isStatic               = typeof options.isStatic === 'number' ? options.isStatic : 0;
 
     // The following properties are used internally, and mostly set when this emitter

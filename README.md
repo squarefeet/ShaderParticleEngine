@@ -14,6 +14,11 @@ That said, it ain't gonna be long until it's at 1.0.0.
 
 Breaking Changes
 ================
+* **Version 0.7.3** has renamed and added a lot of emitter options. Opacity, color, size, and angle are now consistent. They all have *Start, *Middle, and *End varients, as well as *StartSpread, *MiddleSpread, and *EndSpread varients. As an example:
+	* ```opacityStart```, ```opacityStartSpread```,
+	* ```opacityMiddle```, ```opacityMiddleSpread```,
+	* ```opacityEnd```, ```opacityEndSpread```.
+
 * **Version 0.7.2** packages up the emitter objects (Group, Emitter, utils) into one namespace: ```SPE```.
 	* To create a particle group from **v0.7.2+**: ```new SPE.Group( ... )```
 	* To create a particle emitter from **v0.7.2+**: ```new SPE.Emitter( ... )```
@@ -44,7 +49,7 @@ Changelog
 * Dev: ShaderParticleGroup.removeEmitter()
 * Dev: ShaderParticleEmitter.angle
 * Dev: ShaderParticleEmitter.angleAlignVelocity
-* Dev: ShaderParticleEmitter.setOption()
+* Dev: ShaderParticleEmitter.setOption() (**DEPRECATED** See ```dynamicOptionSetting``` branch for this code.)
 
 **Version 0.6.0**
 * To adjust particle sizes, please use `sizeStart` instead of the old `size` property.
