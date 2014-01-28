@@ -62,7 +62,7 @@ SPE.Emitter = function( options ) {
     that.angleStart             = parseFloat( typeof options.angleStart === 'number' ? options.angleStart : 0 );
     that.angleStartSpread       = parseFloat( typeof options.angleStartSpread === 'number' ? options.angleStartSpread : 0 );
 
-    that.angleEnd               = parseFloat( typeof options.angleEnd === 'number' ? options.angleEnd : options.angleStart );
+    that.angleEnd               = parseFloat( typeof options.angleEnd === 'number' ? options.angleEnd : 0 );
     that.angleEndSpread         = parseFloat( typeof options.angleEndSpread === 'number' ? options.angleEndSpread : 0 );
 
     that.angleMiddle            = parseFloat(

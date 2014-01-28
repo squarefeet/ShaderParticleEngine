@@ -13,7 +13,7 @@ var SPE = SPE || {};
 SPE.Group = function( options ) {
     var that = this;
 
-    that.fixedTimeStep          = parseFloat( options.fixedTimeStep || 0.016 );
+    that.fixedTimeStep          = parseFloat( typeof options.fixedTimeStep === 'number' ? options.fixedTimeStep : 0.016 );
 
     // Uniform properties ( applied to all particles )
     that.maxAge                 = parseFloat( options.maxAge || 3 );
@@ -114,7 +114,6 @@ SPE.Group.prototype = {
         return that;
     },
 
-
     /**
      * Add an emitter to this particle group. Once added, an emitter will be automatically
      * updated when SPE.Group#tick() is called.
@@ -170,9 +169,9 @@ SPE.Group.prototype = {
             acceleration[i]         = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
             size[i]                 = new THREE.Vector3(
-                that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ),
-                that._randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ),
-                that._randomFloat( emitter.sizeEnd, emitter.sizeEndSpread )
+                Math.abs( that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) ),
+                Math.abs( that._randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ) ),
+                Math.abs( that._randomFloat( emitter.sizeEnd, emitter.sizeEndSpread ) )
             );
 
             angle[i]                = new THREE.Vector4(
@@ -190,9 +189,9 @@ SPE.Group.prototype = {
             colorEnd[i]             = that._randomColor( emitter.colorEnd,      emitter.colorEndSpread );
 
             opacity[i]              = new THREE.Vector3(
-                that._randomFloat( emitter.opacityStart, emitter.opacityStartSpread ),
-                that._randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ),
-                that._randomFloat( emitter.opacityEnd, emitter.opacityEndSpread )
+                Math.abs( that._randomFloat( emitter.opacityStart, emitter.opacityStartSpread ) ),
+                Math.abs( that._randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ) ),
+                Math.abs( that._randomFloat( emitter.opacityEnd, emitter.opacityEndSpread ) )
             );
         }
 
@@ -464,7 +463,7 @@ SPE.shaders = {
             'float halfDuration = duration / 2.0;',
             'float pointSize = 0.0;',
 
-            'vAngle = angle.x;',
+            'vAngle = 0.0;',
 
             'if( alive > 0.5 ) {',
 
@@ -476,9 +475,11 @@ SPE.shaders = {
                     'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacity.y, opacity.z, lerpAmount2) );',
                 '}',
 
+
                 // Get the position of this particle so we can use it
                 // when we calculate any perspective that might be required.
                 'vec4 pos = GetPos();',
+
 
                 // Determine the angle we should use for this particle.
                 'if( angle[3] == 1.0 ) {',
@@ -498,6 +499,7 @@ SPE.shaders = {
                 'else {',
                     'pointSize = mix( size.y, size.z, lerpAmount2 );',
                 '}',
+
 
                 'if( hasPerspective == 1 ) {',
                     'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
