@@ -531,7 +531,6 @@ SPE.Group.prototype = {
 
         for( var i = 0, il = emitters.length; i < il; ++i ) {
             if( emitters[i].__id === id ) {
-                // TODO: loop thru vertices and kill 'em!
                 emitters.splice(i, 1);
                 break;
             }
