@@ -470,10 +470,16 @@ ShaderParticleGroup.shaders = {
 
                 // lerp the color and opacity
                 'if( positionInTime < 0.5) {',
-                    'vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacityStart, opacityMiddle, lerpAmount1) );',
+                    'vColor = vec4(', 
+                        'mix(colorStart, colorMiddle, lerpAmount1),',
+                        'mix(opacityStart, opacityMiddle, lerpAmount1)',
+                    ');',
                 '}',
                 'else {',
-                    'vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacityMiddle, opacityEnd, lerpAmount2) );',
+                    'vColor = vec4(',
+                        'mix(colorMiddle, colorEnd, lerpAmount2),',
+                        'mix(opacityMiddle, opacityEnd, lerpAmount2)',
+                    ');',
                 '}',
 
                 // Get the position of this particle so we can use it
@@ -481,7 +487,7 @@ ShaderParticleGroup.shaders = {
                 'vec4 pos = GetPos();',
 
                 'if( angleAlignVelocity == 1.0 ) {',
-                    'vAngle = -atan(pos.y, pos.x);',
+                    'vAngle = -atan( pos.y, pos.x );',
                 '}',
                 'else {',
                     'vAngle = 0.0;',
