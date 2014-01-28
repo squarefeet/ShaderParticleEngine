@@ -19,7 +19,7 @@ SPE.Group = function( options ) {
     that.maxAge                 = parseFloat( options.maxAge || 3 );
     that.texture                = options.texture || null;
     that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1, 10 );
-    that.colorize               = parseInt( options.colorize || 1, 10 );
+    that.colorize               = parseInt( typeof options.colorize === 'number' ? options.colorize : 1, 10 );
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
