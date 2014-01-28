@@ -1,6 +1,6 @@
-(function() {
+var SPE = SPE || {};
 
-this.shaderParticleUtils = {
+SPE.utils = {
 
     /**
      * Given a base vector and a spread range vector, create
@@ -289,5 +289,3 @@ this.shaderParticleUtils = {
         return str;
     }
 };
-
-}());

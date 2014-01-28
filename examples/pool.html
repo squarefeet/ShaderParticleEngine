@@ -15,6 +15,7 @@
     <script type="text/javascript" src="./js/Pool.js"></script>
 
 	<!-- ShaderParticles -->
+    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
 	<script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
     <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
 
@@ -79,7 +80,7 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
         		maxAge: 0.5,
                 blending: THREE.AdditiveBlending

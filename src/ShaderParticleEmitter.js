@@ -8,7 +8,9 @@
 //
 // ShaderParticleEmitter may be freely distributed under the MIT license (See LICENSE.txt)
 
-function ShaderParticleEmitter( options ) {
+var SPE = SPE || {};
+
+SPE.Emitter = function( options ) {
     // If no options are provided, fallback to an empty object.
     options = options || {};
 
@@ -90,7 +92,7 @@ function ShaderParticleEmitter( options ) {
     that.userData = {};
 }
 
-ShaderParticleEmitter.prototype = {
+SPE.Emitter.prototype = {
 
     /**
      * Reset a particle's position. Accounts for emitter type and spreads.
@@ -188,7 +190,7 @@ ShaderParticleEmitter.prototype = {
     },
 
     /**
-     * Update this emitter's particle's positions. Called by the ShaderParticleGroup
+     * Update this emitter's particle's positions. Called by the SPE.Group
      * that this emitter belongs to.
      *
      * @param  {Number} dt
@@ -410,7 +412,7 @@ ShaderParticleEmitter.prototype = {
     }
 };
 
-// Extend ShaderParticleEmitter's prototype with functions from utils object.
-for( var i in shaderParticleUtils ) {
-    ShaderParticleEmitter.prototype[ '_' + i ] = shaderParticleUtils[i];
+// Extend SPE.Emitter's prototype with functions from utils object.
+for( var i in SPE.utils ) {
+    SPE.Emitter.prototype[ '_' + i ] = SPE.utils[i];
 }

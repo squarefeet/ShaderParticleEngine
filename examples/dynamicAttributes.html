@@ -143,13 +143,13 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
         		maxAge: 5,
                 hasGravity: 1
         	});
 
-        	emitter = new ShaderParticleEmitter({
+        	emitter = new SPE.Emitter({
                 type: 'sphere',
         		particlesPerSecond: 5000,
                 dynamic: true
