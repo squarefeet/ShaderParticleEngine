@@ -1,33 +1,33 @@
-<!-- A seperate test file to play around with whilst doing updates/bug fixes -->
 <html>
 <head>
-	<title>Basic Shader Particles</title>
-	<link rel="stylesheet" type="text/css" href="./css/style.css">
+    <title>Basic Shader Particles</title>
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
 </head>
 <body>
-	<p class="numParticles"></p>
+    <p class="numParticles"></p>
 
-	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r60.min.js"></script>
-	<script type="text/javascript" src="./js/Stats.min.js"></script>
+    <!-- THREE.min.js r60 and FPS stats -->
+    <script type="text/javascript" src="./js/THREE-r60.min.js"></script>
+    <script type="text/javascript" src="./js/Stats.min.js"></script>
 
-	<!-- ShaderParticles -->
-	<script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
+    <!-- ShaderParticles -->
+    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
     <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
 
 
-	<script type="text/javascript">
-		// variables used in init()
+    <script type="text/javascript">
+        // variables used in init()
         var scene, camera, renderer, stats, stats2, clock;
 
         // Used in initParticles()
-		var emitter, particleGroup;
+        var emitter, particleGroup;
 
-		// Setup the scene
+        // Setup the scene
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
-            camera.position.z = 200;
+            camera.position.z = 50;
             camera.lookAt( scene.position );
 
             renderer = new THREE.WebGLRenderer();
@@ -46,33 +46,73 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
-        		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 1,
-                blending: THREE.AdditiveBlending
-        	});
+            particleGroup = new SPE.Group({
+                texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
+                maxAge: 2,
+                blending: THREE.NormalBlending,
+                // colorize: 1,
+                // fixedTimeStep: 0.005
+            });
 
-        	emitter = new ShaderParticleEmitter({
-                type: 'sphere',
-                position: new THREE.Vector3(0, 100, 0),
-                radius: 0.001,
-                radiusScale: new THREE.Vector3(1, 1, 1),
-                speed: 20,
-                speedSpread: 0,
-                colorStart: new THREE.Color('yellow'),
-                colorEnd: new THREE.Color('red'),
+            emitter = new SPE.Emitter({
+                type: 'cube',
+
+                position: new THREE.Vector3(0, 25, 0),
+
+                acceleration: new THREE.Vector3(0, 0, 0),
+                accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+
+                velocity: new THREE.Vector3(0, -20, 0),
+                velocitySpread: new THREE.Vector3(0, 0, 0),
+
+                // Color tests
+                colorStart: new THREE.Color( 'red' ),
+                colorStartSpread: new THREE.Vector3(0, 0, 0),
+
+                colorMiddle: new THREE.Color( 'white' ),
+                colorMiddleSpread: new THREE.Vector3(0, 0, 0),
+
+                colorEnd: new THREE.Color( 'green' ),
+                colorEndSpread: new THREE.Vector3(0, 0, 0),
+
+                // Size tests
+                sizeStart: 5,
+                sizeStartSpread: 0,
+
+                sizeMiddle: 10,
+                sizeMiddleSpread: 0,
+
+                sizeEnd: 5,
+                sizeEndSpread: 10,
+
+                // Opacity tests
                 opacityStart: 1,
+                opacityStartSpread: 0,
+                
+                opacityMiddle: 0,
+                opacityMiddleSpread: 1,
+
                 opacityEnd: 1,
-                size: 20,
-                sizeEnd: 20,
-                particlesPerSecond: 1000
-        	});
+                opacityEndSpread: 0,
 
-        	particleGroup.addEmitter( emitter );
-        	scene.add( particleGroup.mesh );
+                particleCount: 20,
 
-        	document.querySelector('.numParticles').textContent =
-        		'Total particles: ' + emitter.numParticles;
+                // Angle tests
+                // angleStart: Math.PI * 0.5,
+                // angleStartSpread: Math.PI * 2,
+
+                // angleMiddle: 0,
+                // angleMiddleSpread: Math.PI * 2,
+
+                // angleEnd: Math.PI * 1.5,
+                angleEndSpread: Math.PI * 1.5
+            });
+
+            particleGroup.addEmitter( emitter );
+            scene.add( particleGroup.mesh );
+
+            document.querySelector('.numParticles').textContent =
+                'Total particles: ' + emitter.numParticles;
         }
 
 
@@ -80,35 +120,35 @@
         function animate() {
             requestAnimationFrame( animate );
 
-            // setTimeout( animate, 1 );
-
+            // Use a fixed time-step here to avoid gaps
             render( clock.getDelta() );
+
             stats.update();
         }
 
-        function render( dt ) {
 
+        function render( dt ) {
             particleGroup.tick( dt );
             renderer.render( scene, camera );
         }
 
 
         window.addEventListener( 'resize', function() {
-        	var w = window.innerWidth,
-        		h = window.innerHeight;
+            var w = window.innerWidth,
+                h = window.innerHeight;
 
-        	camera.aspect = w / h;
-        	camera.updateProjectionMatrix();
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
 
-        	renderer.setSize( w, h );
+            renderer.setSize( w, h );
         }, false );
 
         init();
         initParticles();
 
-        setTimeout(animate, 1000);
+        setTimeout(animate, 0);
 
-	</script>
+    </script>
 
 </body>
 </html>
