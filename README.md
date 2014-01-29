@@ -367,13 +367,9 @@ If you don't have grunt installed, first make sure you've got [NodeJS](http://no
 
 ```npm install -g grunt-cli```
 
-Now you can install the local grunt package
+Now you can install the local grunt package:
 
-```cd [projectFolder]```
-
-```npm install```
-
-```grunt```
+```cd [projectFolder] && npm install && grunt```
 
 
 The output of grunt will sit in the `build` folder.
