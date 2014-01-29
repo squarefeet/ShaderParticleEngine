@@ -8,7 +8,7 @@ Pull requests and issue reports welcome. Please see the notes on pull requests a
 
 Version 0.7.4
 =============
-The latest release has jumped from ```0.5.1``` to ```0.7.4```. There are no release versions in between - the party was all on the dev branch. A full log of the changes between these versions is available in the changelog towards the end of this document. There have been a lot of changes since ```0.5.1```, so if you're updating, please check the Breaking Changes and Changelog to play catchup.
+The latest release has jumped from ```0.5.1``` to ```0.7.4```. There are no release versions in between - the party was all on the dev branch. A full log of the changes between these versions is available in the changelog towards the end of this document. There have been a lot of changes since ```0.5.1```, so if you're updating, please check the [Breaking Changes](https://github.com/squarefeet/ShaderParticleEngine#breaking-changes) and [Changelog](https://github.com/squarefeet/ShaderParticleEngine#changelog) to play catchup.
 
 In between ```0.5.1``` and ```0.7.4```, there have been some contributions from the community to the library:
 
@@ -42,7 +42,7 @@ After experimenting with Stemkoski's particle engine, I was having trouble getti
 
 Another optimisation I wanted was to be able to 'group' lots of emitters into one ```THREE.ParticleSystem```, so that if I had (for example) 20 particle emitters sharing the same texture, I could send all 20 of those emitters to the GPU at the same time via sharing the same geometry. This is where the basis for the ```ShaderParticleGroup``` comes from.
 
-This project requires THREE.js revision 58/59/60.
+This project requires THREE.js revision 58 to revision 65.
 
 
 
@@ -364,14 +364,17 @@ Building
 This project uses [Grunt](http://gruntjs.com/) to create the distributions, one dev build (not minimized) and one production build (minimized). If you make changes and want to build it, follow these steps:
 
 If you don't have grunt installed, first make sure you've got [NodeJS](http://nodejs.org/) and NPM installed, then install Grunt CLI. You might have to do this as root:
+
 ```npm install -g grunt-cli```
 
 Now you can install the local grunt package
+
 ```cd [projectFolder]```
 
 ```npm install```
 
 ```grunt```
+
 
 The output of grunt will sit in the `build` folder.
 
@@ -379,7 +382,9 @@ The output of grunt will sit in the `build` folder.
 
 Known Bugs
 ==========
-See the [issues page](https://github.com/squarefeet/ShaderParticleEngine/issues) for any known bugs. Please open an issue if you find anything not behaving properly.
+* There is an issue using ```SPE.Emitter#angleAlignVelocity``` if your emitter isn't positioned at origin (0, 0, 0). This is being investigated.
+
+See the [issues page](https://github.com/squarefeet/ShaderParticleEngine/issues) for any known other bugs. Please open an issue if you find anything not behaving properly.
 
 
 Submitting Pull Requests
