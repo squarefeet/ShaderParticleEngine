@@ -7,7 +7,7 @@
 	<p class="numParticles"></p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r60.min.js"></script>
+	<script type="text/javascript" src="./js/THREE-r65.min.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
@@ -48,19 +48,19 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
         		maxAge: 2
         	});
 
             for( var i = 0; i < numEmitters; ++i ) {
-            	emitter = new ShaderParticleEmitter({
+            	emitter = new SPE.Emitter({
             		position: new THREE.Vector3(
                         getRandomNumber(window.innerWidth/5),
                         getRandomNumber(window.innerHeight/5),
                         getRandomNumber(200)
                     ),
-                    
+
             		accelerationSpread: new THREE.Vector3(
                         getRandomNumber(-10),
                         getRandomNumber(-10),
@@ -71,22 +71,22 @@
                         getRandomNumber(20),
                         getRandomNumber(20),
                         getRandomNumber(20)
-                    ),                    
+                    ),
 
                     colorStart: (new THREE.Color()).setRGB(
-                        Math.random(), 
-                        Math.random(), 
+                        Math.random(),
+                        Math.random(),
                         Math.random()
                     ),
                     colorEnd: (new THREE.Color()).setRGB(
-                        Math.random(), 
-                        Math.random(), 
+                        Math.random(),
+                        Math.random(),
                         Math.random()
                     ),
-            		size: 2,
+            		sizeStart: 2,
             		sizeEnd: 2,
 
-            		particlesPerSecond: 250,
+            		particleCount: 500,
 
                     opacityStart: 0,
                     opacityMiddle: 1,
@@ -98,11 +98,11 @@
 
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + (emitter.numParticles * numEmitters);
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );

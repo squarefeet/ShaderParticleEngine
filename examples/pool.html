@@ -8,13 +8,14 @@
 	<p class="numParticles">Click mouse or press any key to trigger an explosion.</p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r60.min.js"></script>
+	<script type="text/javascript" src="./js/THREE-r65.min.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
     <!-- The Object Pool constructor -->
     <script type="text/javascript" src="./js/Pool.js"></script>
 
 	<!-- ShaderParticles -->
+    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
 	<script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
     <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
 
@@ -31,17 +32,17 @@
                 positionSpread: new THREE.Vector3(10, 10, 10),
                 radius: 1,
                 speed: 100,
-                size: 30,
-                sizeSpread: 30,
+                sizeStart: 30,
+                sizeStartSpread: 30,
                 sizeEnd: 0,
                 opacityStart: 1,
                 opacityEnd: 0,
                 colorStart: new THREE.Color('yellow'),
-                colorSpread: new THREE.Vector3(0, 10, 0),
+                colorStartSpread: new THREE.Vector3(0, 10, 0),
                 colorEnd: new THREE.Color('red'),
-                particlesPerSecond: 2000,
+                particleCount: 1000,
                 alive: 0,
-                emitterDuration: 0.05
+                duration: 0.05
             };
 
 		// Setup the scene
@@ -53,8 +54,8 @@
 
             var referenceCube = new THREE.Mesh(
                 new THREE.CubeGeometry(300, 300, 300),
-                new THREE.MeshBasicMaterial({ 
-                    wireframe: true, 
+                new THREE.MeshBasicMaterial({
+                    wireframe: true,
                     opacity: 0.1,
                     transparent: true,
                     color: 0xffffff
@@ -79,7 +80,7 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
         		maxAge: 0.5,
                 blending: THREE.AdditiveBlending

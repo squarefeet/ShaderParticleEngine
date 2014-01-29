@@ -7,7 +7,7 @@
 	<p class="numParticles"></p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r60.min.js"></script>
+	<script type="text/javascript" src="./js/THREE-r65.min.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
@@ -30,8 +30,8 @@
 
             var referenceCube = new THREE.Mesh(
                 new THREE.CubeGeometry(30, 30, 30),
-                new THREE.MeshBasicMaterial({ 
-                    wireframe: true, 
+                new THREE.MeshBasicMaterial({
+                    wireframe: true,
                     opacity: 0.1,
                     transparent: true,
                     color: 0xffffff
@@ -55,12 +55,12 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/star.png'),
         		maxAge: 1
         	});
 
-        	emitter = new ShaderParticleEmitter({
+        	emitter = new SPE.Emitter({
                 type: 'sphere',
 
         		position: new THREE.Vector3(0, 0, 0),
@@ -71,24 +71,24 @@
 
         		colorStart: new THREE.Color('yellow'),
         		colorEnd: new THREE.Color('red'),
-        		size: 2,
+        		sizeStart: 2,
                 // sizeSpread: 30,
         		sizeEnd: 0,
 
                 opacityStart: 0,
                 opacityEnd: 1,
 
-        		particlesPerSecond: 50000
+        		particleCount: 50000
         	});
 
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + emitter.numParticles;
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );

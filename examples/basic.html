@@ -7,11 +7,13 @@
 	<p class="numParticles"></p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r60.min.js"></script>
+	<script type="text/javascript" src="./js/THREE-r65.min.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
-	<script type="text/javascript" src="../build/ShaderParticles.min.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
 
 
 	<script type="text/javascript">
@@ -44,13 +46,14 @@
 
         // Create particle group and emitter
         function initParticles() {
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
         		maxAge: 2
         	});
 
-        	emitter = new ShaderParticleEmitter({
+        	emitter = new SPE.Emitter({
         		position: new THREE.Vector3(0, 0, 0),
+                positionSpread: new THREE.Vector3( 0, 0, 0 ),
 
         		acceleration: new THREE.Vector3(0, -10, 0),
         		accelerationSpread: new THREE.Vector3( 10, 0, 10 ),
@@ -59,28 +62,29 @@
         		velocitySpread: new THREE.Vector3(10, 7.5, 10),
 
         		colorStart: new THREE.Color('white'),
-        		colorEnd: new THREE.Color('blue'),
-        		size: 1,
-        		sizeEnd: 2,
+        		colorEnd: new THREE.Color('red'),
 
-        		particlesPerSecond: 1000
+        		sizeStart: 1,
+        		sizeEnd: 1,
+
+        		particleCount: 2000
         	});
 
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
-        		'Total particles: ' + emitter.numParticles;
+        	document.querySelector('.numParticles').textContent =
+        		'Total particles: ' + emitter.particleCount;
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );
 
             // Use a fixed time-step here to avoid gaps
             render( clock.getDelta() );
-            
+
             stats.update();
         }
 

@@ -7,7 +7,7 @@
 	<p class="numParticles"></p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r60.min.js"></script>
+	<script type="text/javascript" src="./js/THREE-r65.min.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
@@ -45,38 +45,38 @@
         // Create particle group and emitter
         function initParticles() {
             var texture = THREE.ImageUtils.loadTexture('./img/cloudSml.png');
-            texture.magFilter = THREE.LinearMipMapLinearFilter;
-            texture.minFilter = THREE.LinearMipMapLinearFilter;
+            // texture.magFilter = THREE.LinearMipMapLinearFilter;
+            // texture.minFilter = THREE.LinearMipMapLinearFilter;
 
-        	particleGroup = new ShaderParticleGroup({
+        	particleGroup = new SPE.Group({
         		texture: texture,
         		maxAge: 5
         	});
 
-        	emitter = new ShaderParticleEmitter({
+        	emitter = new SPE.Emitter({
         		position: new THREE.Vector3(0, 0, 0),
                 positionSpread: new THREE.Vector3(100, 50, 100),
 
         		colorStart: new THREE.Color('black'),
-                colorSpread: new THREE.Vector3(1, 0.1, 0.3),
+                colorStartSpread: new THREE.Vector3(1, 1, 1),
         		colorEnd: new THREE.Color('black'),
-        		size: 500,
+        		sizeStart: 500,
                 sizeSpread: 10,
                 opacityStart: 0,
                 opacityMiddle: 1,
                 opacityEnd: 0,
 
-        		particlesPerSecond: 10,
+        		particleCount: 50,
         	});
 
         	particleGroup.addEmitter( emitter );
         	scene.add( particleGroup.mesh );
 
-        	document.querySelector('.numParticles').textContent = 
+        	document.querySelector('.numParticles').textContent =
         		'Total particles: ' + emitter.numParticles;
         }
 
-        
+
 
         function animate() {
             requestAnimationFrame( animate );
