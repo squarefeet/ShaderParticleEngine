@@ -8,14 +8,14 @@ Pull requests and issue reports welcome. Please see the notes on pull requests a
 
 Version 0.7.4
 =============
-The latest release has jumped from 0.5.1 to 0.7.4. There are no release versions in between - the party was all on the dev branch. A full log of the changes between these versions is available in the changelog towards the end of this document. There have been a lot of changes since 0.5.1, so if you're updating, please check the Breaking Changes and Changelog to play catchup.
+The latest release has jumped from ```0.5.1``` to ```0.7.4```. There are no release versions in between - the party was all on the dev branch. A full log of the changes between these versions is available in the changelog towards the end of this document. There have been a lot of changes since ```0.5.1```, so if you're updating, please check the Breaking Changes and Changelog to play catchup.
 
-In between 0.5.1 and 0.7.4, there have been some contributions from the community to the library:
+In between ```0.5.1``` and ```0.7.4```, there have been some contributions from the community to the library:
 
-* @DelvarWorld has kindly brought this library into a much fitter state than it was before, and feature contributions from @stemkoski have been combined into the 0.7.4 release.
+* [@DelvarWorld](https://github.com/delvarworld/)) has kindly brought this library into a much fitter state than it was before, and feature contributions from [@stemkoski](https://github.com/stemkoski/)) have been combined into the ```0.7.4``` release.
 
 
-Currently not at 1.0.0, so the API is due to change. Please be aware of this when using this library.
+Currently not at ```1.0.0```, so the API might change. Please be aware of this when using this library.
 
 
 Breaking Changes
