@@ -48,7 +48,7 @@
         function initParticles() {
             particleGroup = new SPE.Group({
                 texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
-                maxAge: 2,
+                maxAge: 10,
                 blending: THREE.NormalBlending,
                 // colorize: 1,
                 // fixedTimeStep: 0.005
@@ -57,13 +57,13 @@
             emitter = new SPE.Emitter({
                 type: 'cube',
 
-                position: new THREE.Vector3(0, 25, 0),
+                // position: new THREE.Vector3(0, 25, 0),
 
-                acceleration: new THREE.Vector3(0, 0, 0),
-                accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+                // acceleration: new THREE.Vector3(0, 0, 0),
+                // accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
 
-                velocity: new THREE.Vector3(0, -20, 0),
-                velocitySpread: new THREE.Vector3(0, 0, 0),
+                velocity: new THREE.Vector3(1, 1, 0),
+                // velocitySpread: new THREE.Vector3(0, 0, 0),
 
                 // Color tests
                 colorStart: new THREE.Color( 'red' ),
@@ -95,7 +95,7 @@
                 opacityEnd: 1,
                 opacityEndSpread: 0,
 
-                particleCount: 20,
+                particleCount: 200,
 
                 // Angle tests
                 // angleStart: Math.PI * 0.5,
@@ -105,11 +105,15 @@
                 // angleMiddleSpread: Math.PI * 2,
 
                 // angleEnd: Math.PI * 1.5,
-                angleEndSpread: Math.PI * 1.5
+                // angleEndSpread: Math.PI * 1.5
             });
 
             particleGroup.addEmitter( emitter );
             scene.add( particleGroup.mesh );
+
+
+
+            scene.add( particleGroup.vectorFieldDebug );
 
             document.querySelector('.numParticles').textContent =
                 'Total particles: ' + emitter.numParticles;
@@ -122,7 +126,6 @@
 
             // Use a fixed time-step here to avoid gaps
             render( clock.getDelta() );
-
             stats.update();
         }
 
@@ -130,6 +133,10 @@
         function render( dt ) {
             particleGroup.tick( dt );
             renderer.render( scene, camera );
+
+            camera.position.x = Math.cos( Date.now() * 0.0005 ) * 100;
+            camera.position.z = Math.sin( Date.now() * 0.0005 ) * 100;
+            camera.lookAt( scene.position );
         }
 
 

@@ -28,12 +28,39 @@ SPE.Group = function( options ) {
     that.depthWrite             = options.depthWrite || false;
     that.depthTest              = options.depthTest || true;
 
+
+    that.vectorField = {
+        position: new THREE.Vector3(0, 0, 0),
+        size: new THREE.Vector3( 10, 10, 10 ),
+        velocity: new THREE.Vector3( -5, -5, 0 ),
+        acceleration: new THREE.Vector3( -30, 10, 0 )
+    };
+
+    that.vectorFieldDebug = new THREE.Mesh(
+        new THREE.CubeGeometry( 
+            that.vectorField.size.x, 
+            that.vectorField.size.y, 
+            that.vectorField.size.z
+        ),
+        new THREE.MeshBasicMaterial( { 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.1
+        } )
+    );
+
+    that.vectorFieldDebug.position = that.vectorField.position;
+
     // Create uniforms
     that.uniforms = {
-        duration:       { type: 'f',    value: that.maxAge },
-        texture:        { type: 't',    value: that.texture },
-        hasPerspective: { type: 'i',    value: that.hasPerspective },
-        colorize:       { type: 'i',    value: that.colorize }
+        duration:           { type: 'f',    value: that.maxAge },
+        texture:            { type: 't',    value: that.texture },
+        hasPerspective:     { type: 'i',    value: that.hasPerspective },
+        colorize:           { type: 'i',    value: that.colorize },
+        vectorFieldPos:     { type: 'v3',    value: that.vectorField.position },
+        vectorFieldSize:    { type: 'v3',    value: that.vectorField.size },
+        vectorFieldVel:     { type: 'v3',    value: that.vectorField.velocity },
+        vectorFieldAccel:   { type: 'v3',    value: that.vectorField.acceleration }
     };
 
     // Create a map of attributes that will hold values for each particle in this group.
@@ -411,6 +438,11 @@ SPE.shaders = {
         'uniform float duration;',
         'uniform int hasPerspective;',
 
+        'uniform vec3 vectorFieldPos;', 
+        'uniform vec3 vectorFieldSize;',
+        'uniform vec3 vectorFieldVel;', 
+        'uniform vec3 vectorFieldAccel;',
+
         'attribute vec3 colorStart;',
         'attribute vec3 colorMiddle;',
         'attribute vec3 colorEnd;',
@@ -428,10 +460,29 @@ SPE.shaders = {
         'varying vec4 vColor;',
         'varying float vAngle;',
 
+        // UH-OH.
+        // I need to be able to track the amount of time the vertex
+        // has been within the vector field, but I don't think that's
+        // possible :(. As it is, it jumps position rather than moving towards.
+        // Balls. I don't wanna do this on the CPU!
+        'vec3 IntegrateVectorField( vec3 pos ) {',
+            'float halfX = vectorFieldSize.x * 0.5;',
+            'float halfY = vectorFieldSize.y * 0.5;',
+            'float halfZ = vectorFieldSize.z * 0.5;',
+
+            'if( abs(pos.x) <= halfX &&',
+                'abs(pos.y) <= halfY &&', 
+                'abs(pos.z) <= halfZ ', 
+            ') {',
+                'pos = pos + ( vectorFieldVel * age );',
+            '}',
+
+            'return pos;',
+        '}',
 
         // Integrate acceleration into velocity and apply it to the particle's position
         'vec4 GetPos() {',
-            'vec3 newPos = vec3( position );',
+            'vec3 pos = vec3( position );',
 
             // Move acceleration & velocity vectors to the value they
             // should be at the current age
@@ -442,10 +493,13 @@ SPE.shaders = {
             'v = v + (a * age);',
 
             // Add velocity vector to the newPos vector
-            'newPos = newPos + v;',
+            'pos = pos + v;',
+
+            // Integrate vector field
+            'pos = IntegrateVectorField( pos );',
 
             // Convert the newPos vector into world-space
-            'vec4 mvPosition = modelViewMatrix * vec4( newPos, 1.0 );',
+            'vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );',
 
             'return mvPosition;',
         '}',
@@ -504,7 +558,10 @@ SPE.shaders = {
 
                 // Set particle size and position
                 'gl_PointSize = pointSize;',
-                'gl_Position = projectionMatrix * pos;',
+
+                'pos = projectionMatrix * pos;',               
+
+                'gl_Position = pos;',
             '}',
 
             'else {',
