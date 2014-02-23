@@ -23,7 +23,7 @@ SPE.Group = function( options ) {
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
-    that.transparent            = options.transparent || true;
+    that.transparent            = typeof options.transparent === 'number' ? options.transparent : 1;
     that.alphaTest              = typeof options.alphaTest === 'number' ? options.alphaTest : 0.5;
     that.depthWrite             = options.depthWrite || false;
     that.depthTest              = options.depthTest || true;
