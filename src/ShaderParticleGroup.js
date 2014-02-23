@@ -31,9 +31,9 @@ SPE.Group = function( options ) {
 
     that.vectorField = {
         position: new THREE.Vector3(0, 0, 0),
-        size: new THREE.Vector3( 10, 10, 10 ),
-        velocity: new THREE.Vector3( -5, -5, 0 ),
-        acceleration: new THREE.Vector3( -30, 10, 0 )
+        size: new THREE.Vector3( 40, 40, 40 ),
+        velocity: new THREE.Vector3( 0, 0, 0 ),
+        acceleration: new THREE.Vector3( 0, -2, 0 )
     };
 
     that.vectorFieldDebug = new THREE.Mesh(
@@ -461,23 +461,21 @@ SPE.shaders = {
         'varying float vAngle;',
 
         // UH-OH.
-        // I need to be able to track the amount of time the vertex
-        // has been within the vector field, but I don't think that's
-        // possible :(. As it is, it jumps position rather than moving towards.
-        // Balls. I don't wanna do this on the CPU!
-        'vec3 IntegrateVectorField( vec3 pos ) {',
+        // type can be any of vec3 position, velocity, acceleration and size
+        'vec3 IntegrateVectorField( vec3 type, vec3 vectorFieldType) {',
             'float halfX = vectorFieldSize.x * 0.5;',
             'float halfY = vectorFieldSize.y * 0.5;',
             'float halfZ = vectorFieldSize.z * 0.5;',
 
-            'if( abs(pos.x) <= halfX &&',
-                'abs(pos.y) <= halfY &&', 
-                'abs(pos.z) <= halfZ ', 
+            'if( abs(type.x) <= halfX &&',
+                'abs(type.y) <= halfY &&', 
+                'abs(type.z) <= halfZ ', 
             ') {',
-                'pos = pos + ( vectorFieldVel * age );',
+                'type = type + vectorFieldType*age;',
             '}',
+            
 
-            'return pos;',
+            'return type;',
         '}',
 
         // Integrate acceleration into velocity and apply it to the particle's position
@@ -486,17 +484,30 @@ SPE.shaders = {
 
             // Move acceleration & velocity vectors to the value they
             // should be at the current age
-            'vec3 a = acceleration * age;',
-            'vec3 v = velocity * age;',
+            'vec3 a = IntegrateVectorField(acceleration * age, vectorFieldAccel);',
+            'vec3 v = IntegrateVectorField(velocity * age, vectorFieldVel);',
 
             // Move velocity vector to correct values at this age
             'v = v + (a * age);',
 
             // Add velocity vector to the newPos vector
             'pos = pos + v;',
+            
+            //check if the particle is in vectorfield, if yes make it blue
+            'float halfX = vectorFieldSize.x * 0.5;',
+            'float halfY = vectorFieldSize.y * 0.5;',
+            'float halfZ = vectorFieldSize.z * 0.5;',
+
+
+            'if( abs(pos.x) <= halfX &&',
+                'abs(pos.y) <= halfY &&', 
+                'abs(pos.z) <= halfZ ', 
+            ') {',
+                'vColor = vec4(0,0,1,1);',
+            '}',
 
             // Integrate vector field
-            'pos = IntegrateVectorField( pos );',
+            'pos = IntegrateVectorField( pos, vectorFieldPos );',
 
             // Convert the newPos vector into world-space
             'vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );',
