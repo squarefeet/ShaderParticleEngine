@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+
+        <style type="text/css">
+            * {
+                margin: 0;
+            }
+
+            .range-slider {
+                position: absolute;
+                top: 50%;
+                left: 25%;
+                width: 50%;
+                height: 20%;
+                background-color: green;
+            }
+
+            .range-slider > .slider {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 0;
+                height: 100%;
+                background-color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <script type="text/javascript" src="res/js/vendor/THREE-r65.min.js"></script>
+        <script type="text/javascript">
+            function RangeSlider() {
+                this.min = -100;
+                this.max = 100;
+                this.value = 0;
+
+                this.active = false;
+
+                this.startPosition = new THREE.Vector2();
+                this.currentPosition = new THREE.Vector2();
+
+                this.element = document.createElement( 'div' );
+                this.slider = document.createElement( 'div' );
+
+                this.element.className = 'range-slider';
+                this.slider.className = 'slider';
+
+                this.element.appendChild( this.slider );
+
+                this._addEvents();
+
+                document.body.appendChild( this.element );
+            }
+
+            RangeSlider.prototype = {
+
+                _addEvents: function() {
+                    this.element.addEventListener( 'mousedown', this, false );
+                    document.body.addEventListener( 'mousemove', this, false );
+                    document.body.addEventListener( 'mouseup', this, false );
+                },
+
+                handleEvent: function( e ) {
+                    switch( e.type ) {
+                        case 'mousedown':
+                            this._start( e );
+                            break;
+
+                        case 'mousemove':
+                            this._move( e );
+                            break;
+
+                        case 'mouseup':
+                            this._end( e );
+                            break;
+                    }
+                },
+
+                _start: function( e ) {
+                    this.active = true;
+                    this.startPosition.set( e.pageX, e.pageY );
+                },
+
+                _move: function( e ) {
+                    if( !this.active ) return;
+
+                    this.currentPosition.set( e.pageX, e.pageY );
+                    this.currentPosition.sub( this.startPosition );
+
+                    console.log( this.currentPosition.x, this.currentPosition.y );
+
+                    var width = this.currentPosition.x;
+
+                    if( width < 0 ) {
+                        width = 0;
+                    }
+
+                    this.slider.style.width = width + '%';
+                },
+
+                _end: function( e ) {
+                    if( !this.active ) return;
+
+                    this.active = false;
+
+                    this.startPosition.copy( this.currentPosition );
+                }
+            };
+
+
+            var slider = new RangeSlider();
+        </script>
+    </body>
+</html>

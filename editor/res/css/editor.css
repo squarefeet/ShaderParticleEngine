@@ -156,6 +156,35 @@ body {
     -webkit-transform: rotate(180deg);
 }
 
+.range-wrapper {
+    margin-bottom: 1em;
+}
+
+.range-wrapper input[type=range] {
+    position: relative;
+    height: 2em;
+    width: 70%;
+    float: left;
+}
+
+.range-wrapper span {
+    float: left;
+    width: 15%;
+    line-height: 2em;
+    text-align: center;
+    color: #aaa;
+}
+.range-wrapper > input[type=text] {
+    clear: both;
+    margin-left: 15%;
+    width: 70%;
+    font-size: 1.2em;
+    line-height: 1.5em;
+    padding: 0.15em;
+    background-color: transparent;
+    text-align: center;
+}
+
 
 input {
     cursor: pointer;
@@ -165,6 +194,9 @@ input {
     padding: 0.3em;
 }
 
+
+
+/* Texture */
 .image-upload input {
     display: none;
 }
@@ -172,4 +204,15 @@ input {
     margin: 1em 0 0.3em 0;
     background-color: rgba(0, 0, 0, 0.1);
     color: #aaa;
+    width: 100%;
+}
+
+/* Position */
+.setting-wrapper.position {
+
+}
+
+.setting-wrapper.position.open > .setting-inner-wrapper {
+    height: auto;
+    max-height: 16em;
 }

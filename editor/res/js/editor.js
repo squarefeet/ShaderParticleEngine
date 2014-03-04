@@ -17,7 +17,6 @@
 
     var EMITTER_SETTINGS = {
         type: 'cube',
-
         particleCount: 1000,
 
         position: new THREE.Vector3(),
@@ -80,6 +79,28 @@
     };
 
 
+    var ZOOMABLE_SETTINGS = [
+        'positionSpread',
+        'acceleration',
+        'accelerationSpread',
+        'velocity',
+        'velocitySpread',
+        'radius',
+        'radiusSpread',
+        'speed',
+        'speedSpread',
+        'sizeStart',
+        'sizeStartSpread',
+        'sizeMiddle',
+        'sizeMiddleSpread',
+        'sizeEnd',
+        'sizeEndSpread'
+    ];  
+
+    var DEFAULT_SETTINGS = {};
+
+    var CURRENT_ZOOM_LEVEL = 1;
+
     function makeSelect( options, defaultIndex, onChange ) {
         var select = document.createElement( 'select' ),
             option;
@@ -99,6 +120,43 @@
         }, false );
 
         return select;
+    }
+
+
+    function makeRange( min, max, defaultValue, onChange ) {
+        var wrapper = document.createElement( 'div' ),
+            range = document.createElement( 'input' ),
+            minLabel = document.createElement( 'span' ),
+            value = document.createElement( 'input' ),
+            maxLabel = document.createElement( 'span' );
+        
+        wrapper.className = 'range-wrapper';
+        range.min = min;
+        range.max = max;
+        range.value = defaultValue;
+        range.type = 'range';
+        value.type = 'text';
+
+        minLabel.textContent = min;
+        maxLabel.textContent = max;
+        value.value = defaultValue;
+
+        range.addEventListener( 'change', function( e ) {
+            value.value = range.value;
+            onChange( range.value );
+        }, false );
+
+        value.addEventListener( 'change', function() {
+            range.value = value.value;
+            onChange( range.value );
+        }, false );
+
+        wrapper.appendChild( minLabel );
+        wrapper.appendChild( range );
+        wrapper.appendChild( maxLabel );
+        wrapper.appendChild( value );
+
+        return wrapper;
     }
 
 
@@ -143,14 +201,17 @@
         };
 
         // Bind scope
-        this._toggleSettings = this._toggleSettings.bind( this );
-        this._onResize = this._onResize.bind( this );
-        this._animate = this._animate.bind( this );
+        for( var i in this ) {
+            if( typeof this[ i ] === 'function' ) {
+                this[ i ] = this[ i ].bind( this );
+            }
+        }
 
 
         this.dt = 0.016;
         this._settingsIsOpen = true;
 
+        this._cloneSettings();
         this._createScene();
         this._createSettings();
         this._createParticles();
@@ -158,6 +219,22 @@
     }
 
     Editor.prototype = {
+
+        _cloneSettings: function() {
+            for( var i in EMITTER_SETTINGS ) {
+                if( typeof EMITTER_SETTINGS[ i ] === 'number' ) {
+                    DEFAULT_SETTINGS[ i ] = EMITTER_SETTINGS[ i ];
+                }
+                else if( EMITTER_SETTINGS[ i ] instanceof THREE.Vector3 ) {
+                    DEFAULT_SETTINGS[ i ] = EMITTER_SETTINGS[ i ].clone();
+                }
+                else if( EMITTER_SETTINGS[ i ] instanceof THREE.Color ) {
+                    DEFAULT_SETTINGS[ i ] = EMITTER_SETTINGS[ i ].clone();
+                }
+            }
+
+            console.log( DEFAULT_SETTINGS );
+        },
 
         _createScene: function() {
             this.scene = new THREE.Scene();
@@ -211,9 +288,7 @@
 
         _createParticles: function() {
             this.particleGroup = new SPE.Group( GROUP_SETTINGS );
-
             this.particleEmitter = new SPE.Emitter( EMITTER_SETTINGS );
-
             this.particleGroup.addEmitter( this.particleEmitter );
             this.scene.add( this.particleGroup.mesh );
         },
@@ -259,8 +334,26 @@
             this.elements.settings.appendChild( container.wrapper );
         },
 
+        _makePosition: function() {
+            var self = this,
+                container = makeRollableWrapper( 'Position', false ),
+                x = makeRange( -2000, 2000, 0, function( value ) { 
+                    console.log( value ); 
+                } ),
+                y = makeRange( -2000, 2000, 0, function( e ) { console.log( e ); } ),
+                z = makeRange( -2000, 2000, 0, function( e ) { console.log( e ); } );
+
+            container.wrapper.className = 'setting-wrapper position';
+
+            container.innerWrapper.appendChild( x );
+            container.innerWrapper.appendChild( y );
+            container.innerWrapper.appendChild( z );
+            this.elements.settings.appendChild( container.wrapper );
+        },
+
         _createSettings: function() {
             this._makeTextureSelect();
+            this._makePosition();
         },
 
         _addListeners: function() {
@@ -272,13 +365,9 @@
                 self.controls.focus( self.focusMesh, true );
             }, false );
 
-            document.querySelector( '.icon.decrease-size' ).addEventListener( 'mouseup', function() {
+            document.querySelector( '.icon.decrease-size' ).addEventListener( 'mouseup', self.decreaseSize, false );
 
-            }, false );
-
-            document.querySelector( '.icon.increase-size' ).addEventListener( 'mouseup', function() {
-
-            }, false );
+            document.querySelector( '.icon.increase-size' ).addEventListener( 'mouseup', self.increaseSize, false );
 
             window.addEventListener( 'resize', this._onResize, false );
         },
@@ -313,6 +402,53 @@
         },
 
 
+        _setParticleSize: function() {
+            var emitter = this.particleEmitter,
+                start = emitter.verticesIndex,
+                end = start + emitter.particleCount,
+                particleSize = emitter.attributes.size.value;
+
+            for( var i = start; i < end; ++i ) {
+                particleSize[ i ].set(
+                    Math.abs( emitter._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) ),
+                    Math.abs( emitter._randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ) ),
+                    Math.abs( emitter._randomFloat( emitter.sizeEnd, emitter.sizeEndSpread ) )
+                );
+            }
+
+            emitter.attributes.size.needsUpdate = true;
+        },
+
+        _setZoomLevel: function() {
+            this.focusMesh.scale.set( 
+                CURRENT_ZOOM_LEVEL,
+                CURRENT_ZOOM_LEVEL,
+                CURRENT_ZOOM_LEVEL
+            );
+
+            this.focusMesh.position.y = (this.focusMesh.geometry.width * this.focusMesh.scale.x) * 0.5;
+
+            for( var i = 0, defaultSetting, setting; i < ZOOMABLE_SETTINGS.length; ++i ) {
+                defaultSetting = DEFAULT_SETTINGS[ ZOOMABLE_SETTINGS[ i ] ];
+                setting = EMITTER_SETTINGS[ ZOOMABLE_SETTINGS[ i ] ];
+
+
+                if( typeof setting === 'number' ) {
+                    setting = defaultSetting * CURRENT_ZOOM_LEVEL;
+                }
+                else if( setting instanceof THREE.Vector3 ) {
+                    setting.x = defaultSetting.x * CURRENT_ZOOM_LEVEL;
+                    setting.y = defaultSetting.y * CURRENT_ZOOM_LEVEL;
+                    setting.z = defaultSetting.z * CURRENT_ZOOM_LEVEL;
+                }
+
+                this.particleEmitter[ ZOOMABLE_SETTINGS[ i ] ] = setting;
+            }
+
+            this._setParticleSize();
+        },
+
+
         // "Public" API
         start: function() {
             this._animate();
@@ -325,11 +461,18 @@
         },
 
         increaseSize: function() {
-
+            CURRENT_ZOOM_LEVEL += 0.5;
+            this._setZoomLevel();
         },
 
         decreaseSize: function() {
+            CURRENT_ZOOM_LEVEL -= 0.5;
 
+            if( CURRENT_ZOOM_LEVEL < 0.01 ) {
+                CURRENT_ZOOM_LEVEL = 0.01;
+            }
+
+            this._setZoomLevel();
         }
 
     };
