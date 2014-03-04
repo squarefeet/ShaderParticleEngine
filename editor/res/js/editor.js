@@ -8,6 +8,78 @@
         'Custom...': ''
     };
 
+
+    var GROUP_SETTINGS = {
+        texture: THREE.ImageUtils.loadTexture( 'res/img/smokeparticle.png' ),
+        maxAge: 5
+    };
+
+
+    var EMITTER_SETTINGS = {
+        type: 'cube',
+
+        particleCount: 1000,
+
+        position: new THREE.Vector3(),
+        positionSpread: new THREE.Vector3(),
+
+        acceleration: new THREE.Vector3( 0, -2, 0 ),
+        accelerationSpread: new THREE.Vector3( 1, 0, 1 ),
+
+        velocity: new THREE.Vector3( 0, 5, 0 ),
+        velocitySpread: new THREE.Vector3( 1, 1, 1 ),
+
+        radius: 10,
+        radiusSpread: 0,
+        radiusSpreadClamp: 3,
+        radiusScale: new THREE.Vector3( 1, 1, 1 ),
+
+        speed: 5,
+        speedSpread: 1,
+
+        sizeStart: 1,
+        sizeStartSpread: 0,
+
+        sizeMiddle: 2,
+        sizeMiddleSpread: 0,
+
+        sizeEnd: 0,
+        sizeEndSpread: 0,
+
+        angleStart: 0,
+        angleStartSpread: 0,
+
+        angleMiddle: 0,
+        angleMiddleSpread: 0,
+
+        angleEnd: 0,
+        angleEndSpread: 0,
+
+        colorStart: new THREE.Color( 0x5577FF ),
+        colorStartSpread: new THREE.Vector3(),
+
+        colorMiddle: new THREE.Color( 0xFFFFFF ),
+        colorMiddleSpread: new THREE.Vector3(),
+
+        colorEnd: new THREE.Color( 0x557700 ),
+        colorEndSpread: new THREE.Vector3(),
+
+        opacityStart: 1,
+        opacityStartSpread: 0,
+
+        opacityMiddle: 0.1,
+        opacityMiddleSpread: 0.1,
+
+        opacityEnd: 0,
+        opacityEndSpread: 0,
+
+        duration: null,
+
+        alive: 1,
+        isStatic: 0
+    };
+
+
     function makeSelect( options, defaultIndex, onChange ) {
         var select = document.createElement( 'select' ),
             option;
@@ -17,7 +89,7 @@
             option.value = i;
             option.textContent = i;
             select.appendChild( option );
-        }  
+        }
 
         select.selectedIndex = defaultIndex;
 
@@ -103,10 +175,21 @@
                     wireframe: true
                 } )
             );
-
             this.grid.rotation.x = Math.PI * 0.5;
-
             this.scene.add( this.grid );
+
+            this.focusMesh = new THREE.Mesh(
+                new THREE.CubeGeometry( 5, 5, 5 ),
+                new THREE.MeshBasicMaterial( {
+                    color: 0xffffff,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.1
+                } )
+            );
+            this.focusMesh.position.y = 2.5;
+            this.scene.add( this.focusMesh );
+
 
             var statsEl = this.stats.domElement,
                 rendererEl = this.renderer.domElement;
@@ -127,50 +210,35 @@
         },
 
         _createParticles: function() {
-            this.particleGroup = new SPE.Group( {
-                texture: THREE.ImageUtils.loadTexture( 'res/img/smokeparticle.png' ),
-                maxAge: 5
-            } );
+            this.particleGroup = new SPE.Group( GROUP_SETTINGS );
 
-            this.particleEmitter = new SPE.Emitter( {
-                position: new THREE.Vector3(),
-                velocity: new THREE.Vector3( 0, 3, 0 ),
-                velocitySpread: new THREE.Vector3( 2, 0, 2 ),
-                acceleration: new THREE.Vector3( 0, -1, 0 )
-            } );
+            this.particleEmitter = new SPE.Emitter( EMITTER_SETTINGS );
 
             this.particleGroup.addEmitter( this.particleEmitter );
             this.scene.add( this.particleGroup.mesh );
         },
 
-        _makeImageUpload: function() {
+        _makeTextureSelect: function() {
             var self = this,
-                wrapper = makeRollableWrapper( 'Texture', false ),
+                container = makeRollableWrapper( 'Texture', false ),
                 input = document.createElement( 'input' ),
                 select = makeSelect( DEFAULT_TEXTURES, 2, function( selectedOption, name ) {
-                    console.log( selectedOption, name );
-
-                    var texture, fakeClick;
-
                     if( name !== 'Custom...' ) {
                         input.style.display = 'none';
                         texture = THREE.ImageUtils.loadTexture( selectedOption )
-                        self.particleGroup.texture = texture;
-                        self.particleGroup.uniforms.texture.value = texture;
+                        self.setTexture( texture );
                     }
                     else {
                         input.style.display = 'block';
 
                         if( uploadedTexture !== null ) {
-                            console.log( uploadedTexture );
-                            self.particleGroup.texture = uploadedTexture;
-                            self.particleGroup.uniforms.texture.value = uploadedTexture;
+                            self.setTexture( uploadedTexture );
                         }
                     }
                 } ),
                 uploadedTexture = null;
 
-            wrapper.wrapper.classList.add( 'image-upload' );
+            container.wrapper.classList.add( 'image-upload' );
 
             input.type = 'file';
             input.accept = 'image/*';
@@ -180,24 +248,37 @@
 
                 reader.onload = function( e ) {
                     uploadedTexture = THREE.ImageUtils.loadTexture( e.target.result );
-                    self.particleGroup.texture = uploadedTexture;
-                    self.particleGroup.uniforms.texture.value = uploadedTexture;
+                    self.setTexture( uploadedTexture );
                 };
 
                 reader.readAsDataURL( e.target.files[0] );
-            }, false ); 
+            }, false );
 
-            wrapper.innerWrapper.appendChild( select );
-            wrapper.innerWrapper.appendChild( input );
-            this.elements.settings.appendChild( wrapper.wrapper );
+            container.innerWrapper.appendChild( select );
+            container.innerWrapper.appendChild( input );
+            this.elements.settings.appendChild( container.wrapper );
         },
 
         _createSettings: function() {
-            this._makeImageUpload();
+            this._makeTextureSelect();
         },
 
         _addListeners: function() {
+            var self = this;
+
             this.elements.settingsHandle.addEventListener( 'mouseup', this._toggleSettings, false );
+
+            document.querySelector( '.icon.reset-camera' ).addEventListener( 'mouseup', function() {
+                self.controls.focus( self.focusMesh, true );
+            }, false );
+
+            document.querySelector( '.icon.decrease-size' ).addEventListener( 'mouseup', function() {
+
+            }, false );
+
+            document.querySelector( '.icon.increase-size' ).addEventListener( 'mouseup', function() {
+
+            }, false );
 
             window.addEventListener( 'resize', this._onResize, false );
         },
@@ -229,10 +310,26 @@
             this.stats.update();
             this.renderer.render( this.scene, this.camera );
             this.particleGroup.tick( this.dt );
-        },  
+        },
 
+
+        // "Public" API
         start: function() {
             this._animate();
+        },
+
+
+        setTexture: function( texture ) {
+            this.particleGroup.texture = texture;
+            this.particleGroup.uniforms.texture.value = texture;
+        },
+
+        increaseSize: function() {
+
+        },
+
+        decreaseSize: function() {
+
         }
 
     };

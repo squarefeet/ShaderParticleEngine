@@ -28,7 +28,7 @@ body {
 
 .menu {
     width: 100%;
-    height: 3em;
+    height: 4em;
     background-color: rgba( 50, 50, 50, 0.8 );
     box-shadow: 0 0.2em 0.2em rgba( 255, 255, 255, 0.1 );
     border-bottom: 1px solid rgba( 100, 100, 100, 0.5 );
@@ -47,7 +47,7 @@ body {
 }
 
 .settings {
-    top: 3em;
+    top: 4em;
     right: 0;
     width: 30em;
     bottom: 0;
