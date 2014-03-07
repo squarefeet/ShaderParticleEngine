@@ -45,7 +45,10 @@
                 mouseWheel: true,
                 scrollbars: true,
                 fadeScrollbars: false,
-                interactiveScrollbars: true
+                interactiveScrollbars: true,
+                click: true,
+                preventDefault: false,
+                disableTouch: true
             } );
         },
 

@@ -378,7 +378,7 @@ IScroll.prototype = {
 		}
 
 		if ( this.options.preventDefault && !utils.isBadAndroid && !utils.preventDefaultException(e.target, this.options.preventDefaultException) ) {
-			e.preventDefault();
+			// e.preventDefault();
 		}
 
 		var point = e.touches ? e.touches[0] : e,
@@ -422,7 +422,7 @@ IScroll.prototype = {
 		}
 
 		if ( this.options.preventDefault ) {	// increases performance on Android? TODO: check!
-			e.preventDefault();
+			// e.preventDefault();
 		}
 
 		var point		= e.touches ? e.touches[0] : e,
@@ -519,7 +519,7 @@ IScroll.prototype = {
 		}
 
 		if ( this.options.preventDefault && !utils.preventDefaultException(e.target, this.options.preventDefaultException) ) {
-			e.preventDefault();
+			// e.preventDefault();
 		}
 
 		var point = e.changedTouches ? e.changedTouches[0] : e,
