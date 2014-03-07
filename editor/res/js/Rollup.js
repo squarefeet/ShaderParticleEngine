@@ -8,7 +8,7 @@
 			duration: 500,
 			easing: 'ease',
 			group: 'standard',
-			solo: true
+			solo: false
 		};
 
 		if( options ) {
@@ -34,11 +34,16 @@
 			var container = document.createElement( 'div' ),
 				title = document.createElement( 'h4' ),
 				content = this.options.content || document.createElement( 'div' ),
-				transition = 'height ' + this.options.duration + 'ms ' + this.options.easing;
+				transition = 'height ' + this.options.duration + 'ms ' + this.options.easing,
+				clearFix = document.createElement( 'div' ),
+				arrow = document.createElement( 'div' );
 
 			container.className = 'roll-up';
 			title.classList.add( 'title' );
 			content.classList.add( 'content' );
+			arrow.classList.add( 'arrow' );
+
+			clearFix.classList.add( 'clear-fix' );
 
 			title.innerHTML = this.options.title;
 
@@ -49,12 +54,18 @@
 			container.style.msTransition = transition;
 			container.style.transition = transition;
 
+			// content.appendChild( clearFix );
 			container.appendChild( title );
+			container.appendChild( arrow );
 			container.appendChild( content );
 
 			this.domElement = container;
 			this.contentElement = content;
 			this.titleElement = title;
+		},
+
+		_getOffsetHeight: function() {
+			return this.titleElement.offsetHeight + this.contentElement.offsetHeight;
 		},
 
 		toggle: function() {
@@ -72,7 +83,7 @@
 
 			this.state = true;
 			this.domElement.classList.add( 'open' );
-			this.domElement.style.height = (this.titleElement.offsetHeight + this.contentElement.offsetHeight + 2) + 'px';
+			this.domElement.style.height = (this._getOffsetHeight() + 2) + 'px';
 
 			if( this.options.solo ) {
 				for( var i = 0; i < group.length; ++i ) {

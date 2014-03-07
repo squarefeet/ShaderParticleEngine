@@ -1,0 +1,41 @@
+section.settings-panel {
+    position: absolute;
+    top: 3em;
+    right: 0;
+    bottom: 1px;
+    width: 20rem;
+    margin-top: 2px;
+    background: rgba( 50, 50, 50, 0.6 );
+}
+
+section.settings-panel > .group-wrapper {
+    margin: 0.1rem 0.1rem 0.4rem;
+    border: 1px solid rgba( 255, 255, 255, 0.1 );
+    background: rgba( 0, 0, 0, 0.2 );
+    -webkit-transform: translateZ(0);
+}
+
+section.settings-panel > .group-wrapper > .group-title {
+    color: #eee;
+    padding: 0.2rem 0.4rem;
+    font-weight: normal;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-transform: capitalize;
+    background: rgba( 0, 0, 0, 0.3 );
+}
+
+section.settings-panel > .handle {
+    position: absolute;
+    top: 50%;
+    left: -2rem;
+    width: 2rem;
+    height: 4rem;
+    background: rgba( 50, 50, 50, 0.6 );
+    cursor: pointer;
+    border-top-left-radius: 0.3rem;
+    border-bottom-left-radius: 0.3rem;
+}
+
+section.settings-panel > .handle:hover {
+    background: rgba( 50, 50, 50, 0.8 );
+}

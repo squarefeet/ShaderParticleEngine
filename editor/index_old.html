@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" type="text/css" href="res/css/editor.css">
+        <link rel="stylesheet" type="text/css" href="res/css/icons.css">
+    </head>
+
+    <body>
+        <script type="text/javascript" src="res/js/vendor/THREE-r65.min.js"></script>
+        <script type="text/javascript" src="res/js/vendor/Stats.min.js"></script>
+        <script type="text/javascript" src="res/js/vendor/EditorControls.js"></script>
+        <script type="text/javascript" src="../build/ShaderParticles.min.js"></script>
+        <script type="text/javascript" src="res/js/editor.js"></script>
+
+        <div class="container absolute">
+            <div class="menu absolute transition-all">
+                <div class="icon reset-camera"></div>
+                <div class="icon increase-size"></div>
+                <div class="icon decrease-size"></div>
+            </div>
+            <div class="particle-wrapper absolute"></div>
+            <div class="settings absolute transition-all">
+                <div class="visibility-handle absolute transition-all">
+                    <p class="transition-all">&gt;</p>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var editor = new Editor();
+            editor.start();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,6 @@
+var CONFIG = CONFIG || {
+
+    
+    
+};
+

@@ -2,17 +2,33 @@
 	position: relative;
 	top: 0;
 	left: 0;
-	width: 100%;
-	height: 3.7em;
+	height: 1.5rem;
 	overflow: hidden;
-    margin: 0.2em;
+    margin: 0.2rem;
     border: 1px solid rgba( 255, 255, 255, 0.1 );
     background: rgba( 0, 0, 0, 0.1 );
     -webkit-transform: translateZ(0);
 }
 
+.roll-up > .arrow {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.3rem;
+    width: 0.6rem;
+    height: 0.6rem;
+    background: url(../img/arrow.png) center center no-repeat transparent;
+    background-size: contain;
+    -webkit-transform: rotate(0deg);
+    opacity: 0.5;
+}
+
+.roll-up.open > .arrow {
+    -webkit-transform: rotate(180deg);
+}
+
 .roll-up:hover {
-    border: 1px solid rgba( 255, 255, 255, 0.2 );
+    /*border: 1px solid rgba( 255, 255, 255, 0.2 );*/
+    border: 1px solid rgba(38, 161, 255, 0.5);
     background: rgba( 0, 0, 0, 0.2 );
 }
 
@@ -23,9 +39,10 @@
 	width: 100%;
     text-align: left;
     color: #ccc;
-    padding: 0 0.3em;
-    font-size: 1.5em;
-    line-height: 2.5em;
+    font-weight: normal;
+    padding: 0 0.3rem;
+    font-size: 0.8rem;
+    line-height: 1.5rem;
     text-shadow: 0 1px 0 rgba( 255, 255, 255, 0.1 );
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
     cursor: pointer;
@@ -34,7 +51,7 @@
 .roll-up > .content {
 	position: relative;
 	width: 100%;
-	padding: 0.5em 0.3em;
+	padding: 0.5rem 0.3rem;
 	border-top: 1px solid rgba( 255, 255, 255, 0.1 );
 	color: #eee;
 }

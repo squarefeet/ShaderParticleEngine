@@ -10,7 +10,9 @@ var Slider = function( options ) {
 
         fromValue: -100,
         toValue: 100,
-        startValue: 50
+        startValue: 0,
+        title: null,
+        round: false
     };
 
     if( options ) {
@@ -85,15 +87,42 @@ Slider.prototype = {
     },
 
     _make: function() {
+        var self = this;
+
         this.wrapper = document.createElement( 'div' );
         this.handle = document.createElement( 'div' );
         this.valueSlider = document.createElement( 'div' );
         this.readout = document.createElement( 'div' );
+        this.title = document.createElement( 'div' );
 
         this.wrapper.className = this.options.className;
         this.handle.className = 'slider-handle';
         this.valueSlider.className = 'slider-value';
         this.readout.className = 'slider-readout';
+        this.title.className = 'slider-title';
+
+        if( this.options.title ) {
+            this.title.textContent = this.options.title;
+        }
+
+        this.readout.addEventListener( 'dblclick', function() {
+            self.disableInteraction();
+            self.readout.setAttribute( 'contenteditable', true );
+            self.readout.focus();
+            document.execCommand( 'selectAll', false, null );
+        }, false );
+
+        this.readout.addEventListener( 'keydown', function( e ) {
+            if( e.keyCode === 13 ) {
+                self.readout.blur();
+            }
+        }, false );
+
+        this.readout.addEventListener( 'blur', function( e ) {
+            self.readout.removeAttribute( 'contenteditable' );
+            self._setValue( +self.readout.textContent );
+            self.enableInteraction();
+        }, false );
 
         this.wrapper.style.width = this.options.width + 'px';
         this.wrapper.style.height = this.options.height + 'px';
@@ -120,6 +149,7 @@ Slider.prototype = {
         this.wrapper.appendChild( this.handle );
         this.wrapper.appendChild( this.valueSlider );
         this.wrapper.appendChild( this.readout );
+        this.options.parent.appendChild( this.title );
         this.options.parent.appendChild( this.wrapper );
     },
 
@@ -144,7 +174,7 @@ Slider.prototype = {
         this.handle.style.webkitTransform = 'translate3d(' + x + 'px, ' + y + 'px, 0)';
         this.valueSlider.style.width = x + 'px';
 
-        this.readout.textContent = this.value.toFixed(2);
+        this.readout.textContent = this.options.round ? this.value : this.value.toFixed(2);
     },
 
     _clampInternalValue: function() {
@@ -170,6 +200,39 @@ Slider.prototype = {
             this.options.orientation === 'horizontal' ? this.options.width : this.options.height,
             this.options.fromValue,
             this.options.toValue
+        );
+
+        if( this.options.round ) {
+            this.value = Math.round( this.value );
+        }
+
+        this._positionHandle();
+
+        for( var i = 0; i < this.callbacks.length; ++i ) {
+            this.callbacks[i]( this.value );
+        }
+    },
+
+    _setValue: function( value ) {
+        this.value = value;
+
+        if( this.options.round ) {
+            this.value = Math.round( this.value );
+        }
+
+        if( this.value < this.options.fromValue ) {
+            this.options.fromValue = this.value;
+        }
+        else if( this.value > this.options.toValue ) {
+            this.options.toValue = this.value;
+        }
+
+        this.internalValue = this._scaleValue(
+            this.value,
+            this.options.fromValue,
+            this.options.toValue,
+            0,
+            this.options.orientation === 'horizontal' ? this.options.width : this.options.height
         );
 
         this._positionHandle();
