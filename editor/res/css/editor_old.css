@@ -1,0 +1,218 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    font-size: 62.5%;
+    font-family: sans-serif;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.transition-all {
+    -webkit-transition: all 250ms ease;
+}
+
+.container {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #eee;
+}
+
+.menu {
+    width: 100%;
+    height: 4em;
+    background-color: rgba( 50, 50, 50, 0.8 );
+    box-shadow: 0 0.2em 0.2em rgba( 255, 255, 255, 0.1 );
+    border-bottom: 1px solid rgba( 100, 100, 100, 0.5 );
+    z-index: 5;
+}
+
+.menu:hover {
+    border-bottom: 1px solid rgba( 100, 100, 100, 0.8 );
+}
+
+.particle-wrapper {
+    width: 100%;
+    height: 100%;
+    background-color: rgba( 0, 0, 0, 0.1 );
+    z-index: 3;
+}
+
+.settings {
+    top: 4em;
+    right: 0;
+    width: 30em;
+    bottom: 0;
+    background-color: rgba( 30, 30, 30, 0.8 );
+    border-left: 1px solid rgba( 100, 100, 100, 0.5 );
+    z-index: 4;
+}
+
+.settings:hover {
+    border-left: 1px solid rgba( 100, 100, 100, 0.8 );
+}
+
+.settings > .visibility-handle {
+    top: 50%;
+    left: -2em;
+    width: 2em;
+    height: 5em;
+    margin-top: -2.5em;
+    background-color: rgba( 24, 24, 24, 1 );
+    border: 1px solid rgba( 100, 100, 100, 0.5 );
+    box-shadow: inset 0 0 0 rgba(0, 0, 0, 0);
+    border-right: none;
+    border-top-left-radius: 0.3em;
+    border-bottom-left-radius: 0.3em;
+    cursor: pointer;
+}
+
+.settings > .visibility-handle > p {
+    line-height: 2.5em;
+    text-align: center;
+    font-size: 2em;
+    color: #999;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+}
+
+.settings:hover > .visibility-handle {
+    border: 1px solid rgba( 100, 100, 100, 0.8 );
+    border-right: none;
+}
+
+.settings > .visibility-handle:hover {
+    border: 1px solid rgba( 100, 100, 100, 0.8 );
+    box-shadow: inset 0.4em 0 0.4em rgba( 0, 0, 0, 0.4 );
+    border-right: none;
+}
+
+.settings > .visibility-handle:hover > p {
+    color: #aaa;
+}
+
+
+.setting-wrapper {
+    position: relative;
+    margin: 0.2em;
+    padding: 0.3em;
+    border: 1px solid rgba( 255, 255, 255, 0.1 );
+    background: rgba( 0, 0, 0, 0.1 );
+    /*height: 2.5em;*/
+    /*max-height: 100em;*/
+    overflow: hidden;
+}
+.setting-wrapper:hover {
+    border: 1px solid rgba( 255, 255, 255, 0.3 );
+    background: rgba( 0, 0, 0, 0.5 );
+}
+
+
+
+.setting-wrapper > h6 {
+    position: relative;
+    width: 100%;
+    text-align: left;
+    color: #bbb;
+    font-size: 1.4em;
+    margin: 0.1em 0 0;
+    text-shadow: 0 1px 0 rgba( 255, 255, 255, 0.1 );
+    cursor: pointer;
+}
+
+.setting-wrapper > .setting-inner-wrapper {
+    position: relative;
+    -webkit-transition: max-height 250ms linear;
+    overflow: hidden;
+    height: auto;
+    max-height: 0em;
+}
+
+.setting-wrapper.open > .setting-inner-wrapper {
+    height: auto;
+    max-height: 10em;
+}
+
+.setting-wrapper > .arrow {
+    top: 0.3em;
+    right: 0.3em;
+    width: 1.5em;
+    height: 1.5em;
+    background: url(../img/arrow.png) center center no-repeat transparent;
+    background-size: contain;
+    -webkit-transform: rotate(0deg);
+    opacity: 0.5;
+}
+
+.setting-wrapper.open > .arrow {
+    -webkit-transform: rotate(180deg);
+}
+
+.range-wrapper {
+    margin-bottom: 1em;
+}
+
+.range-wrapper input[type=range] {
+    position: relative;
+    height: 2em;
+    width: 70%;
+    float: left;
+}
+
+.range-wrapper span {
+    float: left;
+    width: 15%;
+    line-height: 2em;
+    text-align: center;
+    color: #aaa;
+}
+.range-wrapper > input[type=text] {
+    clear: both;
+    margin-left: 15%;
+    width: 70%;
+    font-size: 1.2em;
+    line-height: 1.5em;
+    padding: 0.15em;
+    background-color: transparent;
+    text-align: center;
+}
+
+
+input {
+    cursor: pointer;
+    width: 100%;
+    color: #aaa;
+    border: 1px solid rgba( 255, 255, 255, 0.2 );
+    padding: 0.3em;
+}
+
+
+
+/* Texture */
+.image-upload input {
+    display: none;
+}
+.image-upload select {
+    margin: 1em 0 0.3em 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #aaa;
+    width: 100%;
+}
+
+/* Position */
+.setting-wrapper.position {
+
+}
+
+.setting-wrapper.position.open > .setting-inner-wrapper {
+    height: auto;
+    max-height: 16em;
+}

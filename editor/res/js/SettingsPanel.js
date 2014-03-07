@@ -16,13 +16,17 @@
             this.scroller.refresh();
         },
 
+        _toggleOpen: function() {
+            this.domElement.classList.toggle( 'closed' );
+        },
+
         _makeElements: function() {
             this.domElement = document.createElement( 'section' );
             this.handle = document.createElement( 'div' );
             this.scrollWrapper = document.createElement( 'div' );
             this.scrollContainer = document.createElement( 'div' );
-            
-            this.domElement.classList.add( 'settings-panel' );
+
+            this.domElement.classList.add( 'settings-panel', 'closed' );
             this.handle.classList.add( 'handle' );
             this.scrollWrapper.classList.add( 'scroll-wrapper' );
             this.scrollContainer.classList.add( 'scroll-container' );
@@ -30,6 +34,8 @@
             this.scrollWrapper.appendChild( this.scrollContainer );
             this.domElement.appendChild( this.handle );
             this.domElement.appendChild( this.scrollWrapper );
+
+            this.handle.addEventListener( 'click', this._toggleOpen, false );
 
             this._makePanels();
         },
@@ -76,6 +82,8 @@
                             toValue: group[ i ].maxValue,
                             round: group[ i ].round
                         });
+
+                        el.registerCallback( group[ i ].action );
                     }
                 }
 

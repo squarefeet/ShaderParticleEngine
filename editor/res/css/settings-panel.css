@@ -5,15 +5,21 @@ section.settings-panel {
     bottom: 1px;
     width: 20rem;
     margin-top: 2px;
-    background: rgba( 50, 50, 50, 0.6 );
-    overflow: hidden;
+    background: rgba( 0, 0, 0, 0.8 );
+    -webkit-transition: width 500ms ease;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    z-index: 2;
+}
+
+section.settings-panel.closed {
+    width: 0rem;
 }
 
 section.settings-panel > .scroll-wrapper {
     position: relative;
     top: 0;
     left: 0;
-    right: 7px;
+    width: 20rem;
     height: 100%;
     overflow: hidden;
 }
@@ -22,12 +28,13 @@ section.settings-panel > .scroll-wrapper > .scroll-container {
     position: absolute;
     top: 0;
     left: 0;
+    right: 7px;
 }
 
 section.settings-panel .group-wrapper {
     margin: 0.1rem 0.1rem 0.4rem;
-    border: 1px solid rgba( 255, 255, 255, 0.1 );
-    background: rgba( 0, 0, 0, 0.2 );
+    border: 1px solid rgba( 255, 255, 255, 0.2 );
+    background: rgba( 0, 0, 0, 0.6 );
     -webkit-transform: translateZ(0);
 }
 
@@ -37,7 +44,7 @@ section.settings-panel .group-wrapper > .group-title {
     font-weight: normal;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     text-transform: capitalize;
-    background: rgba( 0, 0, 0, 0.3 );
+    background: rgba( 50, 50, 50, 0.6 );
 }
 
 section.settings-panel > .handle {
@@ -46,16 +53,50 @@ section.settings-panel > .handle {
     left: -2rem;
     width: 2rem;
     height: 4rem;
-    background: rgba( 50, 50, 50, 0.6 );
+    background: rgba( 0, 0, 0, 0.8 );
     cursor: pointer;
     border-top-left-radius: 0.3rem;
     border-bottom-left-radius: 0.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-right: none;
+}
+
+section.settings-panel > .handle::after {
+    position: absolute;
+    content: ">";
+    width: 100%;
+    line-height: 4rem;
+    font-size: 1.5rem;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 2px 0 0px rgba( 255, 255, 255, 0.2 );
+    color: rgba(0, 0, 0, 0);
+}
+
+section.settings-panel.closed > .handle::after {
+    content: "<";
+    text-shadow: -2px 0 0px rgba( 255, 255, 255, 0.2 );
+}
+
+section.settings-panel.closed > .handle {
+    background: rgba(38, 161, 255, 0.3);
 }
 
 section.settings-panel > .handle:hover {
-    background: rgba( 50, 50, 50, 0.8 );
+    border: 1px solid rgba(38, 161, 255, 0.5);
+    border-right: none;
+}
+section.settings-panel:hover {
+    border-left: 1px solid rgba(38, 161, 255, 0.5);
 }
 
 .iScrollIndicator {
     border: 1px solid rgba( 255, 255, 255, 0.4 ) !important;
+    cursor: pointer;
+}
+
+.iScrollIndicator:hover,
+.iScrollIndicator:active {
+    background: rgba(38, 161, 255, 0.2) !important;
+    border: 1px solid rgba(38, 161, 255, 0.8) !important;
 }

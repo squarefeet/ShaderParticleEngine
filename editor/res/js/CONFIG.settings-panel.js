@@ -12,7 +12,7 @@ var CONFIG = CONFIG || {};
             maxValue: max,
             round: !!round,
             action: function() {
-                app.events.fire( 'setting:' + eventName );
+                app.events.fire.apply( app.events, ['setting:' + eventName, null].concat( Array.prototype.slice.call( arguments ) ) );
             }
         };
     }

@@ -184,6 +184,12 @@ Slider.prototype = {
         );
     },
 
+    _callCallbacks: function() {
+        for( var i = 0; i < this.callbacks.length; ++i ) {
+            this.callbacks[i]( this.value, this.options.title );
+        }
+    },
+
     _determineValue: function( x, y ) {
         if( this.options.orientation === 'horizontal' ) {
             this.internalValue = x;
@@ -207,14 +213,11 @@ Slider.prototype = {
         }
 
         this._positionHandle();
-
-        for( var i = 0; i < this.callbacks.length; ++i ) {
-            this.callbacks[i]( this.value );
-        }
+        this._callCallbacks();
     },
 
     _setValue: function( value ) {
-        this.value = value;
+        this.value = isNaN( value ) ? this.value : value;
 
         if( this.options.round ) {
             this.value = Math.round( this.value );
@@ -236,10 +239,7 @@ Slider.prototype = {
         );
 
         this._positionHandle();
-
-        for( var i = 0; i < this.callbacks.length; ++i ) {
-            this.callbacks[i]( this.value );
-        }
+        this._callCallbacks();
     },
 
     _scaleValue: function( num, lowIn, highIn, lowOut, highOut ) {

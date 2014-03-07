@@ -5,7 +5,7 @@
 	height: 1.5rem;
 	overflow: hidden;
     margin: 0.2rem;
-    border: 1px solid rgba( 255, 255, 255, 0.1 );
+    border: 1px solid rgba( 255, 255, 255, 0.15 );
     background: rgba( 0, 0, 0, 0.1 );
     -webkit-transform: translateZ(0);
 }
@@ -29,7 +29,7 @@
 .roll-up:hover {
     /*border: 1px solid rgba( 255, 255, 255, 0.2 );*/
     border: 1px solid rgba(38, 161, 255, 0.5);
-    background: rgba( 0, 0, 0, 0.2 );
+    background: rgba( 20, 20, 20, 0.9 );
 }
 
 .roll-up > .title {
@@ -44,7 +44,7 @@
     font-size: 0.8rem;
     line-height: 1.5rem;
     text-shadow: 0 1px 0 rgba( 255, 255, 255, 0.1 );
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 1);
     cursor: pointer;
 }
 
