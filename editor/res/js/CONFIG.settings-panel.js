@@ -29,7 +29,7 @@ var CONFIG = CONFIG || {};
         },
 
         positioning: {
-            position: makeSetting( 'Position', 'position', 'slider', ['x', 'y', 'z'], -200, 200 ),
+            position: makeSetting( 'Position', 'position', 'slider', ['x', 'y', 'z'], -20, 20 ),
             positionSpread: makeSetting( 'Position Spread', 'positionSpread', 'slider', ['x', 'y', 'z'], -200, 200 ),
             radius: makeSetting( 'Radius', 'radius', 'slider', [''], 1, 200 ),
             radiusSpread: makeSetting( 'Radius Spread', 'radiusSpread', 'slider', [''], 0, 200 ),

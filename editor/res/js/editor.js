@@ -52,7 +52,7 @@ Editor.prototype = {
         rendererEl.style.top = '0';
 
         this.camera.position.y = 5;
-        this.camera.position.z = -10;
+        this.camera.position.z = 10;
         this.camera.lookAt( this.scene.position );
 
         this.domElement.appendChild( this.stats.domElement );
