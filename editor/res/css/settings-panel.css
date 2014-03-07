@@ -1,21 +1,37 @@
 section.settings-panel {
     position: absolute;
     top: 3em;
-    right: 0;
+    right: 0px;
     bottom: 1px;
     width: 20rem;
     margin-top: 2px;
     background: rgba( 50, 50, 50, 0.6 );
+    overflow: hidden;
 }
 
-section.settings-panel > .group-wrapper {
+section.settings-panel > .scroll-wrapper {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 7px;
+    height: 100%;
+    overflow: hidden;
+}
+
+section.settings-panel > .scroll-wrapper > .scroll-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+section.settings-panel .group-wrapper {
     margin: 0.1rem 0.1rem 0.4rem;
     border: 1px solid rgba( 255, 255, 255, 0.1 );
     background: rgba( 0, 0, 0, 0.2 );
     -webkit-transform: translateZ(0);
 }
 
-section.settings-panel > .group-wrapper > .group-title {
+section.settings-panel .group-wrapper > .group-title {
     color: #eee;
     padding: 0.2rem 0.4rem;
     font-weight: normal;
@@ -38,4 +54,8 @@ section.settings-panel > .handle {
 
 section.settings-panel > .handle:hover {
     background: rgba( 50, 50, 50, 0.8 );
+}
+
+.iScrollIndicator {
+    border: 1px solid rgba( 255, 255, 255, 0.4 ) !important;
 }

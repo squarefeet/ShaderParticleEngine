@@ -1,18 +1,35 @@
 (function() {
 
     function SettingsPanel() {
+        // Bind scope
+        for( var i in this ) {
+            if( typeof this[ i ] === 'function' ) {
+                this[ i ] = this[ i ].bind( this );
+            }
+        }
+
         this._makeElements();
     }
 
     SettingsPanel.prototype = {
+        _refreshScroller: function() {
+            this.scroller.refresh();
+        },
+
         _makeElements: function() {
             this.domElement = document.createElement( 'section' );
             this.handle = document.createElement( 'div' );
+            this.scrollWrapper = document.createElement( 'div' );
+            this.scrollContainer = document.createElement( 'div' );
             
             this.domElement.classList.add( 'settings-panel' );
             this.handle.classList.add( 'handle' );
+            this.scrollWrapper.classList.add( 'scroll-wrapper' );
+            this.scrollContainer.classList.add( 'scroll-container' );
 
-            this.domElement.appendChild( this.handle ) ;
+            this.scrollWrapper.appendChild( this.scrollContainer );
+            this.domElement.appendChild( this.handle );
+            this.domElement.appendChild( this.scrollWrapper );
 
             this._makePanels();
         },
@@ -23,6 +40,13 @@
             for( var i in settings ) {
                 this._makePanelGroup( i, settings[ i ])
             }
+
+            this.scroller = new IScroll( this.scrollWrapper, {
+                mouseWheel: true,
+                scrollbars: true,
+                fadeScrollbars: false,
+                interactiveScrollbars: true
+            } );
         },
 
         _makePanelGroup: function( groupName, group ) {
@@ -56,13 +80,14 @@
                     title: group[ i ].title,
                     content: content,
                     group: groupName,
-                    solo: true
+                    solo: true,
+                    callback: this._refreshScroller
                 });
 
                 wrapper.appendChild( rollup.domElement );
             }
 
-            this.domElement.appendChild( wrapper );
+            this.scrollContainer.appendChild( wrapper );
         }
     };
 

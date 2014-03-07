@@ -20,8 +20,11 @@ var CONFIG = CONFIG || {};
     CONFIG.settingsPanel = {
 
         general: {
+            texture: makeSetting( 'Texture', 'texture', 'select', ['Bullet', 'Cloud', 'Smoke', 'Star', 'Custom'] ),
             type: makeSetting( 'Emitter Type', 'type', 'select', ['cube', 'sphere', 'disk'] ),
-            particleCount: makeSetting( 'Particle Count', 'particleCount', 'slider', [''], 0, 10000, true )
+            particleCount: makeSetting( 'Particle Count', 'particleCount', 'slider', [''], 0, 10000, true ),
+            duration: makeSetting( 'Duration', 'duration', 'slider', [''], 0, 10 ),
+            isStatic: makeSetting( 'Static', 'static', 'checkbox', [''], 0, 1 )
         },
 
         positioning: {
@@ -45,6 +48,16 @@ var CONFIG = CONFIG || {};
         sizing: {
             size: makeSetting( 'Size', 'size', 'slider', ['Start', 'Middle', 'End'], 0, 50 ),
             sizeSpread: makeSetting( 'Size Spread', 'sizeSpread', 'slider', ['Start', 'Middle', 'End'], 0, 50 ),
+        },
+
+        color: {
+            color: makeSetting( 'Color', 'color', 'color', ['Start', 'Middle', 'End'], 0, 255 ),
+            colorSpread: makeSetting( 'Color Spread', 'colorSpread', 'color', ['Start', 'Middle', 'End'], 0, 255 ),
+        },
+
+        opacity: {
+            opacity: makeSetting( 'Opacity', 'opacity', 'slider', ['Start', 'Middle', 'End'], 0, 1 ),
+            opacitySpread: makeSetting( 'Opacity Spread', 'opacitySpread', 'slider', ['Start', 'Middle', 'End'], 0, 1 ),
         }
 
     };

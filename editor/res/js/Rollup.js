@@ -8,7 +8,8 @@
 			duration: 500,
 			easing: 'ease',
 			group: 'standard',
-			solo: false
+			solo: false,
+			callback: null
 		};
 
 		if( options ) {
@@ -74,6 +75,13 @@
 			}
 			else {
 				this.close();
+			}
+
+			if( typeof this.options.callback === 'function' ) {
+				var self = this;
+				setTimeout( function() {
+					self.options.callback();
+				}, this.options.duration + 50 );
 			}
 		},
 
