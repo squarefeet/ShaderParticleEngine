@@ -4,18 +4,50 @@
         var emitter = app.editor.particleEmitter,
             start = emitter.verticesIndex,
             end = start + emitter.particleCount,
-            attributeValue = emitter.attributes[ attributeName ].value;
+            attributeValue = emitter.attributes[ attributeName ] ? emitter.attributes[ attributeName ].value : null;
+
+            console.log( attributeName );
 
         for( var i = start; i < end; ++i ) {
-            attributeValue[ i ].set(
-                Math.abs( emitter._randomFloat( emitter[ attributeName + 'Start' ],     emitter[ attributeName + 'StartSpread' ] ) ),
-                Math.abs( emitter._randomFloat( emitter[ attributeName + 'Middle' ],    emitter[ attributeName + 'MiddleSpread' ] ) ),
-                Math.abs( emitter._randomFloat( emitter[ attributeName + 'End' ],       emitter[ attributeName + 'EndSpread' ] ) )
-            );
-        }
 
-        emitter.attributes[ attributeName ].needsUpdate = true;
+            if( emitter.attributes[ attributeName + 'Start' ] ) {
+                emitter.attributes[ attributeName + 'Start' ].value[ i ] = 
+                    emitter._randomColor( emitter[ attributeName + 'Start' ], emitter[ attributeName + 'StartSpread' ] );
+
+                emitter.attributes[ attributeName + 'Middle' ].value[ i ] = 
+                    emitter._randomColor( emitter[ attributeName + 'Middle' ], emitter[ attributeName + 'MiddleSpread' ] );
+
+                emitter.attributes[ attributeName + 'End' ].value[ i ] = 
+                    emitter._randomColor( emitter[ attributeName + 'End' ], emitter[ attributeName + 'EndSpread' ] );
+
+                emitter.attributes[ attributeName + 'Start' ].needsUpdate = true;
+                emitter.attributes[ attributeName + 'Middle' ].needsUpdate = true;
+                emitter.attributes[ attributeName + 'End' ].needsUpdate = true;
+            }
+            else if( emitter.attributes[ attributeName ].value instanceof THREE.Vector3 ) {
+                attributeValue[ i ].set(
+                    Math.abs( emitter._randomFloat( emitter[ attributeName + 'Start' ],     emitter[ attributeName + 'StartSpread' ] ) ),
+                    Math.abs( emitter._randomFloat( emitter[ attributeName + 'Middle' ],    emitter[ attributeName + 'MiddleSpread' ] ) ),
+                    Math.abs( emitter._randomFloat( emitter[ attributeName + 'End' ],       emitter[ attributeName + 'EndSpread' ] ) )
+                );
+
+                emitter.attributes[ attributeName ].needsUpdate = true;
+            }
+            else {
+                attributeValue[ i ].set(
+                    Math.abs( emitter._randomFloat( emitter[ attributeName + 'Start' ],     emitter[ attributeName + 'StartSpread' ] ) ),
+                    Math.abs( emitter._randomFloat( emitter[ attributeName + 'Middle' ],    emitter[ attributeName + 'MiddleSpread' ] ) ),
+                    Math.abs( emitter._randomFloat( emitter[ attributeName + 'End' ],       emitter[ attributeName + 'EndSpread' ] ) ),
+                    0
+                );
+
+                emitter.attributes[ attributeName ].needsUpdate = true;
+            }
+        }        
     };
+
+    var color = [],
+        colorSpread = [];
 
 
     // General
@@ -113,6 +145,33 @@
         setShaderStartMiddleEndAttribute( 'opacity' );
     } );
 
+    // Angle
+    app.events.on( 'setting:angle', function( value, title ) {
+        app.editor.particleEmitter[ 'angle' + title.replace( ':', '' ) ] = value;
+        setShaderStartMiddleEndAttribute( 'angle' );
+    } );
+
+    app.events.on( 'setting:angleSpread', function( value, title ) {
+        app.editor.particleEmitter[ 'angle' + title.replace( ':', '' ) + 'Spread' ] = value;
+        setShaderStartMiddleEndAttribute( 'angle' );
+    } );
+
+    app.events.on( 'setting:color', function( value, title ) {
+        for( var i = 0; i < value.length; ++i ) {
+            color[ i ] = value[ i ] / 255;
+        }
+
+        app.editor.particleEmitter[ 'color' + title.replace( ':', '' ) ].fromArray( color );
+        setShaderStartMiddleEndAttribute( 'color' );
+    } );
+
+    app.events.on( 'setting:colorSpread', function( value, title ) {
+        app.editor.particleEmitter[ 'color' + title.replace( ':', '' ) + 'Spread' ].set( value, value, value );
+
+        console.log( value, app.editor.particleEmitter[ 'color' + title.replace( ':', '' ) + 'Spread' ] );
+
+        setShaderStartMiddleEndAttribute( 'color' );
+    } );
 
 
 

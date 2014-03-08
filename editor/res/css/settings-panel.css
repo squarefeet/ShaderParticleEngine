@@ -100,3 +100,22 @@ section.settings-panel:hover {
     background: rgba(38, 161, 255, 0.2) !important;
     border: 1px solid rgba(38, 161, 255, 0.8) !important;
 }
+
+
+section.settings-panel .single-attribute {
+    position: relative;
+    top: 0;
+    left: 0;
+    /*height: 1.5rem;*/
+    overflow: hidden;
+    margin: 0.2rem;
+    border: 1px solid rgba( 255, 255, 255, 0.15 );
+    background: rgba( 0, 0, 0, 0.1 );
+    -webkit-transform: translateZ(0);
+}
+
+section.settings-panel .single-attribute > span {
+    color: #aaa;
+    float: left;
+    line-height: 2rem;
+}

@@ -12,7 +12,7 @@ var CONFIG = CONFIG || {};
             maxValue: max,
             round: !!round,
             action: function() {
-                app.events.fire.apply( app.events, ['setting:' + eventName, null].concat( Array.prototype.slice.call( arguments ) ) );
+                app.events.fire.apply( app.events, [ 'setting:' + eventName, null ].concat( Array.prototype.slice.call( arguments ) ) );
             }
         };
     }
@@ -53,12 +53,17 @@ var CONFIG = CONFIG || {};
 
         color: {
             color: makeSetting( 'Color', 'color', 'color', ['Start', 'Middle', 'End'], 0, 255 ),
-            colorSpread: makeSetting( 'Color Spread', 'colorSpread', 'color', ['Start', 'Middle', 'End'], 0, 255 ),
+            colorSpread: makeSetting( 'Color Spread', 'colorSpread', 'slider', ['Start', 'Middle', 'End'], 0, 1 ),
         },
 
         opacity: {
             opacity: makeSetting( 'Opacity', 'opacity', 'slider', ['Start', 'Middle', 'End'], 0, 1 ),
             opacitySpread: makeSetting( 'Opacity Spread', 'opacitySpread', 'slider', ['Start', 'Middle', 'End'], 0, 1 ),
+        },
+
+        angle: {
+            angle: makeSetting( 'Angle', 'angle', 'slider', ['Start', 'Middle', 'End'], -Math.PI, Math.PI ),
+            angleSpread: makeSetting( 'Angle Spread', 'angleSpread', 'slider', ['Start', 'Middle', 'End'], 0, Math.PI * 2 ),
         }
 
     };

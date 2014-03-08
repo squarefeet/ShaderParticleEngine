@@ -79,9 +79,9 @@
 
 			if( typeof this.options.callback === 'function' ) {
 				var self = this;
-				setTimeout( function() {
+				// setTimeout( function() {
 					self.options.callback();
-				}, this.options.duration + 50 );
+				// }, this.options.duration + 50 );
 			}
 		},
 

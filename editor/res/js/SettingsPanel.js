@@ -16,7 +16,27 @@
 
     SettingsPanel.prototype = {
         _refreshScroller: function() {
-            this.scroller.refresh();
+            var currentY = Math.abs( this.scroller.y ),
+                pastCenter = currentY > ( Math.abs( this.scroller.maxScrollY ) * 0.5 ),
+                self = this,
+                start = Date.now(),
+                dt = 0;
+
+            var interval = setInterval( function() {
+                dt += Date.now() - start;
+                start = Date.now();
+
+                if( dt > 500 ) {
+                    clearInterval( interval );
+                    return;
+                }
+
+                self.scroller.refresh();
+
+                if( pastCenter ) {
+                    self.scroller.scrollTo( 0, self.scroller.maxScrollY, 0 );
+                }
+            }, 1000 / 60 );
         },
 
         _toggleOpen: function() {
@@ -80,12 +100,21 @@
             for( i in group ) {
                 content = document.createElement( 'div' );
 
-                if( group[ i ].type === 'slider' ) {
-                    var numChildren = group[ i ].children.length;
+                var numChildren = group[ i ].children.length;
 
+                
+
+                if( group[ i ].type === 'slider' ) {
                     if( numChildren > 1 ) {
                         this.attributes[ i ] = {};
                     }
+                    
+                    // else {
+                    //     var title = document.createElement( 'span' );
+                    //     title.textContent = group[ i ].title;
+                    //     content.classList.add( 'single-attribute' );
+                    //     content.appendChild( title );
+                    // }
 
                     for( var j = 0, el; j < numChildren; ++j ) {
                         el = new Slider({
@@ -100,11 +129,29 @@
 
                         el.registerCallback( group[ i ].action );
 
-                        // el.registerCallback( (function( name, title ) {
-                        //     return function( value ) {
-                        //         self.setAttribute( name, value, title );
-                        //     };
-                        // }( i, group[ i ].children[ j ] )) );
+                        if( numChildren > 1 ) {
+                            this.attributes[ i ][ group[ i ].children[ j ] ] = el;
+                        }
+                        else {
+                            this.attributes[ i ] = el;
+                        }
+                    }
+                }
+
+
+                else if( group[ i ].type === 'color' ) {
+                    if( numChildren > 1 ) {
+                        this.attributes[ i ] = {};
+                    }
+                    for( var j = 0, el; j < numChildren; ++j ) {
+                        el = new ColorPicker({
+                            width: 100,
+                            height: 100,
+                            callback: group[ i ].action,
+                            title: group[ i ].children[ j ] ? group[ i ].children[ j ] + ':' : '',
+                        });
+
+                        content.appendChild( el.domElement );
 
                         if( numChildren > 1 ) {
                             this.attributes[ i ][ group[ i ].children[ j ] ] = el;
@@ -115,16 +162,20 @@
                     }
                 }
 
-                rollup = new Rollup({
-                    title: group[ i ].title,
-                    content: content,
-                    group: groupName,
-                    solo: true,
-                    callback: this._refreshScroller,
-                    solo: CONFIG.soloSettingGroupRollups
-                });
+                // if( numChildren > 1 ) {
+                    rollup = new Rollup({
+                        title: group[ i ].title,
+                        content: content,
+                        group: groupName,
+                        callback: this._refreshScroller,
+                        solo: CONFIG.soloSettingGroupRollups
+                    });
 
-                wrapper.appendChild( rollup.domElement );
+                    wrapper.appendChild( rollup.domElement );
+                // }
+                // else {
+                //     wrapper.appendChild( content );
+                // }
             }
 
             this.scrollContainer.appendChild( wrapper );
@@ -155,7 +206,7 @@
                         attribute._setValue( emitterAttributes [ i ] );
                     }
                     else {
-                        attribute._setValue( emitterAttributes [ i ] );
+                        // attribute._setValue( emitterAttributes [ i ] );
                     }
                 }
                 else {
@@ -164,14 +215,17 @@
 
                     additionalString = ~i.indexOf( 'Spread' ) ? 'Spread' : '';
 
-                    if( ~i.indexOf( 'Start' ) && this.attributes[ subAttribute + 'Spread' ] ) {
-                        this.attributes[ subAttribute + additionalString ][ 'Start' ]._setValue( emitterAttributes[ i ] );
-                    }
-                    else if( ~i.indexOf( 'Middle' ) && this.attributes[ subAttribute + 'Spread' ] ) {
-                        this.attributes[ subAttribute + additionalString ][ 'Middle' ]._setValue( emitterAttributes[ i ] );
-                    }
-                    else if( ~i.indexOf( 'End' ) && this.attributes[ subAttribute + 'Spread' ] ) {
-                        this.attributes[ subAttribute + additionalString ][ 'End' ]._setValue( emitterAttributes[ i ] );
+                    if( typeof emitterAttributes[ i ] === 'number' ) {
+
+                        if( ~i.indexOf( 'Start' ) && this.attributes[ subAttribute + 'Spread' ] ) {
+                            this.attributes[ subAttribute + additionalString ][ 'Start' ]._setValue( emitterAttributes[ i ] );
+                        }
+                        else if( ~i.indexOf( 'Middle' ) && this.attributes[ subAttribute + 'Spread' ] ) {
+                            this.attributes[ subAttribute + additionalString ][ 'Middle' ]._setValue( emitterAttributes[ i ] );
+                        }
+                        else if( ~i.indexOf( 'End' ) && this.attributes[ subAttribute + 'Spread' ] ) {
+                            this.attributes[ subAttribute + additionalString ][ 'End' ]._setValue( emitterAttributes[ i ] );
+                        }
                     }
                 }
             }

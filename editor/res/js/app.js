@@ -1,6 +1,12 @@
+THREE.Color.prototype.invert = function() {
+    this.r *= -1;
+    this.g *= -1;
+    this.b *= -1;
+};
+
 var app = app || {};
 
-app.events = new PubSub( { debug: true } );
+app.events = new PubSub( { debug: false } );
 app.menu = new Menu();
 app.editor = new Editor();
 app.settings = new SettingsPanel();

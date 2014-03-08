@@ -37,7 +37,9 @@ Editor.prototype = {
         this.grid = new THREE.Mesh(
             new THREE.PlaneGeometry( size, size, segments, segments ),
             new THREE.MeshBasicMaterial( {
-                color: 0x222222,
+                color: this.renderer.getClearColor().invert,
+                opacity: 0.2,
+                transparent: true,
                 wireframe: true
             } )
         );
@@ -46,6 +48,8 @@ Editor.prototype = {
     },
 
 	_createScene: function() {
+        var self = this;
+
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
         this.stats = new Stats();
@@ -53,6 +57,25 @@ Editor.prototype = {
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.clock = new THREE.Clock();
         this.controls = new THREE.EditorControls( this.camera, this.renderer.domElement );
+        this.worldAxis = new THREE.AxisHelper( 1 );
+
+        this.worldAxis.material.linewidth = 1;
+        this.worldAxis.material.depthTest = false;
+        this.worldAxis.material.depthWrite = false;
+        // this.worldAxis.material.transparent = true;
+        // this.worldAxis.material.opacity = 0.5;
+
+        this.controls.addEventListener( 'change', function() {
+            var absScale = self.camera.position.distanceTo( self.particleEmitter.position );
+
+            self.worldAxis.scale.set( 
+                absScale, absScale, absScale
+            ).divideScalar( 5 );
+        });
+
+        this.controls.dispatchEvent( 'change' );
+
+        this.scene.add( this.worldAxis );
 
         this.focusMesh = new THREE.Mesh(
             new THREE.CubeGeometry( 1, 1, 1 ),
