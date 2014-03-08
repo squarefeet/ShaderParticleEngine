@@ -98,7 +98,7 @@ nav.menu > .items-wrapper > ul > li > span {
 }
 
 nav.menu > .items-wrapper > ul > li > img {
-    width: 1.5rem;
+    /*width: 1.5rem;*/
     height: 1.5rem;
     margin-top: 0.25rem;
 }

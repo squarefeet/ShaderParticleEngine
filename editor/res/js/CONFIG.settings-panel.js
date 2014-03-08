@@ -30,20 +30,20 @@ var CONFIG = CONFIG || {};
 
         positioning: {
             position: makeSetting( 'Position', 'position', 'slider', ['x', 'y', 'z'], -20, 20 ),
-            positionSpread: makeSetting( 'Position Spread', 'positionSpread', 'slider', ['x', 'y', 'z'], -200, 200 ),
-            radius: makeSetting( 'Radius', 'radius', 'slider', [''], 1, 200 ),
-            radiusSpread: makeSetting( 'Radius Spread', 'radiusSpread', 'slider', [''], 0, 200 ),
+            positionSpread: makeSetting( 'Position Spread', 'positionSpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
+            radius: makeSetting( 'Radius', 'radius', 'slider', [''], 1, 20 ),
+            radiusSpread: makeSetting( 'Radius Spread', 'radiusSpread', 'slider', [''], 0, 20 ),
             radiusSpreadClamp: makeSetting( 'Radius Spread Clamp', 'radiusSpreadClamp', 'slider', [''], 0, 10 ),
             radiusScale: makeSetting( 'Radius Scale', 'radiusScale', 'slider', ['x', 'y', 'z'], 0, 1 ),
         },
 
         movement: {
-            acceleration: makeSetting( 'Acceleration', 'acceleration', 'slider', ['x', 'y', 'z'], -200, 200 ),
-            accelerationSpread: makeSetting( 'Acceleration Spread', 'accelerationSpread', 'slider', ['x', 'y', 'z'], -200, 200 ),
-            velocity: makeSetting( 'Velocity', 'velocity', 'slider', ['x', 'y', 'z'], -200, 200 ),
-            velocitySpread: makeSetting( 'Velocity Spread', 'velocitySpread', 'slider', ['x', 'y', 'z'], -200, 200 ),
-            speed: makeSetting( 'Speed', 'speed', 'slider', [''], 0, 200 ),
-            speedSpread: makeSetting( 'Speed Spread', 'speedSpread', 'slider', [''], 0, 200 ),
+            acceleration: makeSetting( 'Acceleration', 'acceleration', 'slider', ['x', 'y', 'z'], -20, 20 ),
+            accelerationSpread: makeSetting( 'Acceleration Spread', 'accelerationSpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
+            velocity: makeSetting( 'Velocity', 'velocity', 'slider', ['x', 'y', 'z'], -20, 20 ),
+            velocitySpread: makeSetting( 'Velocity Spread', 'velocitySpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
+            speed: makeSetting( 'Speed', 'speed', 'slider', [''], 0, 20 ),
+            speedSpread: makeSetting( 'Speed Spread', 'speedSpread', 'slider', [''], 0, 20 ),
         },
 
         sizing: {

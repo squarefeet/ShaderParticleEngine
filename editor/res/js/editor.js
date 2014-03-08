@@ -11,6 +11,8 @@ function Editor() {
 
 	this._createScene();
 	this._createParticles();
+
+    window.addEventListener( 'resize', this._onResize, false );
 }
 
 Editor.prototype = {
@@ -68,6 +70,12 @@ Editor.prototype = {
         this.particleEmitter = new SPE.Emitter( settings.emitter );
         this.particleGroup.addEmitter( this.particleEmitter );
         this.scene.add( this.particleGroup.mesh );
+    },
+
+    _onResize: function( e ) {
+        this.renderer.setSize( window.innerWidth, window.innerHeight );
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
     },
 
     _animate: function() {

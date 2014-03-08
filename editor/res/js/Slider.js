@@ -31,6 +31,8 @@ var Slider = function( options ) {
         this.options.startValue :
         Math.min(this.options.fromValue, this.options.toValue) + (Math.abs(this.options.toValue - this.options.fromValue) / 2);
 
+    this.previousValue = this.value;
+
     this.internalValue = this._scaleValue(
         this.value,
         this.options.fromValue,
@@ -185,6 +187,10 @@ Slider.prototype = {
     },
 
     _callCallbacks: function() {
+        if( this.previousValue === this.value ) {
+            return;
+        }
+
         for( var i = 0; i < this.callbacks.length; ++i ) {
             this.callbacks[i]( this.value, this.options.title );
         }
@@ -200,6 +206,8 @@ Slider.prototype = {
 
         this._clampInternalValue();
 
+        this.previousValue = this.value;
+
         this.value = this._scaleValue(
             this.internalValue,
             0,
@@ -212,12 +220,15 @@ Slider.prototype = {
             this.value = Math.round( this.value );
         }
 
+
         this._positionHandle();
         this._callCallbacks();
     },
 
     _setValue: function( value ) {
-        this.value = isNaN( value ) ? this.value : value;
+        this.previousValue = this.value;
+
+        this.value = ( isNaN( value ) || typeof value !== 'number' ) ? this.value : value;
 
         if( this.options.round ) {
             this.value = Math.round( this.value );

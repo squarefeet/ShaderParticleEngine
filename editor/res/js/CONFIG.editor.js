@@ -13,7 +13,7 @@ var CONFIG = CONFIG || {};
 	        particleCount: 1000,
 
 	        position: new THREE.Vector3(),
-	        positionSpread: new THREE.Vector3(),
+	        positionSpread: new THREE.Vector3( 10, 10, 10 ),
 
 	        acceleration: new THREE.Vector3( 0, -2, 0 ),
 	        accelerationSpread: new THREE.Vector3( 1, 0, 1 ),
@@ -30,13 +30,13 @@ var CONFIG = CONFIG || {};
 	        speedSpread: 1,
 
 	        sizeStart: 1,
-	        sizeStartSpread: 0,
+	        sizeStartSpread: 4,
 
 	        sizeMiddle: 2,
-	        sizeMiddleSpread: 0,
+	        sizeMiddleSpread: 3,
 
 	        sizeEnd: 0,
-	        sizeEndSpread: 0,
+	        sizeEndSpread: 2,
 
 	        angleStart: 0,
 	        angleStartSpread: 0,
@@ -57,13 +57,13 @@ var CONFIG = CONFIG || {};
 	        colorEndSpread: new THREE.Vector3(),
 
 	        opacityStart: 1,
-	        opacityStartSpread: 0,
+	        opacityStartSpread: 0.1,
 
-	        opacityMiddle: 0.1,
-	        opacityMiddleSpread: 0.1,
+	        opacityMiddle: 0.5,
+	        opacityMiddleSpread: 0.2,
 
 	        opacityEnd: 0,
-	        opacityEndSpread: 0,
+	        opacityEndSpread: 0.3,
 
 	        duration: null,
 

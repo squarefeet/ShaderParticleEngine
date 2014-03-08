@@ -44,6 +44,7 @@ var CONFIG = CONFIG || {};
             },
 
             Tools: {
+                "Center Emitter": makeMenuItem( 'centerEmitter', 'menu-center-emitter.png', ICON_EVENT_PREFIX ),
                 "Frame Emitter": makeMenuItem( 'frameEmitter', 'menu-frame-emitter.png', ICON_EVENT_PREFIX ),
                 "Increase Emitter Size": makeMenuItem( 'increaseSize', 'menu-increase-size.png', ICON_EVENT_PREFIX ),
                 "Decrease Emitter Size": makeMenuItem( 'decreaseSize', 'menu-decrease-size.png', ICON_EVENT_PREFIX )
