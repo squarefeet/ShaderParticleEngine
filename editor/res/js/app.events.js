@@ -18,9 +18,6 @@
     };
 
 
-    // function 
-
-
     // General
     app.events.on( 'setting:particleCount', function( value, title ) {
         // app.editor.particleEmitter.particleCount = value;
@@ -44,6 +41,7 @@
 
     app.events.on( 'setting:positionSpread', function( value, title ) {
         app.editor.particleEmitter.positionSpread[ title.replace( ':', '' ) ] = value;
+        app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:radius', function( value, title ) {
@@ -66,18 +64,22 @@
     // Movement
     app.events.on( 'setting:acceleration', function( value, title ) {
         app.editor.particleEmitter.acceleration[ title.replace( ':', '' ) ] = value;
+        app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:accelerationSpread', function( value, title ) {
         app.editor.particleEmitter.accelerationSpread[ title.replace( ':', '' ) ] = value;
+        app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:velocity', function( value, title ) {
         app.editor.particleEmitter.velocity[ title.replace( ':', '' ) ] = value;
+        app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:velocitySpread', function( value, title ) {
         app.editor.particleEmitter.velocitySpread[ title.replace( ':', '' ) ] = value;
+        app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:speed', function( value, title ) {
@@ -121,5 +123,16 @@
 
     app.events.on( 'icon:frameEmitter', function() {
         app.editor.controls.focus( app.editor.focusMesh, true );
+    } );
+
+
+    app.events.on( 'toggleSettingsPanel', function( isClosed ) {
+        setTimeout( function() {
+            app.editor._onResize(
+                null,
+                window.innerWidth - ( isClosed ? 0 : 320 ),
+                window.innerHeight
+            );
+        }, !isClosed ? 500 : 0 );
     } );
 }());

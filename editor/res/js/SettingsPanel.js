@@ -21,6 +21,7 @@
 
         _toggleOpen: function() {
             this.domElement.classList.toggle( 'closed' );
+            app.events.fire( 'toggleSettingsPanel', null, this.domElement.classList.contains( 'closed' ) );
         },
 
         _makeElements: function() {
@@ -103,7 +104,7 @@
                         //     return function( value ) {
                         //         self.setAttribute( name, value, title );
                         //     };
-                        // }( i, group[ i ].children[ j ] )) ); 
+                        // }( i, group[ i ].children[ j ] )) );
 
                         if( numChildren > 1 ) {
                             this.attributes[ i ][ group[ i ].children[ j ] ] = el;
@@ -126,31 +127,6 @@
             }
 
             this.scrollContainer.appendChild( wrapper );
-        },
-
-        setAttribute: function( attribute, value, childName ) {
-            var group = app.editor.particleGroup,
-                emitter = app.editor.particleEmitter,
-                groupSingle = group.hasOwnProperty( attribute ),
-                groupMerged = group.hasOwnProperty( attribute + childName ),
-                emitterSingle = emitter.hasOwnProperty( attribute ),
-                emitterMerged = emitter.hasOwnProperty( attribute + childName );
-
-
-            // console.log( attribute, value, childName );
-            // if( childName ) {
-
-                if( groupSingle || groupMerged ) {
-                    console.log( 'group setting', group[ attribute ], group[ attribute + childName ] );
-
-                }
-                else if( emitterSingle || emitterMerged ) {
-                    console.log( 'emitter setting', emitter[ attribute ], emitter[ attribute + childName ] );
-                }
-
-                // attribute = this.attributes[ attribute ][ childName ];
-
-            // }
         },
 
         setAttributesFromMap: function( map ) {
@@ -182,25 +158,26 @@
                     }
                 }
                 else {
-                    // if( ~i.indexOf( 'Spread') ) {
-                        attribute = i.replace( 'Spread', '' );
-                        subAttribute = attribute.replace( /Start|Middle|End/, '' );
+                    attribute = i.replace( 'Spread', '' );
+                    subAttribute = attribute.replace( /Start|Middle|End/, '' );
 
-                        additionalString = ~i.indexOf( 'Spread' ) ? 'Spread' : '';
+                    additionalString = ~i.indexOf( 'Spread' ) ? 'Spread' : '';
 
-                        if( ~i.indexOf( 'Start' ) && this.attributes[ subAttribute + 'Spread' ] ) {
-                            this.attributes[ subAttribute + additionalString ][ 'Start' ]._setValue( emitterAttributes[ i ] );
-                        }
-                        else if( ~i.indexOf( 'Middle' ) && this.attributes[ subAttribute + 'Spread' ] ) {
-                            this.attributes[ subAttribute + additionalString ][ 'Middle' ]._setValue( emitterAttributes[ i ] );
-                        }
-                        else if( ~i.indexOf( 'End' ) && this.attributes[ subAttribute + 'Spread' ] ) {
-                            this.attributes[ subAttribute + additionalString ][ 'End' ]._setValue( emitterAttributes[ i ] );
-                        }
+                    if( ~i.indexOf( 'Start' ) && this.attributes[ subAttribute + 'Spread' ] ) {
+                        this.attributes[ subAttribute + additionalString ][ 'Start' ]._setValue( emitterAttributes[ i ] );
                     }
-                // }
+                    else if( ~i.indexOf( 'Middle' ) && this.attributes[ subAttribute + 'Spread' ] ) {
+                        this.attributes[ subAttribute + additionalString ][ 'Middle' ]._setValue( emitterAttributes[ i ] );
+                    }
+                    else if( ~i.indexOf( 'End' ) && this.attributes[ subAttribute + 'Spread' ] ) {
+                        this.attributes[ subAttribute + additionalString ][ 'End' ]._setValue( emitterAttributes[ i ] );
+                    }
+                }
             }
+
+            app.editor._updateFocusMesh();
         }
+
     };
 
     window.SettingsPanel = SettingsPanel;

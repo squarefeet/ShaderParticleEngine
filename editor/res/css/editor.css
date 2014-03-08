@@ -6,6 +6,10 @@ section.editor-wrapper {
 	height: 100%;
 }
 
+canvas {
+	-webkit-transition: all 500ms ease !important;
+}
+
 
 /* Stats */
 #stats {

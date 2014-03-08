@@ -1,9 +1,9 @@
 var app = app || {};
 
-app.events = new PubSub( { debug: true } );
+app.events = new PubSub( { debug: false } );
 app.menu = new Menu();
-app.settings = new SettingsPanel();
 app.editor = new Editor();
+app.settings = new SettingsPanel();
 
 document.body.appendChild( app.menu.domElement );
 document.body.appendChild( app.settings.domElement );

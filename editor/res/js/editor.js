@@ -28,7 +28,7 @@ Editor.prototype = {
         this.grid = new THREE.Mesh(
             new THREE.PlaneGeometry( 200, 200, 20, 20 ),
             new THREE.MeshBasicMaterial( {
-                color: 0x444444,
+                color: 0x222222,
                 wireframe: true
             } )
         );
@@ -36,15 +36,16 @@ Editor.prototype = {
         this.scene.add( this.grid );
 
         this.focusMesh = new THREE.Mesh(
-            new THREE.CubeGeometry( 5, 5, 5 ),
+            new THREE.CubeGeometry( 1, 1, 1 ),
             new THREE.MeshBasicMaterial( {
-                color: 0xffffff,
+                color: 0x0b304c,
                 wireframe: true,
                 transparent: true,
-                opacity: 0.1
+                opacity: 0.4,
+                wireframeLinewidth: 1
             } )
         );
-        this.focusMesh.position.y = 2.5;
+        this.focusMesh.position.y = 0.5;
         this.scene.add( this.focusMesh );
 
 
@@ -72,9 +73,12 @@ Editor.prototype = {
         this.scene.add( this.particleGroup.mesh );
     },
 
-    _onResize: function( e ) {
-        this.renderer.setSize( window.innerWidth, window.innerHeight );
-        this.camera.aspect = window.innerWidth / window.innerHeight;
+    _onResize: function( e, width, height ) {
+        width = width || window.innerWidth;
+        height = height || window.innerHeight;
+
+        this.renderer.setSize( width, height );
+        this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
     },
 
@@ -86,6 +90,43 @@ Editor.prototype = {
         this.particleGroup.tick( this.dt );
     },
 
+    _updateFocusMesh: function() {
+        var positionSpread = this.particleEmitter.positionSpread,
+            maxAge = this.particleGroup.maxAge,
+            acceleration = this.particleEmitter.acceleration,
+            accelerationSpread = this.particleEmitter.accelerationSpread,
+            velocity = this.particleEmitter.velocity,
+            velocitySpread = this.particleEmitter.velocitySpread,
+
+            a = new THREE.Vector3().copy( acceleration ),
+            v = new THREE.Vector3().copy( velocity ),
+
+            aSpread = new THREE.Vector3().copy( accelerationSpread ),
+            vSpread = new THREE.Vector3().copy( velocitySpread ),
+            scale = new THREE.Vector3();
+
+        aSpread.divideScalar( 2 );
+        vSpread.divideScalar( 2 );
+
+        a.add( aSpread );
+        v.add( vSpread );
+
+        a.multiplyScalar( Math.pow( maxAge, 2 ) );
+        v.multiplyScalar( maxAge ).add( a );
+
+        v.x = Math.abs( v.x );
+        v.y = Math.abs( v.y );
+        v.z = Math.abs( v.z );
+
+        scale.copy( v ).add( positionSpread );
+
+        scale.x = Math.max( 1, scale.x );
+        scale.y = Math.max( 1, scale.y );
+        scale.z = Math.max( 1, scale.z );
+
+        this.focusMesh.scale.copy( scale );
+        this.focusMesh.position = this.particleEmitter.position;
+    },
 
     start: function() {
         this._animate();
