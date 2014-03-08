@@ -26,7 +26,7 @@
         // app.editor.particleEmitter.particleCount = value;
     } );
 
-    app.events.on( 'setting:age', function( value, title ) {
+    app.events.on( 'setting:maxAge', function( value, title ) {
         // app.editor.particleEmitter.age = value;
     } );
 
