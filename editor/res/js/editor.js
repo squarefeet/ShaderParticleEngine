@@ -16,6 +16,35 @@ function Editor() {
 }
 
 Editor.prototype = {
+    _createGrid: function() {
+
+        if( this.grid && CONFIG.adaptiveGrid ) {
+            this.scene.remove( this.grid );
+        }
+        else if( this.grid && !CONFIG.adaptiveGrid ) {
+            return;
+        }
+
+
+        var size = 2,
+            segments = 1,
+            scale = CONFIG.adaptiveGrid ? 0.5 : 5;
+            focusMeshScale = ( Math.max( this.focusMesh.scale.x, this.focusMesh.scale.z ) + 0.5 | 0 ) * scale;
+
+        size *= focusMeshScale;
+        segments = Math.sqrt( focusMeshScale ) + 0.5 | 0;
+
+        this.grid = new THREE.Mesh(
+            new THREE.PlaneGeometry( size, size, segments, segments ),
+            new THREE.MeshBasicMaterial( {
+                color: 0x222222,
+                wireframe: true
+            } )
+        );
+        this.grid.rotation.x = Math.PI * 0.5;
+        this.scene.add( this.grid );
+    },
+
 	_createScene: function() {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -25,28 +54,20 @@ Editor.prototype = {
         this.clock = new THREE.Clock();
         this.controls = new THREE.EditorControls( this.camera, this.renderer.domElement );
 
-        this.grid = new THREE.Mesh(
-            new THREE.PlaneGeometry( 200, 200, 20, 20 ),
-            new THREE.MeshBasicMaterial( {
-                color: 0x222222,
-                wireframe: true
-            } )
-        );
-        this.grid.rotation.x = Math.PI * 0.5;
-        this.scene.add( this.grid );
-
         this.focusMesh = new THREE.Mesh(
             new THREE.CubeGeometry( 1, 1, 1 ),
             new THREE.MeshBasicMaterial( {
                 color: 0x0b304c,
                 wireframe: true,
                 transparent: true,
-                opacity: 0.4,
+                opacity: CONFIG.emitterBoundingBoxOpacity,
                 wireframeLinewidth: 1
             } )
         );
         this.focusMesh.position.y = 0.5;
         this.scene.add( this.focusMesh );
+
+        // this._createGrid();
 
 
         var rendererEl = this.renderer.domElement;
@@ -126,6 +147,8 @@ Editor.prototype = {
 
         this.focusMesh.scale.copy( scale );
         this.focusMesh.position = this.particleEmitter.position;
+
+        this._createGrid();
     },
 
     start: function() {

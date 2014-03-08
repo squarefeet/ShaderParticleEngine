@@ -198,10 +198,10 @@ Slider.prototype = {
 
     _determineValue: function( x, y ) {
         if( this.options.orientation === 'horizontal' ) {
-            this.internalValue = x;
+            this.internalValue = !CONFIG.slidersSetValueOnMouseDown ? this.internalValue + x : x;
         }
         else {
-            this.internalValue = y;
+            this.internalValue = !CONFIG.slidersSetValueOnMouseDown ? this.internalValue + y : y;
         }
 
         this._clampInternalValue();
@@ -258,12 +258,17 @@ Slider.prototype = {
     },
 
     _onTouchstart: function( e ) {
+        e.preventDefault();
+        e.stopPropagation();
+
         this.active = 1;
 
         this.startX = this._getPositionForAxis( e, 'x' );
         this.startY = this._getPositionForAxis( e, 'y' );
 
-        this._determineValue( this.startX, this.startY);
+        if( CONFIG.slidersSetValueOnMouseDown ) {
+            this._determineValue( this.startX, this.startY);
+        }
     },
 
     _onTouchmove: function( e ) {
@@ -274,7 +279,16 @@ Slider.prototype = {
         var x = this._getPositionForAxis( e, 'x' ),
             y = this._getPositionForAxis( e, 'y' );
 
-        this._determineValue( x, y );
+
+
+        if( CONFIG.slidersSetValueOnMouseDown ) {
+            this._determineValue( x, y );
+        }
+        else {
+            this._determineValue( x - this.startX, y - this.startY );
+            this.startX = x;
+            this.startY = y;
+        }
     },
 
     _onTouchend: function( e ) {

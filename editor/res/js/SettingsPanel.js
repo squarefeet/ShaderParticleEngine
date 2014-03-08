@@ -120,7 +120,8 @@
                     content: content,
                     group: groupName,
                     solo: true,
-                    callback: this._refreshScroller
+                    callback: this._refreshScroller,
+                    solo: CONFIG.soloSettingGroupRollups
                 });
 
                 wrapper.appendChild( rollup.domElement );

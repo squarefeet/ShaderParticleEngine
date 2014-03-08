@@ -5,9 +5,11 @@ var CONFIG = CONFIG || {};
     var MENU_EVENT_PREFIX = 'menu:',
         ICON_EVENT_PREFIX = 'icon:';
 
-    function makeMenuItem( eventName, img, prefix ) {
+    function makeMenuItem( eventName, img, prefix, toggleable ) {
         return {
             image: img,
+            toggleable: toggleable,
+            eventName: eventName, 
             action: function() {
                 app.events.fire( ( prefix || MENU_EVENT_PREFIX ) + eventName );
             }
@@ -41,6 +43,13 @@ var CONFIG = CONFIG || {};
             Edit: {
                 "Undo": makeMenuItem( 'undo', 'menu-undo.png' ),
                 "Redo": makeMenuItem( 'redo', 'menu-redo.png' ),
+            },
+
+            View: {
+                "Show Grid": makeMenuItem( 'showGrid', 'menu-show-grid.png', null, true ),
+                "Adaptive Grid": makeMenuItem( 'adaptiveGrid', 'menu-adaptive-grid.png', null, true ),
+                "Show Bounding Box": makeMenuItem( 'showEmitterBoundingBox', 'menu-bounding-box.png', null, true ),
+                "Set Slider Value on Mousedown": makeMenuItem( 'slidersSetValueOnMouseDown', 'menu-bounding-box.png', null, true ),
             },
 
             Tools: {

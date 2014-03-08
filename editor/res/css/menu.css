@@ -85,6 +85,10 @@ nav.menu > .items-wrapper > ul > li {
     cursor: pointer;
 }
 
+nav.menu > .items-wrapper > ul > li.on > img {
+    background-color: rgba(38, 161, 255, 1);
+}
+
 nav.menu > .items-wrapper > ul > li:hover {
     background: rgba(0, 0, 0, 0.3);
     color: #ebebeb;
@@ -94,7 +98,7 @@ nav.menu > .items-wrapper > ul > li > img,
 nav.menu > .items-wrapper > ul > li > span {
     position: relative;
     float: left;
-    padding-left: 0.2rem;
+    margin: 0 0.2rem;
 }
 
 nav.menu > .items-wrapper > ul > li > img {

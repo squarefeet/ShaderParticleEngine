@@ -135,4 +135,45 @@
             );
         }, !isClosed ? 500 : 0 );
     } );
+
+
+    app.events.on( 'menu:showGrid', function() {
+        var active = document.querySelector( 'li.showGrid' ).classList.contains( 'on' );
+
+        CONFIG.showGrid = active;
+
+        if( active ) {
+            app.editor.grid.visible = true;
+        }
+        else {
+            app.editor.grid.visible = false;
+        }
+    } );
+
+    app.events.on( 'menu:adaptiveGrid', function() {
+        var active = document.querySelector( 'li.adaptiveGrid' ).classList.contains( 'on' );
+        
+        CONFIG.adaptiveGrid = active;
+        app.editor._createGrid();
+    } );
+
+    app.events.on( 'menu:showEmitterBoundingBox', function() {
+        var active = document.querySelector( 'li.showEmitterBoundingBox' ).classList.contains( 'on' );
+
+        CONFIG.showEmitterBoundingBox = active;
+
+        if( active ) {
+            app.editor.focusMesh.material.opacity = CONFIG.emitterBoundingBoxOpacity;
+        }
+        else {
+            app.editor.focusMesh.material.opacity = 0;
+        }
+    } );
+
+    app.events.on( 'menu:slidersSetValueOnMouseDown', function() {
+        var active = document.querySelector( 'li.slidersSetValueOnMouseDown' ).classList.contains( 'on' );
+        
+        CONFIG.slidersSetValueOnMouseDown = active;
+    } );
+
 }());

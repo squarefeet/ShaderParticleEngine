@@ -1,6 +1,6 @@
 var app = app || {};
 
-app.events = new PubSub( { debug: false } );
+app.events = new PubSub( { debug: true } );
 app.menu = new Menu();
 app.editor = new Editor();
 app.settings = new SettingsPanel();

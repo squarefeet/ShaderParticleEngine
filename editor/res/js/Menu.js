@@ -87,14 +87,24 @@
                 icon = new Image();
                 childLabel = document.createElement( 'span' );
 
+                child.classList.add( menuItems[ i ].eventName );
+
+                if( menuItems[ i ].toggleable && CONFIG[ menuItems[ i ].eventName ] ) {
+                    child.classList.add( 'on' );
+                }
+
                 icon.src = 'res/img/icons/menu/' + menuItems[ i ].image;
                 childLabel.textContent = i;
 
-                child.addEventListener( 'mouseup', (function( item ) {
+                child.addEventListener( 'mouseup', (function( item, el ) {
                     return function( e ) {
+                        if( item.toggleable ) {
+                            el.classList.toggle( 'on' );
+                        }
+
                         item.action();
                     };
-                }( menuItems[ i ] )), false );
+                }( menuItems[ i ], child )), false );
 
                 child.appendChild( icon );
                 child.appendChild( childLabel );
