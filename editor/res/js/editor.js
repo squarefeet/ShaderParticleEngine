@@ -107,6 +107,10 @@ Editor.prototype = {
     _createParticles: function() {
     	var settings = CONFIG.editor;
 
+        if( this.particleGroup ) {
+            this.scene.remove( this.particleGroup.mesh );
+        }
+
         this.particleGroup = new SPE.Group( settings.group );
         this.particleEmitter = new SPE.Emitter( settings.emitter );
         this.particleGroup.addEmitter( this.particleEmitter );

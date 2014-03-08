@@ -50,11 +50,13 @@
 
     // General
     app.events.on( 'setting:particleCount', function( value, title ) {
-        // app.editor.particleEmitter.particleCount = value;
+        CONFIG.editor.emitter.particleCount = value;
+        app.editor._createParticles();
     } );
 
     app.events.on( 'setting:maxAge', function( value, title ) {
-        // app.editor.particleEmitter.age = value;
+        CONFIG.editor.group.maxAge = value;
+        app.editor._createParticles();
     } );
 
     app.events.on( 'setting:duration', function( value, title ) {
