@@ -6,8 +6,6 @@
             end = start + emitter.particleCount,
             attributeValue = emitter.attributes[ attributeName ].value;
 
-        console.log( emitter[ attributeName + 'Start' ], emitter[ attributeName + 'StartSpread' ] );
-
         for( var i = start; i < end; ++i ) {
             attributeValue[ i ].set(
                 Math.abs( emitter._randomFloat( emitter[ attributeName + 'Start' ],     emitter[ attributeName + 'StartSpread' ] ) ),
@@ -20,6 +18,9 @@
     };
 
 
+    // function 
+
+
     // General
     app.events.on( 'setting:particleCount', function( value, title ) {
         // app.editor.particleEmitter.particleCount = value;
@@ -30,7 +31,9 @@
     } );
 
     app.events.on( 'setting:duration', function( value, title ) {
-        // app.editor.particleEmitter.duration = value;
+        app.editor.particleEmitter.age = 0.0;
+        app.editor.particleEmitter.duration = value || null;
+        app.editor.particleEmitter.alive = 1;
     } );
 
 
