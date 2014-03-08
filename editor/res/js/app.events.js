@@ -6,8 +6,6 @@
             end = start + emitter.particleCount,
             attributeValue = emitter.attributes[ attributeName ] ? emitter.attributes[ attributeName ].value : null;
 
-            console.log( attributeName );
-
         for( var i = start; i < end; ++i ) {
 
             if( emitter.attributes[ attributeName + 'Start' ] ) {
@@ -167,9 +165,6 @@
 
     app.events.on( 'setting:colorSpread', function( value, title ) {
         app.editor.particleEmitter[ 'color' + title.replace( ':', '' ) + 'Spread' ].set( value, value, value );
-
-        console.log( value, app.editor.particleEmitter[ 'color' + title.replace( ':', '' ) + 'Spread' ] );
-
         setShaderStartMiddleEndAttribute( 'color' );
     } );
 
@@ -202,6 +197,7 @@
         CONFIG.showGrid = active;
 
         if( active ) {
+            app.editor._updateFocusMesh();
             app.editor.grid.visible = true;
         }
         else {

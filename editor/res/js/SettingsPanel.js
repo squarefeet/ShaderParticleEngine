@@ -71,8 +71,6 @@
                 this._makePanelGroup( i, settings[ i ])
             }
 
-            console.log( this.attributes );
-
             this.scroller = new IScroll( this.scrollWrapper, {
                 mouseWheel: true,
                 scrollbars: true,

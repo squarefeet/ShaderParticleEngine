@@ -17,7 +17,6 @@ function Editor() {
 
 Editor.prototype = {
     _createGrid: function() {
-
         if( this.grid && CONFIG.adaptiveGrid ) {
             this.scene.remove( this.grid );
         }
@@ -62,8 +61,6 @@ Editor.prototype = {
         this.worldAxis.material.linewidth = 1;
         this.worldAxis.material.depthTest = false;
         this.worldAxis.material.depthWrite = false;
-        // this.worldAxis.material.transparent = true;
-        // this.worldAxis.material.opacity = 0.5;
 
         this.controls.addEventListener( 'change', function() {
             var absScale = self.camera.position.distanceTo( self.particleEmitter.position );
@@ -84,14 +81,13 @@ Editor.prototype = {
                 wireframe: true,
                 transparent: true,
                 opacity: CONFIG.emitterBoundingBoxOpacity,
-                wireframeLinewidth: 1
+                wireframeLinewidth: 1,
+                depthWrite: false,
+                depthTest: false
             } )
         );
         this.focusMesh.position.y = 0.5;
         this.scene.add( this.focusMesh );
-
-        // this._createGrid();
-
 
         var rendererEl = this.renderer.domElement;
 
@@ -171,7 +167,9 @@ Editor.prototype = {
         this.focusMesh.scale.copy( scale );
         this.focusMesh.position = this.particleEmitter.position;
 
-        this._createGrid();
+        if( CONFIG.showGrid ) {
+            this._createGrid();
+        }
     },
 
     start: function() {
