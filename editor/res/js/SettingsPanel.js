@@ -9,6 +9,8 @@
         }
 
         this.attributes = {};
+        this.rollups = {};
+        this.textureInput = null;
 
         this._makeElements();
         this.setAttributesFromMap( CONFIG.editor );
@@ -50,7 +52,7 @@
             this.scrollWrapper = document.createElement( 'div' );
             this.scrollContainer = document.createElement( 'div' );
 
-            this.domElement.classList.add( 'settings-panel', 'closed' );
+            this.domElement.classList.add( 'settings-panel' );
             this.handle.classList.add( 'handle' );
             this.scrollWrapper.classList.add( 'scroll-wrapper' );
             this.scrollContainer.classList.add( 'scroll-container' );
@@ -76,7 +78,7 @@
                 scrollbars: true,
                 fadeScrollbars: false,
                 interactiveScrollbars: true,
-                click: true,
+                click: false,
                 preventDefault: false,
                 disableTouch: true
             } );
@@ -100,19 +102,10 @@
 
                 var numChildren = group[ i ].children.length;
 
-                
-
                 if( group[ i ].type === 'slider' ) {
                     if( numChildren > 1 ) {
                         this.attributes[ i ] = {};
                     }
-                    
-                    // else {
-                    //     var title = document.createElement( 'span' );
-                    //     title.textContent = group[ i ].title;
-                    //     content.classList.add( 'single-attribute' );
-                    //     content.appendChild( title );
-                    // }
 
                     for( var j = 0, el; j < numChildren; ++j ) {
                         el = new Slider({
@@ -135,7 +128,6 @@
                         }
                     }
                 }
-
 
                 else if( group[ i ].type === 'color' ) {
                     if( numChildren > 1 ) {
@@ -160,23 +152,79 @@
                     }
                 }
 
-                // if( numChildren > 1 ) {
-                    rollup = new Rollup({
-                        title: group[ i ].title,
-                        content: content,
-                        group: groupName,
-                        callback: this._refreshScroller,
-                        solo: CONFIG.soloSettingGroupRollups
-                    });
+                else if( group[ i ].type === 'select' || group[ i ].type === 'texture-select' ) {
+                    var select = document.createElement( 'select' );
+                    select.setAttribute('data-attribute-name', i );
+                    select.addEventListener( 'change', this._onSelectChange, false );
 
-                    wrapper.appendChild( rollup.domElement );
-                // }
-                // else {
-                //     wrapper.appendChild( content );
-                // }
+                    for( var j = 0, el; j < numChildren; ++j ) {
+                        el = document.createElement( 'option' );
+                        el.textContent = el.value = group[ i ].children[ j ];
+                        select.appendChild( el );
+                    }
+
+                    content.appendChild( select );
+
+                    if( group[ i ].type === 'texture-select' ) {
+                        var file = document.createElement( 'input' );
+                        file.type = 'file';
+                        file.accept = 'image/*';
+                        file.addEventListener( 'change', this._onTextureUpload, false );
+                        file.classList.add( 'hidden' );
+                        content.appendChild( file );
+
+                        this.textureInput = file;
+                    }
+                }
+
+                rollup = new Rollup({
+                    title: group[ i ].title,
+                    content: content,
+                    group: groupName,
+                    callback: this._refreshScroller,
+                    solo: CONFIG.soloSettingGroupRollups
+                });
+
+                this.rollups[ group[ i ].title ] = rollup;
+
+                wrapper.appendChild( rollup.domElement );
             }
 
+
+            this.showOnlyApplicableRollups( CONFIG.editor.emitter.type );
             this.scrollContainer.appendChild( wrapper );
+        },
+
+        _onSelectChange: function( e ) {
+            var attributeName = e.target.getAttribute( 'data-attribute-name' ),
+                value = e.target.value;
+
+            if( attributeName !== 'texture' ) {
+                app.events.fire( 'setting:' + attributeName, null, value );
+            }
+            else {
+                app.events.fire( 'setting:' + attributeName, null, value );
+
+                if( value === 'Custom' ) {
+                    this.textureInput.classList.remove( 'hidden' );
+                }
+                else {
+                    this.textureInput.classList.add( 'hidden' );
+                }
+            }
+        },
+
+        _onTextureUpload: function( e ) {
+            var reader = new FileReader();
+
+            reader.onload = function( e ) {
+                var texture = THREE.ImageUtils.loadTexture( e.target.result );
+                CONFIG.editor.group.texture = texture;
+                app.editor.particleEmitter.type = texture;
+                app.editor.particleGroup.uniforms.texture.value = texture;
+            };
+
+            reader.readAsDataURL( e.target.files[0] );
         },
 
         setAttributesFromMap: function( map ) {
@@ -203,9 +251,6 @@
                     else if( typeof emitterAttributes[ i ] === 'number' ) {
                         attribute._setValue( emitterAttributes [ i ] );
                     }
-                    else {
-                        // attribute._setValue( emitterAttributes [ i ] );
-                    }
                 }
                 else {
                     attribute = i.replace( 'Spread', '' );
@@ -229,6 +274,54 @@
             }
 
             app.editor._updateFocusMesh();
+        },
+
+        showOnlyApplicableRollups: function( emitterType ) {
+            var rollups = this.rollups,
+                applicableRollups = [];
+
+            applicableRollups.push( 'Age' );
+            applicableRollups.push( 'Angle' );
+            applicableRollups.push( 'Angle Spread' );
+            applicableRollups.push( 'Color' );
+            applicableRollups.push( 'Color Spread' );
+            applicableRollups.push( 'Duration' );
+            applicableRollups.push( 'Emitter Type' );
+            applicableRollups.push( 'Opacity' );
+            applicableRollups.push( 'Opacity Spread' );
+            applicableRollups.push( 'Particle Count' );
+            applicableRollups.push( 'Position' );
+            applicableRollups.push( 'Size' );
+            applicableRollups.push( 'Size Spread' );
+            applicableRollups.push( 'Static' );
+            applicableRollups.push( 'Texture' );
+            applicableRollups.push( 'Acceleration' );
+            applicableRollups.push( 'Acceleration Spread' );
+
+            if( emitterType === 'sphere' || emitterType === 'disk' ) {
+                applicableRollups.push( 'Radius' );
+                applicableRollups.push( 'Radius Scale' );
+                applicableRollups.push( 'Radius Spread' );
+                applicableRollups.push( 'Radius Spread Clamp' );
+                applicableRollups.push( 'Radius Scale' );
+                applicableRollups.push( 'Speed' );
+                applicableRollups.push( 'Speed Spread' );
+            }
+            else {
+                applicableRollups.push( 'Position Spread' );
+                applicableRollups.push( 'Velocity' );
+                applicableRollups.push( 'Velocity Spread' );
+            }
+
+
+            for( var i in rollups ) {
+                if( ~applicableRollups.indexOf( i ) ) {
+                    rollups[ i ].domElement.style.display = 'block';
+                }
+                else {
+                    rollups[ i ].domElement.style.display = 'none';
+                }
+            }
         }
 
     };

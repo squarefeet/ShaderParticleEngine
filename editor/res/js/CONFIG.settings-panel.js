@@ -20,9 +20,9 @@ var CONFIG = CONFIG || {};
     CONFIG.settingsPanel = {
 
         general: {
-            texture: makeSetting( 'Texture', 'texture', 'select', ['Bullet', 'Cloud', 'Smoke', 'Star', 'Custom'] ),
-            type: makeSetting( 'Emitter Type', 'type', 'select', ['cube', 'sphere', 'disk'] ),
-            particleCount: makeSetting( 'Particle Count', 'particleCount', 'slider', [''], 0, 10000, true ),
+            texture: makeSetting( 'Texture', 'texture', 'texture-select', ['Bullet', 'Cloud', 'Smoke', 'Star', 'Custom'] ),
+            type: makeSetting( 'Emitter Type', 'type', 'select', ['Cube', 'Sphere', 'Disk'] ),
+            particleCount: makeSetting( 'Particle Count', 'particleCount', 'slider', [''], 1, 10000, true ),
             maxAge: makeSetting( 'Age', 'maxAge', 'slider', [''], 0, 10 ),
             duration: makeSetting( 'Duration', 'duration', 'slider', [''], 0, 10 ),
             isStatic: makeSetting( 'Static', 'static', 'checkbox', [''], 0, 1 )
@@ -31,8 +31,8 @@ var CONFIG = CONFIG || {};
         positioning: {
             position: makeSetting( 'Position', 'position', 'slider', ['x', 'y', 'z'], -20, 20 ),
             positionSpread: makeSetting( 'Position Spread', 'positionSpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
-            radius: makeSetting( 'Radius', 'radius', 'slider', [''], 1, 20 ),
-            radiusSpread: makeSetting( 'Radius Spread', 'radiusSpread', 'slider', [''], 0, 20 ),
+            radius: makeSetting( 'Radius', 'radius', 'slider', [''], 0, 5 ),
+            radiusSpread: makeSetting( 'Radius Spread', 'radiusSpread', 'slider', [''], 0, 5 ),
             radiusSpreadClamp: makeSetting( 'Radius Spread Clamp', 'radiusSpreadClamp', 'slider', [''], 0, 10 ),
             radiusScale: makeSetting( 'Radius Scale', 'radiusScale', 'slider', ['x', 'y', 'z'], 0, 1 ),
         },
@@ -42,8 +42,8 @@ var CONFIG = CONFIG || {};
             accelerationSpread: makeSetting( 'Acceleration Spread', 'accelerationSpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
             velocity: makeSetting( 'Velocity', 'velocity', 'slider', ['x', 'y', 'z'], -20, 20 ),
             velocitySpread: makeSetting( 'Velocity Spread', 'velocitySpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
-            speed: makeSetting( 'Speed', 'speed', 'slider', [''], 0, 20 ),
-            speedSpread: makeSetting( 'Speed Spread', 'speedSpread', 'slider', [''], 0, 20 ),
+            speed: makeSetting( 'Speed', 'speed', 'slider', [''], 0, 5 ),
+            speedSpread: makeSetting( 'Speed Spread', 'speedSpread', 'slider', [''], 0, 5 ),
         },
 
         sizing: {

@@ -17,3 +17,7 @@ body {
 .clear-fix {
     clear: both;
 }
+
+.hidden {
+    visibility: hidden;
+}

@@ -248,7 +248,7 @@ function IScroll (el, options) {
 
 		snapThreshold: 0.334,
 
-// INSERT POINT: OPTIONS 
+// INSERT POINT: OPTIONS
 
 		startX: 0,
 		startY: 0,
@@ -305,7 +305,7 @@ function IScroll (el, options) {
 
 // INSERT POINT: NORMALIZATION
 
-	// Some defaults	
+	// Some defaults
 	this.x = 0;
 	this.y = 0;
 	this.directionX = 0;
@@ -378,7 +378,7 @@ IScroll.prototype = {
 		}
 
 		if ( this.options.preventDefault && !utils.isBadAndroid && !utils.preventDefaultException(e.target, this.options.preventDefaultException) ) {
-			// e.preventDefault();
+			e.preventDefault();
 		}
 
 		var point = e.touches ? e.touches[0] : e,
@@ -422,7 +422,7 @@ IScroll.prototype = {
 		}
 
 		if ( this.options.preventDefault ) {	// increases performance on Android? TODO: check!
-			// e.preventDefault();
+			e.preventDefault();
 		}
 
 		var point		= e.touches ? e.touches[0] : e,
@@ -519,7 +519,7 @@ IScroll.prototype = {
 		}
 
 		if ( this.options.preventDefault && !utils.preventDefaultException(e.target, this.options.preventDefaultException) ) {
-			// e.preventDefault();
+			e.preventDefault();
 		}
 
 		var point = e.changedTouches ? e.changedTouches[0] : e,
@@ -1852,7 +1852,7 @@ Indicator.prototype = {
 				this.maxBoundaryX = this.maxPosX;
 			}
 
-			this.sizeRatioX = this.options.speedRatioX || (this.scroller.maxScrollX && (this.maxPosX / this.scroller.maxScrollX));	
+			this.sizeRatioX = this.options.speedRatioX || (this.scroller.maxScrollX && (this.maxPosX / this.scroller.maxScrollX));
 		}
 
 		if ( this.options.listenY ) {

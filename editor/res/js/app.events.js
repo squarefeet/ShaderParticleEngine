@@ -9,13 +9,13 @@
         for( var i = start; i < end; ++i ) {
 
             if( emitter.attributes[ attributeName + 'Start' ] ) {
-                emitter.attributes[ attributeName + 'Start' ].value[ i ] = 
+                emitter.attributes[ attributeName + 'Start' ].value[ i ] =
                     emitter._randomColor( emitter[ attributeName + 'Start' ], emitter[ attributeName + 'StartSpread' ] );
 
-                emitter.attributes[ attributeName + 'Middle' ].value[ i ] = 
+                emitter.attributes[ attributeName + 'Middle' ].value[ i ] =
                     emitter._randomColor( emitter[ attributeName + 'Middle' ], emitter[ attributeName + 'MiddleSpread' ] );
 
-                emitter.attributes[ attributeName + 'End' ].value[ i ] = 
+                emitter.attributes[ attributeName + 'End' ].value[ i ] =
                     emitter._randomColor( emitter[ attributeName + 'End' ], emitter[ attributeName + 'EndSpread' ] );
 
                 emitter.attributes[ attributeName + 'Start' ].needsUpdate = true;
@@ -41,7 +41,7 @@
 
                 emitter.attributes[ attributeName ].needsUpdate = true;
             }
-        }        
+        }
     };
 
     var color = [],
@@ -49,6 +49,32 @@
 
 
     // General
+    app.events.on( 'setting:type', function( value ) {
+        value = value.toLowerCase();
+        CONFIG.editor.emitter.type = value;
+        app.editor.particleEmitter.type = value;
+        app.settings.showOnlyApplicableRollups( value );
+
+        if( value === 'disk' || value === 'sphere' ) {
+            var velocity = app.editor.particleEmitter.attributes.velocity.value;
+
+            for( var i = 0; i < velocity.length; ++i ) {
+                velocity[ i ].set( 0, 0, 0 );
+            }
+        }
+    } );
+
+    app.events.on( 'setting:texture', function( value, event ) {
+        value = value.toLowerCase();
+
+        if( value !== 'custom' ) {
+            value = THREE.ImageUtils.loadTexture( 'res/img/' + value + '.png' );
+            CONFIG.editor.group.texture = value;
+            app.editor.particleEmitter.type = value;
+            app.editor.particleGroup.uniforms.texture.value = value;
+        }
+    } );
+
     app.events.on( 'setting:particleCount', function( value, title ) {
         CONFIG.editor.emitter.particleCount = value;
         app.editor._createParticles();
@@ -60,6 +86,7 @@
     } );
 
     app.events.on( 'setting:duration', function( value, title ) {
+        CONFIG.editor.emitter.duration = value || null;
         app.editor.particleEmitter.age = 0.0;
         app.editor.particleEmitter.duration = value || null;
         app.editor.particleEmitter.alive = 1;
@@ -68,91 +95,123 @@
 
     // Positioning
     app.events.on( 'setting:position', function( value, title ) {
-    	app.editor.particleEmitter.position[ title.replace( ':', '' ) ] = value;
+        title = title.replace( ':', '' );
+        CONFIG.editor.emitter.position[ title ] = value;
+    	app.editor.particleEmitter.position[ title ] = value;
     } );
 
     app.events.on( 'setting:positionSpread', function( value, title ) {
-        app.editor.particleEmitter.positionSpread[ title.replace( ':', '' ) ] = value;
+        title = title.replace( ':', '' );
+        CONFIG.editor.emitter.positionSpread[ title ] = value;
+        app.editor.particleEmitter.positionSpread[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:radius', function( value, title ) {
+        CONFIG.editor.emitter.radius = value;
         app.editor.particleEmitter.radius = value;
     } );
 
     app.events.on( 'setting:radiusSpread', function( value, title ) {
+        CONFIG.editor.emitter.radiusSpread = value;
         app.editor.particleEmitter.radiusSpread = value;
     } );
 
     app.events.on( 'setting:radiusSpreadClamp', function( value, title ) {
+        CONFIG.editor.emitter.radiusSpreadClamp = value;
         app.editor.particleEmitter.radiusSpreadClamp = value;
     } );
 
     app.events.on( 'setting:radiusScale', function( value, title ) {
-        app.editor.particleEmitter.radiusScale[ title.replace( ':', '' ) ] = value;
+        title = title.replace( ':', '' );
+        CONFIG.editor.emitter.radiusScale[ title ] = value;
+        app.editor.particleEmitter.radiusScale[ title ] = value;
     } );
 
 
     // Movement
     app.events.on( 'setting:acceleration', function( value, title ) {
-        app.editor.particleEmitter.acceleration[ title.replace( ':', '' ) ] = value;
+        title = title.replace( ':', '' );
+
+        CONFIG.editor.emitter.acceleration[ title ] = value;
+        app.editor.particleEmitter.acceleration[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:accelerationSpread', function( value, title ) {
-        app.editor.particleEmitter.accelerationSpread[ title.replace( ':', '' ) ] = value;
+        title = title.replace( ':', '' );
+        CONFIG.editor.emitter.acceleration[ title ] = value;
+        app.editor.particleEmitter.accelerationSpread[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:velocity', function( value, title ) {
-        app.editor.particleEmitter.velocity[ title.replace( ':', '' ) ] = value;
+        title = title.replace( ':', '' )
+        CONFIG.editor.emitter.velocity[ title ] = value;
+        app.editor.particleEmitter.velocity[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:velocitySpread', function( value, title ) {
-        app.editor.particleEmitter.velocitySpread[ title.replace( ':', '' ) ] = value;
+        title = title.replace( ':', '' )
+        CONFIG.editor.emitter.velocitySpread[ title ] = value;
+        app.editor.particleEmitter.velocitySpread[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:speed', function( value, title ) {
+        CONFIG.editor.emitter.speed = value;
         app.editor.particleEmitter.speed = value;
     } );
 
     app.events.on( 'setting:speedSpread', function( value, title ) {
+        CONFIG.editor.emitter.speedSpread = value;
         app.editor.particleEmitter.speedSpread = value;
     } );
 
 
     // Sizing
     app.events.on( 'setting:size', function( value, title ) {
-        app.editor.particleEmitter[ 'size' + title.replace( ':', '' ) ] = value;
+        title = 'size' + title.replace( ':', '' );
+        CONFIG.editor.emitter[ title ] = value;
+        app.editor.particleEmitter[ title ] = value;
         setShaderStartMiddleEndAttribute( 'size' );
     } );
 
     app.events.on( 'setting:sizeSpread', function( value, title ) {
-        app.editor.particleEmitter[ 'size' + title.replace( ':', '' ) + 'Spread' ] = value;
+        title = 'size' + title.replace( ':', '' ) + 'Spread';
+        CONFIG.editor.emitter[ title ] = value;
+        app.editor.particleEmitter[ title ] = value;
         setShaderStartMiddleEndAttribute( 'size' );
     } );
 
     // Opacity
     app.events.on( 'setting:opacity', function( value, title ) {
-        app.editor.particleEmitter[ 'opacity' + title.replace( ':', '' ) ] = value;
+        title = 'opacity' + title.replace( ':', '' );
+        CONFIG.editor.emitter[ title ] = value;
+        app.editor.particleEmitter[ title ] = value;
         setShaderStartMiddleEndAttribute( 'opacity' );
     } );
 
     app.events.on( 'setting:opacitySpread', function( value, title ) {
-        app.editor.particleEmitter[ 'opacity' + title.replace( ':', '' ) + 'Spread' ] = value;
+        title = 'opacity' + title.replace( ':', '' ) + 'Spread';
+        CONFIG.editor.emitter[ title ] = value;
+        app.editor.particleEmitter[ title ] = value;
         setShaderStartMiddleEndAttribute( 'opacity' );
     } );
 
     // Angle
     app.events.on( 'setting:angle', function( value, title ) {
-        app.editor.particleEmitter[ 'angle' + title.replace( ':', '' ) ] = value;
+        title = 'angle' + title.replace( ':', '' );
+        CONFIG.editor.emitter[ title ] = value;
+        app.editor.particleEmitter[ title ] = value;
         setShaderStartMiddleEndAttribute( 'angle' );
     } );
 
     app.events.on( 'setting:angleSpread', function( value, title ) {
-        app.editor.particleEmitter[ 'angle' + title.replace( ':', '' ) + 'Spread' ] = value;
+        title = 'angle' + title.replace( ':', '' ) + 'Spread';
+        CONFIG.editor.emitter[ title ] = value;
+        app.editor.particleEmitter[ title ] = value;
         setShaderStartMiddleEndAttribute( 'angle' );
     } );
 
@@ -161,12 +220,16 @@
             color[ i ] = value[ i ] / 255;
         }
 
-        app.editor.particleEmitter[ 'color' + title.replace( ':', '' ) ].fromArray( color );
+        title = 'color' + title.replace( ':', '' );
+        CONFIG.editor.emitter[ title ].fromArray( color );
+        app.editor.particleEmitter[ title ].fromArray( color );
         setShaderStartMiddleEndAttribute( 'color' );
     } );
 
     app.events.on( 'setting:colorSpread', function( value, title ) {
-        app.editor.particleEmitter[ 'color' + title.replace( ':', '' ) + 'Spread' ].set( value, value, value );
+        title = 'color' + title.replace( ':', '' ) + 'Spread';
+        CONFIG.editor.emitter[ title ].set( value, value, value );
+        app.editor.particleEmitter[ title ].set( value, value, value );
         setShaderStartMiddleEndAttribute( 'color' );
     } );
 
@@ -209,7 +272,7 @@
 
     app.events.on( 'menu:adaptiveGrid', function() {
         var active = document.querySelector( 'li.adaptiveGrid' ).classList.contains( 'on' );
-        
+
         CONFIG.adaptiveGrid = active;
         app.editor._createGrid();
     } );
@@ -229,7 +292,7 @@
 
     app.events.on( 'menu:slidersSetValueOnMouseDown', function() {
         var active = document.querySelector( 'li.slidersSetValueOnMouseDown' ).classList.contains( 'on' );
-        
+
         CONFIG.slidersSetValueOnMouseDown = active;
     } );
 
