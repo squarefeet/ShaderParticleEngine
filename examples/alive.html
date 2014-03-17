@@ -1,0 +1,127 @@
+<html>
+<head>
+    <title>Basic Shader Particles</title>
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+<body>
+    <p class="numParticles"></p>
+
+    <div class="alive-wrapper">
+        <p>Change value below to change number of particles</p>
+        <p class="small">0 = No particles; 1 = 100% of emitter's particle count</p>
+        <input type="number" min="0" max="1" step="0.05" value="1" class="alive-value">
+    </div>
+
+    <!-- THREE.min.js r60 and FPS stats -->
+    <script type="text/javascript" src="./js/THREE-r65.min.js"></script>
+    <script type="text/javascript" src="./js/Stats.min.js"></script>
+
+    <!-- ShaderParticles -->
+    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+    <script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
+
+
+    <script type="text/javascript">
+        // variables used in init()
+        var scene, camera, renderer, stats, stats2, clock;
+
+        // Used in initParticles()
+        var emitter, particleGroup;
+
+        // Setup the scene
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 50;
+            camera.lookAt( scene.position );
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000);
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+        // Create particle group and emitter
+        function initParticles() {
+            particleGroup = new SPE.Group({
+                texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
+                maxAge: 2
+            });
+
+            emitter = new SPE.Emitter({
+                position: new THREE.Vector3(0, 0, 0),
+                positionSpread: new THREE.Vector3( 0, 0, 0 ),
+
+                acceleration: new THREE.Vector3(0, -10, 0),
+                accelerationSpread: new THREE.Vector3( 10, 0, 10 ),
+
+                velocity: new THREE.Vector3(0, 15, 0),
+                velocitySpread: new THREE.Vector3(10, 7.5, 10),
+
+                colorStart: new THREE.Color('white'),
+                colorEnd: new THREE.Color('red'),
+
+                sizeStart: 1,
+                sizeEnd: 1,
+
+                particleCount: 2000,
+                alive: 1
+            });
+
+            particleGroup.addEmitter( emitter );
+            scene.add( particleGroup.mesh );
+
+            document.querySelector('.numParticles').textContent =
+                'Total particles: ' + emitter.particleCount;
+
+            document.querySelector( '.alive-value' ).addEventListener( 'change', function( e ) {
+                emitter.alive = +this.value;
+            }, false );
+        }
+
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+
+            // Use a fixed time-step here to avoid gaps
+            render( 0.016 );
+
+            stats.update();
+        }
+
+
+        function render( dt ) {
+            particleGroup.tick( dt );
+            renderer.render( scene, camera );
+        }
+
+
+        window.addEventListener( 'resize', function() {
+            var w = window.innerWidth,
+                h = window.innerHeight;
+
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize( w, h );
+        }, false );
+
+        init();
+        initParticles();
+
+        setTimeout(animate, 0);
+
+    </script>
+
+</body>
+</html>

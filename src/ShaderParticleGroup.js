@@ -1,6 +1,6 @@
-// ShaderParticleGroup 0.7.4
+// ShaderParticleGroup 0.7.5
 //
-// (c) 2013 Luke Moody (http://www.github.com/squarefeet)
+// (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //
 // Based on Lee Stemkoski's original work:
@@ -23,7 +23,7 @@ SPE.Group = function( options ) {
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
-    that.transparent            = options.transparent || true;
+    that.transparent            = typeof options.transparent === 'number' ? options.transparent : 1;
     that.alphaTest              = typeof options.alphaTest === 'number' ? options.alphaTest : 0.5;
     that.depthWrite             = options.depthWrite || false;
     that.depthTest              = options.depthTest || true;
