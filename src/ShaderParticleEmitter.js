@@ -1,6 +1,6 @@
-// ShaderParticleEmitter 0.7.4
+// ShaderParticleEmitter 0.7.5
 //
-// (c) 2013 Luke Moody (http://www.github.com/squarefeet)
+// (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
 //
 // Based on Lee Stemkoski's original work:
@@ -107,7 +107,7 @@ SPE.Emitter = function( options ) {
 
     // Generic
     that.duration               = typeof options.duration === 'number' ? options.duration : null;
-    that.alive                  = parseInt( typeof options.alive === 'number' ? options.alive : 1, 10 );
+    that.alive                  = parseFloat( typeof options.alive === 'number' ? options.alive : 1.0 );
     that.isStatic               = typeof options.isStatic === 'number' ? options.isStatic : 0;
 
     // The following properties are used internally, and mostly set when this emitter
@@ -198,12 +198,18 @@ SPE.Emitter.prototype = {
             start = that.verticesIndex,
             particleCount = that.particleCount,
             end = start + particleCount,
-            pps = that.particlesPerSecond,
+            pps = that.particlesPerSecond * that.alive,
             ppsdt = pps * dt,
             m = that.maxAge,
             emitterAge = that.age,
             duration = that.duration,
             pIndex = that.particleIndex;
+
+        // if( that.alive !== 1.0 && that.alive > 0.0 ) {
+        //     end *= that.alive;
+        //     pps = particleCount / that.maxAge | 0;
+        //     // console.log( end );
+        // }
 
         // Loop through all the particles in this emitter and
         // determine whether they're still alive and need advancing
@@ -223,7 +229,7 @@ SPE.Emitter.prototype = {
         // the recycled vertices array and reset the age of the
         // emitter to zero ready to go again if required, then
         // exit this function.
-        if( that.alive === 0 ) {
+        if( that.alive === 0.0 ) {
             that.age = 0.0;
             return;
         }
@@ -231,7 +237,7 @@ SPE.Emitter.prototype = {
         // If the emitter has a specified lifetime and we've exceeded it,
         // mark the emitter as dead and exit this function.
         if( typeof duration === 'number' && emitterAge > duration ) {
-            that.alive = 0;
+            that.alive = 0.0;
             that.age = 0.0;
             return;
         }

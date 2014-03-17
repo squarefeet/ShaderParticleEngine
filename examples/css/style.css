@@ -3,10 +3,36 @@
 	padding: 0;
 }
 
+body {
+    color: white;
+    font-family: sans-serif;
+}
+
+p {
+    margin: 0.2em 0;
+}
+
+p.small {
+    font-size: 0.8em;
+}
+
 .numParticles {
 	position: absolute;
 	bottom: 10px;
 	left: 10px;
 	color: white;
 	text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+}
+
+.alive-wrapper {
+    position: absolute;
+    top: 2em;
+    width: 25em;
+    left: 50%;
+    margin-left: -12.5em;   
+    text-align: center;
+    padding: 1em;
+    background-color: rgba( 255, 255, 255, 0.15 );
+    border-radius: 1em;
+    border: 1px solid rgba( 255, 255, 255, 0.3 );
 }

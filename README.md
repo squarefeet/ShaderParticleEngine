@@ -6,16 +6,15 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
 
-Version 0.7.4
+Version 0.7.5
 =============
-The latest release has jumped from ```0.5.1``` to ```0.7.4```. There are no release versions in between - the party was all on the dev branch. A full log of the changes between these versions is available in the changelog towards the end of this document. There have been a lot of changes since ```0.5.1```, so if you're updating, please check the [Breaking Changes](https://github.com/squarefeet/ShaderParticleEngine#breaking-changes) and [Changelog](https://github.com/squarefeet/ShaderParticleEngine#changelog) to play catchup.
+A minor release, this changes the behaviour of the `SPE.Emitter#alive` property. It is no longer just 0 and 1.
 
-In between ```0.5.1``` and ```0.7.4```, there have been some contributions from the community to the library:
+`SPE.Emitter#alive`: Values between 0 and 1 now control the percentage of particles that are alive at a given moment. If you have an emitter with a `particleCount` of 1000 and you set alive to be 0.1, only 100 particles will be emitted (`1000 * 0.1 === 100`).
 
-* [@DelvarWorld](https://github.com/delvarworld/)) has kindly brought this library into a much fitter state than it was before, and feature contributions from [@stemkoski](https://github.com/stemkoski/)) have been combined into the ```0.7.4``` release.
+See `examples/alive.html` for an example.
 
-
-Currently not at ```1.0.0```, so the API might change. Please be aware of this when using this library.
+Currently not at ```1.0.0```, so the API _might_ change. Please be aware of this when using this library.
 
 
 Breaking Changes
@@ -288,9 +287,9 @@ var particleEmitter = new SPE.Emitter({
 	// 	A null value indicates an infinite duration.
 	emitterDuration: null,
 
-	// [OPTIONAL] Should this emitter be alive (i.e. should it be emitting)?
-	// 0 for false, 1 for true
-	alive: 1,
+	// [OPTIONAL] What percentage of `particleCount` particles should be emitted?
+	// 0 being no particles, 1 being 100% of `particleCount`.
+	alive: 1.0,
 
 	// [OPTIONAL] New in v0.4.0. If you want a huge amount of particles, and
 	// they aren't going to be moving, then set this property to `1`. This will
@@ -318,9 +317,20 @@ Turn on a given number of emitters that live in a pool created using the method 
 
 Changelog
 =========
+**Version 0.7.5**
+* `SPE.Emitter#alive`: Values between 0 and 1 now control the percentage of particles that are alive at a given moment. If you have an emitter with a `particleCount` of 1000 and you set alive to be 0.1, only 100 particles will be emitted (`1000 * 0.1 === 100`).
+
+
 **Version 0.7.4**
+* The latest release has jumped from ```0.5.1``` to ```0.7.4```. There are no release versions in between - the party was all on the dev branch. A full log of the changes between these versions is available in the changelog towards the end of this document. There have been a lot of changes since ```0.5.1```, so if you're updating, please check the [Breaking Changes](https://github.com/squarefeet/ShaderParticleEngine#breaking-changes) and [Changelog](https://github.com/squarefeet/ShaderParticleEngine#changelog) to play catchup.
+
+* In between ```0.5.1``` and ```0.7.4```, there have been some contributions from the community to the library:
+	* [@DelvarWorld](https://github.com/delvarworld/)) has kindly brought this library into a much fitter state than it was before, and feature contributions from [@stemkoski](https://github.com/stemkoski/)) have been combined into the ```0.7.4``` release.
+
 * Deprecated ```SPE.Emitter#particlesPerSecond``` in favour of ```SPE.Emitter#particleCount```.
 * Renamed ```SPE.Emitter#emitterDuration``` to ```SPE.Emitter#duration```.
+
+
 
 **Version 0.7.3**
 * Added the following properties:
