@@ -381,6 +381,10 @@ IScroll.prototype = {
 			e.preventDefault();
 		}
 
+		if( utils.preventDefaultException(e.target, this.options.preventDefaultException) ) {
+			return;
+		}
+
 		var point = e.touches ? e.touches[0] : e,
 			pos;
 

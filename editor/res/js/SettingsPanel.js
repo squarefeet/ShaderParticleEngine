@@ -79,8 +79,7 @@
                 fadeScrollbars: false,
                 interactiveScrollbars: true,
                 click: false,
-                preventDefault: false,
-                disableTouch: true
+                preventDefault: false
             } );
         },
 
@@ -281,7 +280,17 @@
             var rollups = this.rollups,
                 applicableRollups = [];
 
+            // Group properties
+            applicableRollups.push( 'Texture' );
+            applicableRollups.push( 'Has Perspective' );
+            applicableRollups.push( 'Colorize' );
+            applicableRollups.push( 'Blending' );
+            applicableRollups.push( 'Transparent' );
+            applicableRollups.push( 'Alpha Test' );
+            applicableRollups.push( 'Depth Write' );
+            applicableRollups.push( 'Depth Test' );
             applicableRollups.push( 'Age' );
+
             applicableRollups.push( 'Alive' );
             applicableRollups.push( 'Angle' );
             applicableRollups.push( 'Angle Spread' );

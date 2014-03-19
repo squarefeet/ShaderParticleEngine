@@ -17,7 +17,7 @@ canvas {
 	top: 0.7rem;
 	right: 0;
 	height: 0.75rem;
-	z-index: 3;
+	z-index: 5;
 	pointer-events: none;
 }
 
