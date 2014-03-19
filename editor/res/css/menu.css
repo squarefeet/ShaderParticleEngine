@@ -13,7 +13,7 @@ nav.menu {
     height: 2rem;
     color: #bdbdbd;
     border-bottom: 1px solid rgba(38, 161, 255, 0.3);
-    z-index: 2;
+    z-index: 5;
 }
 
 nav.menu > .logo {

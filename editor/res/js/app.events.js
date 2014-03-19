@@ -80,6 +80,12 @@
         app.editor._createParticles();
     } );
 
+    app.events.on( 'setting:alive', function( value, title ) {
+        CONFIG.editor.emitter.alive = value;
+        app.editor.particleEmitter.alive = value;
+        // app.editor._createParticles();
+    } );
+
     app.events.on( 'setting:maxAge', function( value, title ) {
         CONFIG.editor.group.maxAge = value;
         app.editor._createParticles();
@@ -140,7 +146,7 @@
 
     app.events.on( 'setting:accelerationSpread', function( value, title ) {
         title = title.replace( ':', '' );
-        CONFIG.editor.emitter.acceleration[ title ] = value;
+        CONFIG.editor.emitter.accelerationSpread[ title ] = value;
         app.editor.particleEmitter.accelerationSpread[ title ] = value;
         app.editor._updateFocusMesh();
     } );
@@ -236,6 +242,38 @@
 
 
     // Menu items
+    app.events.on( 'menu:new', function() {
+        var emitter = CONFIG.editor.emitter,
+            group = CONFIG.editor.group;
+
+
+        for( var i in group ) {
+            group[ i ] = CONFIG.editor.defaultGroup[ i ];
+        }
+
+        for( var i in emitter ) {
+            if( typeof emitter[ i ] === 'string' || typeof emitter[ i ] === 'number' ) {
+                emitter[ i ] = CONFIG.editor.defaultEmitter[ i ];
+            }
+            else if( emitter[ i ] instanceof THREE.Vector3 ) {
+                emitter[ i ].copy( CONFIG.editor.defaultEmitter[ i ] );
+            }
+            else if( emitter[ i ] instanceof THREE.Color ) {
+                emitter[ i ].copy( CONFIG.editor.defaultEmitter[ i ] );
+            }
+        }
+
+        app.settings.setAttributesFromMap( CONFIG.editor );
+
+        app.events.fire( 'icon:frameEmitter' );
+    } );
+
+    app.events.on( 'menu:export', function() {
+        app.files.export( CONFIG.editor.group, CONFIG.editor.emitter );
+    } );
+
+
+
     app.events.on( 'icon:centerEmitter', function() {
         app.editor.controls.focus( app.editor.focusMesh );
     } );

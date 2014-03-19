@@ -9,7 +9,7 @@ var CONFIG = CONFIG || {};
         return {
             image: img,
             toggleable: toggleable,
-            eventName: eventName, 
+            eventName: eventName,
             action: function() {
                 app.events.fire( ( prefix || MENU_EVENT_PREFIX ) + eventName );
             }

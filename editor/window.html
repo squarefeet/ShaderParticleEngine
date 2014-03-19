@@ -17,155 +17,15 @@
             .clearfix {
                 clear: both;
             }
-
-            .popup-window {
-                position: absolute;
-                top: 10%;
-                left: 10%;
-                right: 10%;
-                background-color: rgba( 150, 150, 150, 0.9 );
-                border: 1px solid rgba( 100, 100, 100, 1 );
-                border-radius: 2px 2px;
-                box-shadow: 0 0 20px rgba( 0, 0, 0, 0.5 );
-            }
-
-            .popup-window > .title-bar {
-                position: relative;
-                width: 100%;
-                padding: 0.3em;
-                background: rgba( 100, 100, 100, 0.5 );
-                border-bottom: 1px solid rgba( 0, 0, 0, 0.3 );
-            }
-
-            .popup-window > .title-bar > h3 {
-                color: rgba( 0, 0, 0, 0.8 );
-                text-shadow: 0 1px 0 rgba( 255, 255, 255, 0.3 );
-            }
-
-            .popup-window > .title-bar > .close-button {
-                position: absolute;
-                top: 0;
-                right: 0;
-                width: 4rem;
-                height: 100%;
-                background-color: rgba( 0, 0, 0, 0.1 );
-            }
-
-
-            .popup-window > .content-wrapper {
-                position: relative;
-                padding: 1rem 0.5rem;
-            }
-
-            .popup-window > .button-wrapper {
-                position: relative;
-                top: 0;
-                right: 0;
-                width: 100%;
-            }
-
-            .popup-window > .button-wrapper > .button {
-                position: relative;
-                padding: 0.2rem 0.5rem;
-                float: right;
-                margin: 0.2rem 0.3rem;
-                background-color: rgba( 0, 0, 0, 0.5 );
-                color: rgba( 220, 220, 220, 1 );
-                text-shadow: 0 1px 0 rgba( 0, 0, 0, 0.7 );
-                border-radius: 4px 4px;
-                border-top: 1px solid rgba( 255, 255, 255, 0.6 );
-                border-left: 1px solid rgba( 255, 255, 255, 0.5 );
-                border-right: 1px solid rgba( 255, 255, 255, 0.5 );
-                border-bottom: 1px solid rgba( 30, 30, 30, 1 );
-                box-shadow: inset 0 1px 5px rgba( 0, 0, 0, 0.4 );
-                cursor: pointer;
-                -webkit-transition: all 50ms linear;
-                -webkit-user-select: none;
-            }
-
-            .popup-window > .button-wrapper > .button:hover {
-                box-shadow: inset 0 1px 5px rgba( 0, 0, 0, 0.2 );
-                color: rgba( 255, 255, 255, 1 );
-                background-color: rgba( 0, 0, 0, 0.3 );
-            }
-
-            .popup-window > .button-wrapper > .button:active {
-                /*-webkit-transition: all 0ms linear;*/
-                box-shadow: inset 0 1px 5px rgba( 0, 0, 0, 1 );
-                color: rgba( 255, 255, 255, 1 );
-                background-color: rgba( 0, 0, 0, 0.4 );
-            }
         </style>
+
+        <link rel="stylesheet" type="text/css" href="res/css/windows.css">
     </head>
     <body>
+        <script type="text/javascript" src="res/js/PopupWindow.js"></script>
+
         <script type="text/javascript">
-            function PopupWindow( options ) {
-                this.options = {
-                    title: 'My Window',
-                    content: '',
-                    buttons: {}
-                };
-
-                if( options ) {
-                    for( var i in options ) {
-                        this.options[ i ] = options[ i ];
-                    }
-                }
-
-                this._create();
-            }
-
-            PopupWindow.prototype = {
-                _createButtons: function() {
-                    var buttons = this.options.buttons,
-                        button, i;
-
-                    for( i in buttons ) {
-                        button = document.createElement( 'div' );
-                        button.classList.add( 'button' );
-                        button.textContent = i;
-                        button.addEventListener( 'click', (function( btn ) {
-                            return function( e ) {
-                                btn();
-                            };  
-                        }( buttons[ i ] )), false );
-
-                        this.buttonWrapper.appendChild( button );
-                    }
-                },
-
-                _create: function() {
-                    this.domElement = document.createElement( 'div' );
-                    this.titleBar = document.createElement( 'div' );
-                    this.title = document.createElement( 'h3' );
-                    this.contentWrapper = document.createElement( 'div' );
-                    this.buttonWrapper = document.createElement( 'div' );
-                    this.closeButton = document.createElement( 'div' );
-
-
-                    this.domElement.classList.add( 'popup-window' );
-                    this.titleBar.classList.add( 'title-bar' );
-                    this.contentWrapper.classList.add( 'content-wrapper' );
-                    this.buttonWrapper.classList.add( 'button-wrapper' );
-                    this.closeButton.classList.add( 'close-button' );
-
-                    this.title.textContent = this.options.title;
-                    this.contentWrapper.innerHTML = this.options.content;
-
-                    this._createButtons();
-
-                    var clearfix = document.createElement( 'div' );
-                    clearfix.classList.add( 'clearfix' );
-
-                    this.buttonWrapper.appendChild( clearfix );
-
-                    this.titleBar.appendChild( this.title );
-                    this.domElement.appendChild( this.titleBar );
-                    this.domElement.appendChild( this.contentWrapper );
-                    this.domElement.appendChild( this.buttonWrapper );
-                    this.titleBar.appendChild( this.closeButton );
-                }
-            };
+            
 
             var popup = new PopupWindow( {
                 content: 'wat',
@@ -178,8 +38,6 @@
                     }
                 }
             } );
-
-            document.body.appendChild( popup.domElement );
 
         </script>
     </body>

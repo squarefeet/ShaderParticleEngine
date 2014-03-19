@@ -228,6 +228,7 @@
         },
 
         setAttributesFromMap: function( map ) {
+            // TODO: Set select and color values as well.
             var groupAttributes = map.group,
                 emitterAttributes = map.emitter,
                 attribute, subAttribute, additionalString;
@@ -281,6 +282,7 @@
                 applicableRollups = [];
 
             applicableRollups.push( 'Age' );
+            applicableRollups.push( 'Alive' );
             applicableRollups.push( 'Angle' );
             applicableRollups.push( 'Angle Spread' );
             applicableRollups.push( 'Color' );

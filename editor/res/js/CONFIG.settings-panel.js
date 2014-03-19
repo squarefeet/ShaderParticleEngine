@@ -23,6 +23,7 @@ var CONFIG = CONFIG || {};
             texture: makeSetting( 'Texture', 'texture', 'texture-select', ['Bullet', 'Cloud', 'Smoke', 'Star', 'Custom'] ),
             type: makeSetting( 'Emitter Type', 'type', 'select', ['Cube', 'Sphere', 'Disk'] ),
             particleCount: makeSetting( 'Particle Count', 'particleCount', 'slider', [''], 1, 10000, true ),
+            alive: makeSetting( 'Alive', 'alive', 'slider', [''], 0, 1 ),
             maxAge: makeSetting( 'Age', 'maxAge', 'slider', [''], 0, 10 ),
             duration: makeSetting( 'Duration', 'duration', 'slider', [''], 0, 10 ),
             isStatic: makeSetting( 'Static', 'static', 'checkbox', [''], 0, 1 )

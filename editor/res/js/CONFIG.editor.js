@@ -4,7 +4,7 @@ var CONFIG = CONFIG || {};
 
 	CONFIG.editor = {
 		group: {
-			texture: THREE.ImageUtils.loadTexture( 'res/img/smokeparticle.png' ),
+			texture: THREE.ImageUtils.loadTexture( 'res/img/smoke.png' ),
 	        maxAge: 5
 		},
 
@@ -71,7 +71,62 @@ var CONFIG = CONFIG || {};
 
 	        alive: 1,
 	        isStatic: 0
-		}
+		},
+
+		globalSettings: [
+			'type',
+	        'particleCount',
+	        'position',
+	        'positionSpread',
+	        'sizeStart',
+	        'sizeStartSpread',
+	        'sizeMiddle',
+	        'sizeMiddleSpread',
+	        'sizeEnd',
+	        'sizeEndSpread',
+	        'angleStart',
+	        'angleStartSpread',
+	        'angleMiddle',
+	        'angleMiddleSpread',
+	        'angleEnd',
+	        'angleEndSpread',
+	        'angleAlignVelocity',
+	        'colorStart',
+	        'colorStartSpread',
+	        'colorMiddle',
+	        'colorMiddleSpread',
+	        'colorEnd',
+	        'colorEndSpread',
+	        'opacityStart',
+	        'opacityStartSpread',
+	        'opacityMiddle',
+	        'opacityMiddleSpread',
+	        'opacityEnd',
+	        'opacityEndSpread',
+	        'duration',
+	        'alive',
+	        'isStatic'
+		],
+
+		cubeSettings: [
+			'acceleration',
+	        'accelerationSpread',
+	        'velocity',
+	        'velocitySpread'
+		],
+
+		sphereDiskSettings: [
+			'radius',
+	        'radiusSpread',
+	        'radiusSpreadClamp',
+	        'radiusScale',
+	        'speed',
+	        'speedSpread'
+		],
+
+		defaultEmitter: new SPE.Emitter()
 	};
+
+	CONFIG.editor.defaultGroup = new SPE.Group( CONFIG.editor.group );
 
 }());
