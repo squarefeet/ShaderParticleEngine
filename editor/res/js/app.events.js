@@ -261,6 +261,9 @@
             else if( emitter[ i ] instanceof THREE.Color ) {
                 emitter[ i ].copy( CONFIG.editor.defaultEmitter[ i ] );
             }
+            else {
+                emitter[ i ] = CONFIG.editor.defaultEmitter[ i ];
+            }
         }
 
         app.settings.setAttributesFromMap( CONFIG.editor );

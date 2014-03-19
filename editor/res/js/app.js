@@ -28,5 +28,6 @@ document.body.appendChild( app.editor.domElement );
 
 setTimeout( function() {
     app.settings.scroller.refresh();
-    // app.editor.start();
+    app.editor.start();
+    app.events.fire( 'menu:new' );
 }, 50 );

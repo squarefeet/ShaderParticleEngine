@@ -128,5 +128,4 @@ var CONFIG = CONFIG || {};
 	};
 
 	CONFIG.editor.defaultGroup = new SPE.Group( CONFIG.editor.group );
-
 }());
