@@ -44,7 +44,7 @@
                     this.menuItems[ i ].classList.add( 'active' );
                 }
                 else {
-                    this.childrenItems[ i ].style.display = 'none';  
+                    this.childrenItems[ i ].style.display = 'none';
                     this.menuItems[ i ].classList.remove( 'active' );
                 }
             }
@@ -86,6 +86,10 @@
                 child = document.createElement( 'li' );
                 icon = new Image();
                 childLabel = document.createElement( 'span' );
+
+                if( menuItems[ i ].statusText ) {
+                    utils.addStatusTextAttribute( child, menuItems[ i ].statusText );
+                }
 
                 child.classList.add( menuItems[ i ].eventName );
 

@@ -1,5 +1,7 @@
 function Files() {
 	this._currentFileName = null;
+
+	this._parentKeyName = 'spe-editor';
 }
 
 
@@ -10,6 +12,10 @@ Files.prototype = {
 	},
 
 	_setValueForKey: function() {
+
+	},
+
+	_createZipArchive: function() {
 
 	},
 

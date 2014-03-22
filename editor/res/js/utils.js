@@ -1,4 +1,5 @@
 var utils = {
+    noop: function() {},
 
     settingIsEqual: function( a, b ) {
         if( typeof a === 'number' ) {
@@ -50,5 +51,13 @@ var utils = {
 
     uncompressSettings: function( compressionString ) {
 
+    },
+
+    menuItemHasClass: function( name, klass ) {
+        return document.querySelector( 'li.' + name ).classList.contains( klass );
+    },
+
+    addStatusTextAttribute: function( el, text ) {
+        el.setAttribute( CONFIG.statusTextAttribute, text );
     }
 };

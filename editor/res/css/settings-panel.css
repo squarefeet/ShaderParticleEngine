@@ -2,7 +2,7 @@ section.settings-panel {
     position: absolute;
     top: 3em;
     right: 0px;
-    bottom: 1px;
+    bottom: 1.25rem;
     width: 20rem;
     margin-top: 2px;
     background: rgba( 0, 0, 0, 0.8 );

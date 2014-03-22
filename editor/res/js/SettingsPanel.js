@@ -184,6 +184,8 @@
                     solo: CONFIG.soloSettingGroupRollups
                 });
 
+                utils.addStatusTextAttribute( rollup.domElement, group[ i ].statusText );
+
                 this.rollups[ group[ i ].title ] = rollup;
 
                 wrapper.appendChild( rollup.domElement );
@@ -306,8 +308,6 @@
             applicableRollups.push( 'Size Spread' );
             applicableRollups.push( 'Static' );
             applicableRollups.push( 'Texture' );
-            applicableRollups.push( 'Acceleration' );
-            applicableRollups.push( 'Acceleration Spread' );
 
             if( emitterType === 'sphere' || emitterType === 'disk' ) {
                 applicableRollups.push( 'Radius' );
@@ -322,6 +322,8 @@
                 applicableRollups.push( 'Position Spread' );
                 applicableRollups.push( 'Velocity' );
                 applicableRollups.push( 'Velocity Spread' );
+                applicableRollups.push( 'Acceleration' );
+                applicableRollups.push( 'Acceleration Spread' );
             }
 
 

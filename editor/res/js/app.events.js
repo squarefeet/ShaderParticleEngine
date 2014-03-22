@@ -268,7 +268,7 @@
 
         app.settings.setAttributesFromMap( CONFIG.editor );
 
-        app.events.fire( 'icon:frameEmitter' );
+        app.events.fire( 'menu:frameEmitter' );
     } );
 
     app.events.on( 'menu:export', function() {
@@ -277,11 +277,11 @@
 
 
 
-    app.events.on( 'icon:centerEmitter', function() {
+    app.events.on( 'menu:centerEmitter', function() {
         app.editor.controls.focus( app.editor.focusMesh );
     } );
 
-    app.events.on( 'icon:frameEmitter', function() {
+    app.events.on( 'menu:frameEmitter', function() {
         app.editor.controls.focus( app.editor.focusMesh, true );
     } );
 
@@ -298,7 +298,7 @@
 
 
     app.events.on( 'menu:showGrid', function() {
-        var active = document.querySelector( 'li.showGrid' ).classList.contains( 'on' );
+        var active = utils.menuItemHasClass( 'showGrid', 'on' );
 
         CONFIG.showGrid = active;
 
@@ -312,14 +312,14 @@
     } );
 
     app.events.on( 'menu:adaptiveGrid', function() {
-        var active = document.querySelector( 'li.adaptiveGrid' ).classList.contains( 'on' );
+        var active = utils.menuItemHasClass( 'adaptiveGrid', 'on' );
 
         CONFIG.adaptiveGrid = active;
         app.editor._createGrid();
     } );
 
     app.events.on( 'menu:showEmitterBoundingBox', function() {
-        var active = document.querySelector( 'li.showEmitterBoundingBox' ).classList.contains( 'on' );
+        var active = utils.menuItemHasClass( 'showEmitterBoundingBox', 'on' );
 
         CONFIG.showEmitterBoundingBox = active;
 
@@ -332,7 +332,7 @@
     } );
 
     app.events.on( 'menu:slidersSetValueOnMouseDown', function() {
-        var active = document.querySelector( 'li.slidersSetValueOnMouseDown' ).classList.contains( 'on' );
+        var active = utils.menuItemHasClass( 'slidersSetValueOnMouseDown', 'on' );
 
         CONFIG.slidersSetValueOnMouseDown = active;
     } );

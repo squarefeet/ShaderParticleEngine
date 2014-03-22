@@ -4,6 +4,8 @@ var CONFIG = CONFIG || {};
 (function() {
 
     function makeSetting( title, eventName, type, children, min, max, round ) {
+        console.log( eventName );
+
         return {
             title: title,
             type: type,
@@ -11,6 +13,7 @@ var CONFIG = CONFIG || {};
             minValue: min,
             maxValue: max,
             round: !!round,
+            statusText: CONFIG.statusText.settingsPanel[ eventName ],
             action: function() {
                 app.events.fire.apply( app.events, [ 'setting:' + eventName, null ].concat( Array.prototype.slice.call( arguments ) ) );
             }
@@ -48,10 +51,10 @@ var CONFIG = CONFIG || {};
         },
 
         movement: {
-            acceleration: makeSetting( 'Acceleration', 'acceleration', 'slider', ['x', 'y', 'z'], -20, 20 ),
-            accelerationSpread: makeSetting( 'Acceleration Spread', 'accelerationSpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
             velocity: makeSetting( 'Velocity', 'velocity', 'slider', ['x', 'y', 'z'], -20, 20 ),
             velocitySpread: makeSetting( 'Velocity Spread', 'velocitySpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
+            acceleration: makeSetting( 'Acceleration', 'acceleration', 'slider', ['x', 'y', 'z'], -20, 20 ),
+            accelerationSpread: makeSetting( 'Acceleration Spread', 'accelerationSpread', 'slider', ['x', 'y', 'z'], 0, 20 ),
             speed: makeSetting( 'Speed', 'speed', 'slider', [''], 0, 5 ),
             speedSpread: makeSetting( 'Speed Spread', 'speedSpread', 'slider', [''], 0, 5 ),
         },
