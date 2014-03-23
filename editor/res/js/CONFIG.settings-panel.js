@@ -20,7 +20,7 @@ var CONFIG = CONFIG || {};
 
     CONFIG.settingsPanel = {
         group: {
-            texture: makeSetting( 'Texture', 'texture', 'texture-select', ['Bullet', 'Cloud', 'Smoke', 'Star', 'Custom'] ),
+            texture: makeSetting( 'Texture', 'texture', 'texture-select', CONFIG.editor.packagedTextures.concat( [ 'Custom' ] ) ),
             maxAge: makeSetting( 'Age', 'maxAge', 'slider', [''], 0, 10 ),
             hasPerspective: makeSetting( 'Has Perspective', 'hasPerspective', 'checkbox', [''], 0, 1 ),
             colorize: makeSetting( 'Colorize', 'colorize', 'checkbox', [''], 0, 1 ),

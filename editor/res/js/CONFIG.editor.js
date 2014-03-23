@@ -8,6 +8,18 @@ var CONFIG = CONFIG || {};
 	        maxAge: 5
 		},
 
+		packagedTextures: [
+			'bullet',
+			'cloud',
+			'smoke',
+			'star'
+		],
+
+		groupCompressed: {
+			texture: 't',
+			maxAge: 'a'
+		},
+
 		emitter: {
 			type: 'cube',
 	        particleCount: 50,
@@ -71,6 +83,51 @@ var CONFIG = CONFIG || {};
 
 	        alive: 1,
 	        isStatic: 0
+		},
+
+		emitterCompressed: {
+			type: 't',
+			particleCount: 'pc',
+			position: 'p',
+			positionSpread: 'ps',
+			acceleration: 'a',
+			accelerationSpread: 'as',
+			velocity: 'v',
+			velocitySpread: 'vs',
+			radius: 'r',
+			radiusSpread: 'rs',
+			radiusSpreadClamp: 'rsc',
+			radiusScale: 'rsl',
+			speed: 's',
+			speedSpread: 'ss',
+			sizeStart: 'sst',
+	        sizeStartSpread: 'ssts',
+	        sizeMiddle: 'sm',
+	        sizeMiddleSpread: 'sms',
+	        sizeEnd: 'se',
+	        sizeEndSpread: 'ses',
+	        angleStart: 'as',
+	        angleStartSpread: 'ass',
+	        angleMiddle: 'am',
+	        angleMiddleSpread: 'ams',
+	        angleEnd: 'ae',
+	        angleEndSpread: 'aes',
+	        angleAlignVelocity: 'av',
+	        colorStart: 'cs',
+	        colorStartSpread: 'css',
+	        colorMiddle: 'cm',
+	        colorMiddleSpread: 'cms',
+	        colorEnd: 'ce',
+	        colorEndSpread: 'ces',
+	        opacityStart: 'os',
+	        opacityStartSpread: 'oss',
+	        opacityMiddle: 'om',
+	        opacityMiddleSpread: 'oms',
+	        opacityEnd: 'oe',
+	        opacityEndSpread: 'oes',
+	        duration: 'd',
+	        alive: 'al',
+	        isStatic: 'is'
 		},
 
 		globalSettings: [

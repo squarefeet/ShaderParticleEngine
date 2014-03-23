@@ -45,7 +45,33 @@ var utils = {
         }
     },
 
-    compressSettings: (function() {
+    getBase64Texture: function( cb ) {
+        var canvas = document.createElement( 'canvas' ),
+            ctx = canvas.getContext( '2d' ),
+            image = new Image();
+
+        image.onload = function() {
+            ctx.drawImage( image, 0, 0 );
+            cb( canvas.toDataURL() );
+        };
+
+        image.src = CONFIG.editor.group.texture.sourceFile;
+    },
+
+    isUsingPackagedTexture: function() {
+        var tex = CONFIG.editor.group.texture.sourceFile,
+            packaged = CONFIG.editor.packagedTextures;
+
+        for( var i = 0; i < packaged.length; ++i ) {
+            if( ~tex.indexOf( packaged[ i ] ) ) {
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    compressSettings_old: (function() {
         var lzma;
 
         return function( groupSettings, emitterSettings ) {
@@ -59,25 +85,76 @@ var utils = {
             //
             // Argument against: If defaults change in the future,
             // these optimised settings will no longer be valid...
-            var str = {
-                group: {
-                    texture: 'wat',
-                    maxAge: groupSettings.maxAge
-                },
-                emitter: emitterSettings
+
+            var canvas = document.createElement( 'canvas' );
+            var ctx = canvas.getContext( '2d' );
+            var image = new Image();
+
+            image.onload = function() {
+                ctx.drawImage( image, 0, 0 );
+
+                var str = {
+                    group: {
+                        texture: canvas.toDataURL(),
+                        maxAge: groupSettings.maxAge
+                    },
+                    emitter: emitterSettings
+                };
+
+                str = JSON.stringify( str );
+
+                console.log( str.length, str );
+
+                // lzma.compress( str, 1, function( result ) {
+                //     console.log( 'compressed', result.toString().length );
+
+                //     lzma.decompress( result, function( res ) {
+                //         console.log( res.length );
+                //     } );
+                // } );
             };
 
-            str = JSON.stringify( str );
+            image.src = groupSettings.texture.sourceFile;
 
-            lzma.compress( str, 3, function( result ) {
-                console.log( 'compressed', result.toString() );
 
-                lzma.decompress( result, function( res ) {
-                    console.log( res );
-                } );
-            } );
         };
     }()),
+
+    compressSettings: function() {
+        var group = CONFIG.editor.group,
+            groupCompressKeys = CONFIG.editor.groupCompressed,
+            emitter = CONFIG.editor.emitter,
+            emitterCompressKeys = CONFIG.editor.emitterCompressed,
+            groupCompressed = {},
+            emitterCompressed = {},
+            full = {},
+            b64 = utils.getBase64Texture( function( b64Str ) {
+
+                for( var i in group ) {
+                    if( i === 'texture' ) {
+                        // groupCompressed[ groupCompressKeys[ i ] ] = group.texture.sourceFile;
+                        groupCompressed[ groupCompressKeys[ i ] ] = b64Str;
+                    }
+                    else {
+                        groupCompressed[ groupCompressKeys[ i ] ] = group[ i ].toString();
+                    }
+                }
+
+                for( var i in emitter ) {
+                    if( emitter[ i ] instanceof THREE.Vector3 || emitter[ i ] instanceof THREE.Color ) {
+                        emitterCompressed[ emitterCompressKeys[ i ] ] = emitter[ i ].toArray().toString();
+                    }
+                    else {
+                        emitterCompressed[ emitterCompressKeys[ i ] ] = emitter[ i ];
+                    }
+                }
+
+                full.g = groupCompressed;
+                full.e = emitterCompressed;
+
+                console.log( full, JSON.stringify( full ).length );
+            } );
+    },
 
     uncompressSettings: function( compressionString ) {
 

@@ -13,6 +13,8 @@
 * Save As...
 
 * Compress group & emitter settings
+	* LZMA didn't work out, esp. when adding in b64 image string.
+
 * Decompress group & emitter settings
 
 * Options menu: Round values to 2 decimal places on export / save
@@ -29,3 +31,5 @@
 * **DONE** Set correct FPS z-index
 
 * View menu: Show / hide axis helper(s)
+
+* Implement rest of the group settings events.

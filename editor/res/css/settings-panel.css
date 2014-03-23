@@ -119,3 +119,8 @@ section.settings-panel .single-attribute > span {
     float: left;
     line-height: 2rem;
 }
+
+
+section.settings-panel select {
+    text-transform: capitalize;
+}
