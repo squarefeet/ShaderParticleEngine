@@ -27,7 +27,7 @@ CONFIG.statusText = {
 		particleCount: 'The maximum of particles this emitter should have.',
 		alive: 'The percentage of the `particleCount` number of particles that should be shown. Value between 0 and 1.',
 		duration: 'The duration of the emitter. Measured in seconds',
-		static: 'Whether this emitter should be animated.',
+		'static': 'Whether this emitter should be animated.',
 		position: 'The base position of the emitter.',
 		positionSpread: 'The range from the base position that particles should be created within.',
 		radius: 'The sphere or disk radius.',

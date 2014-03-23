@@ -4,8 +4,6 @@ var CONFIG = CONFIG || {};
 (function() {
 
     function makeSetting( title, eventName, type, children, min, max, round ) {
-        console.log( eventName );
-
         return {
             title: title,
             type: type,

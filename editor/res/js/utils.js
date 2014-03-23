@@ -45,9 +45,39 @@ var utils = {
         }
     },
 
-    compressSettings: function( groupSettings, emitterSettings ) {
+    compressSettings: (function() {
+        var lzma;
 
-    },
+        return function( groupSettings, emitterSettings ) {
+            if( !lzma ) {
+                lzma = new LZMA( 'res/js/vendor/lzma_worker.js');
+            }
+
+            // FIXME: create utils.generateOptimisedSettings
+            // that will only generate key/value pairs for settings
+            // that are not defaults.
+            //
+            // Argument against: If defaults change in the future,
+            // these optimised settings will no longer be valid...
+            var str = {
+                group: {
+                    texture: 'wat',
+                    maxAge: groupSettings.maxAge
+                },
+                emitter: emitterSettings
+            };
+
+            str = JSON.stringify( str );
+
+            lzma.compress( str, 3, function( result ) {
+                console.log( 'compressed', result.toString() );
+
+                lzma.decompress( result, function( res ) {
+                    console.log( res );
+                } );
+            } );
+        };
+    }()),
 
     uncompressSettings: function( compressionString ) {
 
