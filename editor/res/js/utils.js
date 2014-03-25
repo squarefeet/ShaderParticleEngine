@@ -8,6 +8,9 @@ var utils = {
         else if( a instanceof THREE.Vector3 || a instanceof THREE.Color ) {
             return a.equals( b );
         }
+        else {
+            return a === b;
+        }
     },
 
     settingAdheresToType: function( settingName, type ) {

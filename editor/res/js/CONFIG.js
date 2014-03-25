@@ -12,7 +12,11 @@ var CONFIG = {
 
     // Interface behaviours
     slidersSetValueOnMouseDown: false,
-    soloSettingGroupRollups: true
+    soloSettingGroupRollups: true,
+
+    // Exports...
+    spacesOrTabs: 'spaces',
+    tabWidth: 4
 
 };
 

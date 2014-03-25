@@ -40,3 +40,7 @@
 * **DONE** Implement rest of the group settings events.
 
 * Make sure axis helper moves with emitter position.
+
+* Finish making menu icons.
+
+* Add preferences with for things like export settings, etc.

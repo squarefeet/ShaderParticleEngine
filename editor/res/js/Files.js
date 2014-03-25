@@ -39,17 +39,18 @@ Files.prototype = {
 			group = CONFIG.editor.group,
 			emitter = CONFIG.editor.emitter,
 			lineFeed = '\r\n',
+			tab = CONFIG.spacesOrTabs === 'spaces' ? (new Array( CONFIG.tabWidth + 1 )).join( ' ' ) : '\t',
 			length, output;
 
 		groupArray.push( '// Create particle group' );
 		groupArray.push( 'var particleGroup = new SPE.Group({' );
-		groupArray.push( '\tmaxAge:' + group.maxAge + ',' );
-		groupArray.push( '\ttexture: THREE.ImageUtils.loadTexture("' + group.texture.sourceFile + '")' );
+		groupArray.push( tab + 'maxAge:' + group.maxAge + ',' );
+		groupArray.push( tab + 'texture: THREE.ImageUtils.loadTexture("' + group.texture.sourceFile + '")' );
 		groupArray.push( '});' );
 		groupArray.join( lineFeed );
 
 		emitterArray.push( '// Create particle emitter' );
-		emitterArray.push( 'var particleEmitter = new SPE.Emitter({' );
+		emitterArray.push( '' );
 
 		for( var i in emitter ) {
 			var setting = emitter[ i ];
@@ -57,16 +58,21 @@ Files.prototype = {
 			if( !utils.settingIsEqual( setting, CONFIG.editor.defaultEmitter[ i ] ) &&
 				utils.settingAdheresToType( i, emitter.type )
 			) {
-				emitterArray.push( '\t' + utils.stringifySetting( i, setting ) + ',' );
+				emitterArray.push( tab + utils.stringifySetting( i, setting ) + ',' );
 			}
 		}
 
 		length = emitterArray.length - 1;
 
 		// Remove trailing comma.
-		emitterArray[ length ] = emitterArray[ length ].substr(0, emitterArray[ length ].length - 1 );
-
-		emitterArray.push( '});' );
+		if( length > 1 ) {
+			emitterArray[ 1 ] = 'var particleEmitter = new SPE.Emitter({' ;
+			emitterArray[ length ] = emitterArray[ length ].substr(0, emitterArray[ length ].length - 1 );
+			emitterArray.push( '});' );
+		}
+		else {
+			emitterArray[ 1 ] = 'var particleEmitter = new SPE.Emitter();';
+		}
 
 
 		output = groupArray.join( lineFeed );

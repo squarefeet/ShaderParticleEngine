@@ -301,7 +301,6 @@
                             }
                         }
                         else {
-                            console.log( i, emitterAttributes[ i ] );
                             this.attributes[ i ].checked = !!emitterAttributes[ i ];
                         }
                     }
@@ -309,8 +308,8 @@
                     else if( typeof emitterAttributes[ i ] === 'number' ) {
                         attribute._setValue( emitterAttributes [ i ] );
                     }
-
                 }
+
                 else {
                     attribute = i.replace( 'Spread', '' );
                     subAttribute = attribute.replace( /Start|Middle|End/, '' );
@@ -332,7 +331,7 @@
                     else {
                          // else if( i === 'type' ) {
                                 // this.attributes[ i ].value = CONFIG.editor.types[ groupAttributes[ i ] ];
-                                console.log( i, CONFIG.editor.types[ emitterAttributes[ i ] ] );
+                                // console.log( i, CONFIG.editor.types[ emitterAttributes[ i ] ] );
                             // }
                     }
                 }
