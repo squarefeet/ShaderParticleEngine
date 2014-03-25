@@ -74,6 +74,12 @@
             }, false );
 
 
+            utils.addStatusTextAttribute( leftArrow, CONFIG.statusText.settingsPanel.leftArrow );
+            utils.addStatusTextAttribute( rightArrow, CONFIG.statusText.settingsPanel.rightArrow );
+            utils.addStatusTextAttribute( input, CONFIG.statusText.settingsPanel.emitterName );
+            utils.addStatusTextAttribute( removeButton, CONFIG.statusText.settingsPanel.removeEmitter );
+            utils.addStatusTextAttribute( addButton, CONFIG.statusText.settingsPanel.addEmitter );
+
             wrapper.appendChild( leftArrow );
             wrapper.appendChild( input );
             wrapper.appendChild( rightArrow );

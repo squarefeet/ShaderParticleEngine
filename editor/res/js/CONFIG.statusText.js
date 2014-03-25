@@ -47,7 +47,14 @@ CONFIG.statusText = {
 		opacity: 'The base opacity values',
 		opacitySpread: "The range from the base `opacity` value that a particle's opacity value will stray.",
 		angle: 'The base angles of rotation.',
-		angleSpread: "The range from the base `angle` value that a particle's rotation will stray."
+		angleSpread: "The range from the base `angle` value that a particle's rotation will stray.",
+
+
+		leftArrow: "Change focus to previous emitter, if one exists.",
+		rightArrow: "Change focus to next emitter, if one exists.",
+		emitterName: "The current emitter's name. Double click to set the value.",
+		addEmitter: "Add a new emitter to the scene.",
+		removeEmitter: "Remove the current emitter from the scene."
 	}
 
 
