@@ -173,5 +173,12 @@ var utils = {
 
     captializeString: function( str ) {
         return str.charAt(0).toUpperCase() + str.slice(1);
+    },
+
+    getCurrentEmitter: function() {
+        return {
+            config: CONFIG.editor.emitter[ app.currentEmitterIndex ],
+            instance: app.editor.particleEmitters[ app.currentEmitterIndex ]
+        };
     }
 };

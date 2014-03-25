@@ -9,7 +9,9 @@ var app = app || {};
 // Load saved configs here? Only on load / error create
 // the instances below...
 
-app.events = new PubSub( { debug: false } );
+app.currentEmitterIndex = 0;
+
+app.events = new PubSub( { debug: true } );
 app.menu = new Menu();
 app.editor = new Editor();
 app.settings = new SettingsPanel();

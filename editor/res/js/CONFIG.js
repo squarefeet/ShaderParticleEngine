@@ -2,6 +2,7 @@ var CONFIG = {
 
 	// Keys...
 	statusTextAttribute: 'data-status-text',
+    newEmitterName: 'Untitled',
 
     // View settings
     showGrid: true,

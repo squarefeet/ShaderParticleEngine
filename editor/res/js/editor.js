@@ -9,6 +9,8 @@ function Editor() {
         }
     }
 
+    this.particleEmitters = [];
+
 	this._createScene();
 	this._createParticles();
 
@@ -63,7 +65,7 @@ Editor.prototype = {
         this.worldAxis.material.depthWrite = false;
 
         this.controls.addEventListener( 'change', function() {
-            var absScale = self.camera.position.distanceTo( self.particleEmitter.position );
+            var absScale = self.camera.position.distanceTo( self.particleEmitters[ app.currentEmitterIndex ].position );
 
             self.worldAxis.scale.set(
                 absScale, absScale, absScale
@@ -105,6 +107,35 @@ Editor.prototype = {
         this.renderer.render( this.scene, this.camera );
     },
 
+    addEmitter: function() {
+        var settings = CONFIG.editor.emitter[ app.currentEmitterIndex ],
+            emitter = new SPE.Emitter( settings );
+
+        this.particleEmitters.push( emitter );
+        this.particleGroup.addEmitter( emitter );
+    },
+
+    recreateEmitters: function() {
+        var settings = CONFIG.editor.emitter[ app.currentEmitterIndex ],
+            emitter = new SPE.Emitter( settings );
+
+        this.scene.remove( this.particleGroup.mesh );
+
+        CONFIG.editor.names.push( CONFIG.newEmitterName + '-' + (app.currentEmitterIndex + 1) );
+
+
+        this.particleEmitters[ app.currentEmitterIndex ] = emitter;
+        this.particleGroup = new SPE.Group( CONFIG.editor.group );
+
+        for( var i = 0; i < this.particleEmitters.length; ++i ) {
+            this.particleGroup.addEmitter( this.particleEmitters[ i ] );
+        }
+
+        console.log( this.particleEmitters );
+
+        this.scene.add( this.particleGroup.mesh );
+    },
+
     _createParticles: function() {
     	var settings = CONFIG.editor;
 
@@ -113,10 +144,11 @@ Editor.prototype = {
         }
 
         this.particleGroup = new SPE.Group( settings.group );
-        this.particleEmitter = new SPE.Emitter( settings.emitter );
-        this.particleGroup.addEmitter( this.particleEmitter );
+        this.addEmitter();
         this.scene.add( this.particleGroup.mesh );
     },
+
+
 
     _onResize: function( e, width, height ) {
         width = width || window.innerWidth;
@@ -136,12 +168,12 @@ Editor.prototype = {
     },
 
     _updateFocusMesh: function() {
-        var positionSpread = this.particleEmitter.positionSpread,
+        var positionSpread = this.particleEmitters[ app.currentEmitterIndex ].positionSpread,
             maxAge = this.particleGroup.maxAge,
-            acceleration = this.particleEmitter.acceleration,
-            accelerationSpread = this.particleEmitter.accelerationSpread,
-            velocity = this.particleEmitter.velocity,
-            velocitySpread = this.particleEmitter.velocitySpread,
+            acceleration = this.particleEmitters[ app.currentEmitterIndex ].acceleration,
+            accelerationSpread = this.particleEmitters[ app.currentEmitterIndex ].accelerationSpread,
+            velocity = this.particleEmitters[ app.currentEmitterIndex ].velocity,
+            velocitySpread = this.particleEmitters[ app.currentEmitterIndex ].velocitySpread,
 
             a = new THREE.Vector3().copy( acceleration ),
             v = new THREE.Vector3().copy( velocity ),
@@ -170,7 +202,9 @@ Editor.prototype = {
         scale.z = Math.max( 1, scale.z );
 
         this.focusMesh.scale.copy( scale );
-        this.focusMesh.position = this.particleEmitter.position;
+        this.focusMesh.position = this.particleEmitters[ app.currentEmitterIndex ].position;
+
+        this.worldAxis.position = this.particleEmitters[ app.currentEmitterIndex ].position;
 
         if( CONFIG.showGrid ) {
             this._createGrid();

@@ -36,12 +36,14 @@ var CONFIG = CONFIG || {};
 			'Disk'
 		],
 
+		names: [],
+
 		groupCompressed: {
 			texture: 't',
 			maxAge: 'a'
 		},
 
-		emitter: {
+		emitter: [ {
 			type: 'cube',
 	        particleCount: 50,
 
@@ -104,7 +106,7 @@ var CONFIG = CONFIG || {};
 
 	        alive: 1,
 	        isStatic: 0
-		},
+		} ],
 
 		emitterCompressed: {
 			type: 't',

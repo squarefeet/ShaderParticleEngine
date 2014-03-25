@@ -1,7 +1,7 @@
 (function() {
 
     var setShaderStartMiddleEndAttribute = function( attributeName ) {
-        var emitter = app.editor.particleEmitter,
+        var emitter = utils.getCurrentEmitter().instance,
             start = emitter.verticesIndex,
             end = start + emitter.particleCount,
             attributeValue = emitter.attributes[ attributeName ] ? emitter.attributes[ attributeName ].value : null;
@@ -51,21 +51,24 @@
     // General
     app.events.on( 'setting:type', function( value ) {
         value = value.toLowerCase();
-        CONFIG.editor.emitter.type = value;
-        app.editor.particleEmitter.type = value;
+
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.type = value;
+        emitter.instance.type = value;
         app.settings.showOnlyApplicableRollups( value );
 
         if( value === 'disk' || value === 'sphere' ) {
-            var velocity = app.editor.particleEmitter.attributes.velocity.value,
-                acceleration = app.editor.particleEmitter.attributes.acceleration.value;
+            var velocity = emitter.instance.attributes.velocity.value,
+                acceleration = emitter.instance.attributes.acceleration.value;
 
             for( var i = 0; i < velocity.length; ++i ) {
                 velocity[ i ].set( 0, 0, 0 );
                 acceleration[ i ].set( 0, 0, 0 );
             }
 
-            CONFIG.editor.emitter.acceleration.set( 0, 0, 0 );
-            CONFIG.editor.emitter.velocity.set( 0, 0, 0 );
+            emitter.config.acceleration.set( 0, 0, 0 );
+            emitter.config.velocity.set( 0, 0, 0 );
         }
     } );
 
@@ -80,26 +83,31 @@
     } );
 
     app.events.on( 'setting:particleCount', function( value, title ) {
-        CONFIG.editor.emitter.particleCount = value;
-        app.editor._createParticles();
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.particleCount = value;
+        app.editor.recreateEmitters();
     } );
 
     app.events.on( 'setting:alive', function( value, title ) {
-        CONFIG.editor.emitter.alive = value;
-        app.editor.particleEmitter.alive = value;
-        // app.editor._createParticles();
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.alive = value;
+        emitter.instance.particleEmitter.alive = value;
     } );
 
     app.events.on( 'setting:maxAge', function( value, title ) {
         CONFIG.editor.group.maxAge = value;
-        app.editor._createParticles();
+        app.editor.recreateEmitters();
     } );
 
     app.events.on( 'setting:duration', function( value, title ) {
-        CONFIG.editor.emitter.duration = value || null;
-        app.editor.particleEmitter.age = 0.0;
-        app.editor.particleEmitter.duration = value || null;
-        app.editor.particleEmitter.alive = 1;
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.duration = value || null;
+        emitter.instance.age = 0.0;
+        emitter.instance.duration = value || null;
+        emitter.instance.alive = 1;
     } );
 
     app.events.on( 'setting:hasPerspective', function( value, title ) {
@@ -139,7 +147,6 @@
 
     app.events.on( 'setting:alphaTest', function( value, title ) {
         CONFIG.editor.group.alphaTest = value;
-        // app.editor._createParticles();
         app.editor.particleGroup.material.alphaTest = value;
         app.editor.particleGroup.material.needsUpdate = true;
     } );
@@ -149,141 +156,183 @@
 
     // Positioning
     app.events.on( 'setting:position', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = title.replace( ':', '' );
-        CONFIG.editor.emitter.position[ title ] = value;
-    	app.editor.particleEmitter.position[ title ] = value;
+
+        emitter.config.position[ title ] = value;
+    	emitter.instance.position[ title ] = value;
     } );
 
     app.events.on( 'setting:positionSpread', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = title.replace( ':', '' );
-        CONFIG.editor.emitter.positionSpread[ title ] = value;
-        app.editor.particleEmitter.positionSpread[ title ] = value;
+
+        emitter.config.positionSpread[ title ] = value;
+        emitter.instance.positionSpread[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:radius', function( value, title ) {
-        CONFIG.editor.emitter.radius = value;
-        app.editor.particleEmitter.radius = value;
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.radius = value;
+        emitter.instance.radius = value;
     } );
 
     app.events.on( 'setting:radiusSpread', function( value, title ) {
-        CONFIG.editor.emitter.radiusSpread = value;
-        app.editor.particleEmitter.radiusSpread = value;
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.radiusSpread = value;
+        emitter.instance.radiusSpread = value;
     } );
 
     app.events.on( 'setting:radiusSpreadClamp', function( value, title ) {
-        CONFIG.editor.emitter.radiusSpreadClamp = value;
-        app.editor.particleEmitter.radiusSpreadClamp = value;
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.radiusSpreadClamp = value;
+        emitter.instance.radiusSpreadClamp = value;
     } );
 
     app.events.on( 'setting:radiusScale', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = title.replace( ':', '' );
-        CONFIG.editor.emitter.radiusScale[ title ] = value;
-        app.editor.particleEmitter.radiusScale[ title ] = value;
+        emitter.config.radiusScale[ title ] = value;
+        emitter.instance.radiusScale[ title ] = value;
     } );
 
 
     // Movement
     app.events.on( 'setting:acceleration', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = title.replace( ':', '' );
 
-        CONFIG.editor.emitter.acceleration[ title ] = value;
-        app.editor.particleEmitter.acceleration[ title ] = value;
+        emitter.config.acceleration[ title ] = value;
+        emitter.instance.acceleration[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:accelerationSpread', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = title.replace( ':', '' );
-        CONFIG.editor.emitter.accelerationSpread[ title ] = value;
-        app.editor.particleEmitter.accelerationSpread[ title ] = value;
+        emitter.config.accelerationSpread[ title ] = value;
+        emitter.instance.accelerationSpread[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:velocity', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = title.replace( ':', '' )
-        CONFIG.editor.emitter.velocity[ title ] = value;
-        app.editor.particleEmitter.velocity[ title ] = value;
+        emitter.config.velocity[ title ] = value;
+        emitter.instance.velocity[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:velocitySpread', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = title.replace( ':', '' )
-        CONFIG.editor.emitter.velocitySpread[ title ] = value;
-        app.editor.particleEmitter.velocitySpread[ title ] = value;
+        emitter.config.velocitySpread[ title ] = value;
+        emitter.instance.velocitySpread[ title ] = value;
         app.editor._updateFocusMesh();
     } );
 
     app.events.on( 'setting:speed', function( value, title ) {
-        CONFIG.editor.emitter.speed = value;
-        app.editor.particleEmitter.speed = value;
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.speed = value;
+        emitter.instance.speed = value;
     } );
 
     app.events.on( 'setting:speedSpread', function( value, title ) {
-        CONFIG.editor.emitter.speedSpread = value;
-        app.editor.particleEmitter.speedSpread = value;
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.speedSpread = value;
+        emitter.instance.speedSpread = value;
     } );
 
 
     // Sizing
     app.events.on( 'setting:size', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = 'size' + title.replace( ':', '' );
-        CONFIG.editor.emitter[ title ] = value;
-        app.editor.particleEmitter[ title ] = value;
+        emitter.config[ title ] = value;
+        emitter.instance[ title ] = value;
         setShaderStartMiddleEndAttribute( 'size' );
     } );
 
     app.events.on( 'setting:sizeSpread', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = 'size' + title.replace( ':', '' ) + 'Spread';
-        CONFIG.editor.emitter[ title ] = value;
-        app.editor.particleEmitter[ title ] = value;
+        emitter.config[ title ] = value;
+        emitter.instance[ title ] = value;
         setShaderStartMiddleEndAttribute( 'size' );
     } );
 
     // Opacity
     app.events.on( 'setting:opacity', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = 'opacity' + title.replace( ':', '' );
-        CONFIG.editor.emitter[ title ] = value;
-        app.editor.particleEmitter[ title ] = value;
+        emitter.config[ title ] = value;
+        emitter.instance[ title ] = value;
         setShaderStartMiddleEndAttribute( 'opacity' );
     } );
 
     app.events.on( 'setting:opacitySpread', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = 'opacity' + title.replace( ':', '' ) + 'Spread';
-        CONFIG.editor.emitter[ title ] = value;
-        app.editor.particleEmitter[ title ] = value;
+        emitter.config[ title ] = value;
+        emitter.instance[ title ] = value;
         setShaderStartMiddleEndAttribute( 'opacity' );
     } );
 
     // Angle
     app.events.on( 'setting:angle', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = 'angle' + title.replace( ':', '' );
-        CONFIG.editor.emitter[ title ] = value;
-        app.editor.particleEmitter[ title ] = value;
+        emitter.config[ title ] = value;
+        emitter.instance[ title ] = value;
         setShaderStartMiddleEndAttribute( 'angle' );
     } );
 
     app.events.on( 'setting:angleSpread', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = 'angle' + title.replace( ':', '' ) + 'Spread';
-        CONFIG.editor.emitter[ title ] = value;
-        app.editor.particleEmitter[ title ] = value;
+        emitter.config[ title ] = value;
+        emitter.instance[ title ] = value;
         setShaderStartMiddleEndAttribute( 'angle' );
     } );
 
     app.events.on( 'setting:color', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         for( var i = 0; i < value.length; ++i ) {
             color[ i ] = value[ i ] / 255;
         }
 
         title = 'color' + title.replace( ':', '' );
-        CONFIG.editor.emitter[ title ].fromArray( color );
-        app.editor.particleEmitter[ title ].fromArray( color );
+        emitter.config[ title ].fromArray( color );
+        emitter.instance[ title ].fromArray( color );
         setShaderStartMiddleEndAttribute( 'color' );
     } );
 
     app.events.on( 'setting:colorSpread', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
         title = 'color' + title.replace( ':', '' ) + 'Spread';
-        CONFIG.editor.emitter[ title ].set( value, value, value );
-        app.editor.particleEmitter[ title ].set( value, value, value );
+        emitter.config[ title ].set( value, value, value );
+        emitter.instance[ title ].set( value, value, value );
         setShaderStartMiddleEndAttribute( 'color' );
     } );
 
@@ -291,7 +340,7 @@
 
     // Menu items
     app.events.on( 'menu:new', function() {
-        var emitter = CONFIG.editor.emitter,
+        var emitter = CONFIG.editor.emitter[ app.currentEmitterIndex ],
             group = CONFIG.editor.group;
 
 
@@ -385,4 +434,113 @@
         CONFIG.slidersSetValueOnMouseDown = active;
     } );
 
+
+
+    // Emitter Selector
+    app.events.on( 'settings:emitterSelector:left', function() {
+        if( --app.currentEmitterIndex < 0 ) {
+            app.currentEmitterIndex = 0;
+            app.settings.emitterSelector.updateArrows();
+            app.settings.emitterSelector.updateName();
+            return;
+        }
+
+        app.settings.emitterSelector.updateName();
+        app.settings.setAttributesFromMap( CONFIG.editor );
+        app.settings.emitterSelector.updateArrows();
+    } );
+
+    app.events.on( 'settings:emitterSelector:right', function() {
+        if( ++app.currentEmitterIndex === CONFIG.editor.emitter.length ) {
+            app.currentEmitterIndex = CONFIG.editor.emitter.length - 1;
+            app.settings.emitterSelector.updateArrows();
+            app.settings.emitterSelector.updateName();
+            return;
+        }
+
+        app.settings.emitterSelector.updateName();
+        app.settings.setAttributesFromMap( CONFIG.editor );
+        app.settings.emitterSelector.updateArrows();
+    } );
+
+
+    app.events.on( 'settings:emitterSelector:add', function() {
+        ++app.currentEmitterIndex;
+
+        var emitter = {},
+            globalSettings = CONFIG.editor.globalSettings,
+            cubeSettings = CONFIG.editor.cubeSettings,
+            sphereDiskSettings = CONFIG.editor.sphereDiskSettings,
+            defaultEmitter = CONFIG.editor.defaultEmitter,
+            setting;
+
+        for( var i = 0; i < globalSettings.length; ++i ) {
+            setting = globalSettings[ i ];
+
+            if( typeof defaultEmitter[ setting ] === 'string' || typeof defaultEmitter[ setting ] === 'number' ) {
+                emitter[ setting ] = defaultEmitter[ setting ];
+            }
+            else if( defaultEmitter[ setting ] instanceof THREE.Vector3 ) {
+                emitter[ setting ] = new THREE.Vector3();
+                emitter[ setting ].copy( defaultEmitter[ setting ] );
+            }
+            else if( defaultEmitter[ setting ] instanceof THREE.Color ) {
+                emitter[ setting ] = new THREE.Color();
+                emitter[ setting ].copy( defaultEmitter[ setting ] );
+            }
+            else {
+                emitter[ setting ] = defaultEmitter[ setting ];
+            }
+        }
+
+        for( var i = 0; i < cubeSettings.length; ++i ) {
+            setting = cubeSettings[ i ];
+
+            if( typeof defaultEmitter[ setting ] === 'string' || typeof defaultEmitter[ setting ] === 'number' ) {
+                emitter[ setting ] = defaultEmitter[ setting ];
+            }
+            else if( defaultEmitter[ setting ] instanceof THREE.Vector3 ) {
+                emitter[ setting ] = new THREE.Vector3();
+                emitter[ setting ].copy( defaultEmitter[ setting ] );
+            }
+            else if( defaultEmitter[ setting ] instanceof THREE.Color ) {
+                emitter[ setting ] = new THREE.Color();
+                emitter[ setting ].copy( defaultEmitter[ setting ] );
+            }
+            else {
+                emitter[ setting ] = defaultEmitter[ setting ];
+            }
+        }
+
+        for( var i = 0; i < sphereDiskSettings.length; ++i ) {
+            setting = sphereDiskSettings[ i ];
+
+            if( typeof defaultEmitter[ setting ] === 'string' || typeof defaultEmitter[ setting ] === 'number' ) {
+                emitter[ setting ] = defaultEmitter[ setting ];
+            }
+            else if( defaultEmitter[ setting ] instanceof THREE.Vector3 ) {
+                emitter[ setting ] = new THREE.Vector3();
+                emitter[ setting ].copy( defaultEmitter[ setting ] );
+            }
+            else if( defaultEmitter[ setting ] instanceof THREE.Color ) {
+                emitter[ setting ] = new THREE.Color();
+                emitter[ setting ].copy( defaultEmitter[ setting ] );
+            }
+            else {
+                emitter[ setting ] = defaultEmitter[ setting ];
+            }
+        }
+
+        CONFIG.editor.emitter.push( emitter );
+
+        app.editor.recreateEmitters();
+        app.settings.emitterSelector.updateName();
+        app.settings.setAttributesFromMap( CONFIG.editor );
+        app.settings.emitterSelector.updateArrows();
+    } );
+
+
+    app.events.on( 'settings:emitterSelector:nameChange', function( value ) {
+        CONFIG.editor.names[ app.currentEmitterIndex ] = value;
+    } );
 }());

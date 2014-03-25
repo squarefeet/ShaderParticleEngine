@@ -1,5 +1,117 @@
 (function() {
 
+    function EmitterSelector( options ) {
+        this.emitterCount = 1;
+
+        this.domElement = null;
+        this.input = null;
+        this.leftArrow = null;
+        this.rightArrow = null;
+
+        this._create();
+    }
+
+    EmitterSelector.prototype = {
+        _create: function() {
+            var wrapper = document.createElement( 'div' ),
+                leftArrow = document.createElement( 'div' ),
+                rightArrow = document.createElement( 'div' ),
+                input = document.createElement( 'input' ),
+                addButton = document.createElement( 'div' ),
+                removeButton = document.createElement( 'div' ),
+                clearfix = document.createElement( 'div' );
+
+            wrapper.classList.add( 'emitter-selector' );
+            leftArrow.classList.add( 'button', 'left-arrow', 'disabled' );
+            rightArrow.classList.add( 'button', 'right-arrow', 'disabled' );
+            input.classList.add( 'emitter-name' );
+            addButton.classList.add( 'button', 'add' );
+            removeButton.classList.add( 'button', 'remove' );
+            clearfix.classList.add( 'clear-fix' );
+
+
+            leftArrow.addEventListener( 'click', function() {
+                app.events.fire( 'settings:emitterSelector:left' );
+            }, false );
+
+            addButton.addEventListener( 'click', function() {
+                app.events.fire( 'settings:emitterSelector:add' );
+            }, false );
+
+            removeButton.addEventListener( 'click', function() {
+                app.events.fire( 'settings:emitterSelector:remove' );
+            }, false );
+
+            rightArrow.addEventListener( 'click', function() {
+                app.events.fire( 'settings:emitterSelector:right' );
+            }, false );
+
+
+            input.setAttribute('isDisabled', true);
+            input.value = CONFIG.newEmitterName + '-' + (app.currentEmitterIndex + 1);
+
+            input.addEventListener( 'mousedown', function( e ) {
+                if( this.getAttribute( 'isDisabled' ) === 'true' ) {
+                    e.preventDefault();
+                    return false;
+                }
+            }, false );
+
+            input.addEventListener( 'dblclick', function() {
+                input.setAttribute('isDisabled', false);
+                this.focus();
+            }, false );
+
+            input.addEventListener( 'keydown', function( e ) {
+                if( e.keyCode === 13 ) {
+                    this.blur();
+                }
+            }, false );
+
+            input.addEventListener( 'blur', function() {
+                app.events.fire( 'settings:emitterSelector:nameChange', null, this.value );
+                input.setAttribute('isDisabled', true);
+            }, false );
+
+
+            wrapper.appendChild( leftArrow );
+            wrapper.appendChild( input );
+            wrapper.appendChild( rightArrow );
+            wrapper.appendChild( removeButton );
+            wrapper.appendChild( addButton );
+            wrapper.appendChild( clearfix );
+
+            this.input = input;
+            this.leftArrow = leftArrow;
+            this.rightArrow = rightArrow;
+            this.domElement = wrapper;
+        },
+
+        updateName: function() {
+            this.input.value = CONFIG.editor.names[ app.currentEmitterIndex ];
+        },
+
+        updateArrows: function() {
+            if( CONFIG.editor.emitter.length === 1 ) {
+                this.leftArrow.classList.add( 'disabled' );
+                this.rightArrow.classList.add( 'disabled' );
+            }
+            else if( app.currentEmitterIndex === 0 ) {
+                this.leftArrow.classList.add( 'disabled' );
+                this.rightArrow.classList.remove( 'disabled' );
+            }
+            else if( app.currentEmitterIndex === CONFIG.editor.emitter.length - 1 ) {
+                this.leftArrow.classList.remove( 'disabled' );
+                this.rightArrow.classList.add( 'disabled' );
+            }
+            else {
+                this.leftArrow.classList.remove( 'disabled' );
+                this.rightArrow.classList.remove( 'disabled' );
+            }
+        }
+    };
+
+
     function SettingsPanel() {
         // Bind scope
         for( var i in this ) {
@@ -11,6 +123,7 @@
         this.attributes = {};
         this.rollups = {};
         this.textureInput = null;
+        this.emitterSelector = null;
 
         this._makeElements();
         this.setAttributesFromMap( CONFIG.editor );
@@ -72,7 +185,12 @@
             var settings = CONFIG.settingsPanel;
 
             for( var i in settings ) {
-                this._makePanelGroup( i, settings[ i ])
+                this._makePanelGroup( i, settings[ i ] );
+
+                if( i === 'group' ) {
+                    this.emitterSelector = new EmitterSelector();
+                    this.scrollContainer.appendChild( this.emitterSelector.domElement );
+                }
             }
 
             this.scroller = new IScroll( this.scrollWrapper, {
@@ -263,9 +381,10 @@
         },
 
         setAttributesFromMap: function( map ) {
+
             // TODO: Set select and color values as well.
             var groupAttributes = map.group,
-                emitterAttributes = map.emitter,
+                emitterAttributes = map.emitter[ app.currentEmitterIndex ],
                 attribute, subAttribute, additionalString;
 
             for( var i in groupAttributes ) {

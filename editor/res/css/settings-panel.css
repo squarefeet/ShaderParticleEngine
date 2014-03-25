@@ -32,7 +32,8 @@ section.settings-panel > .scroll-wrapper > .scroll-container {
     right: 9px;
 }
 
-section.settings-panel .group-wrapper {
+section.settings-panel .group-wrapper,
+section.settings-panel .emitter-selector {
     margin: 0.1rem 0.1rem 0.4rem;
     border: 1px solid rgba( 255, 255, 255, 0.2 );
     background: rgba( 0, 0, 0, 0.6 );
@@ -107,7 +108,6 @@ section.settings-panel .single-attribute {
     position: relative;
     top: 0;
     left: 0;
-    /*height: 1.5rem;*/
     overflow: hidden;
     margin: 0.2rem;
     border: 1px solid rgba( 255, 255, 255, 0.15 );
@@ -121,7 +121,89 @@ section.settings-panel .single-attribute > span {
     line-height: 2rem;
 }
 
-
 section.settings-panel select {
     text-transform: capitalize;
+}
+
+
+section.settings-panel .emitter-selector {
+    position: relative;
+    margin-top: 1rem;
+    padding: 0.2rem;
+    margin-bottom: 0;
+}
+
+section.settings-panel .emitter-selector > .button,
+section.settings-panel .emitter-selector > input {
+    position: relative;
+    float: left;
+    height: 2rem;
+    border: 1px solid rgba( 255, 255, 255, 0.15 );
+    margin: 0 0.2rem;
+    color: #bbb;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+section.settings-panel .emitter-selector > input:hover,
+section.settings-panel .emitter-selector > input:active,
+section.settings-panel .emitter-selector > .button:hover {
+    border: 1px solid rgba(38, 161, 255, 0.5);
+}
+
+section.settings-panel .emitter-selector > .button {
+    width: 1.6rem;
+    line-height: 2rem;
+    text-align: center;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+section.settings-panel .emitter-selector > .button.disabled {
+    opacity: 0.3;
+}
+
+section.settings-panel .emitter-selector > .button.add,
+section.settings-panel .emitter-selector > .button.remove,
+section.settings-panel .emitter-selector > .button.right-arrow {
+    float: right;
+}
+
+section.settings-panel .emitter-selector > .button.left-arrow {
+    margin: 0 0.2rem 0 0;
+}
+
+section.settings-panel .emitter-selector > .button.right-arrow {
+    margin: 0 0 0 0.2rem;
+}
+
+section.settings-panel .emitter-selector > input {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background: transparent;
+    padding: 0 0.4rem;
+    width: 10.7rem;
+}
+
+section.settings-panel .emitter-selector > input[isdisabled=true] {
+    color: #aaa;
+}
+section.settings-panel .emitter-selector > input[isdisabled=false] {
+    color: #eee;
+    cursor: text;
+}
+
+section.settings-panel .emitter-selector > .button.left-arrow:after {
+    content: "◀";
+}
+section.settings-panel .emitter-selector > .button.add:after {
+    content: "+";
+}
+section.settings-panel .emitter-selector > .button.remove:after {
+    content: "-";
+}
+section.settings-panel .emitter-selector > .button.right-arrow:after {
+    content: "▶";
 }
