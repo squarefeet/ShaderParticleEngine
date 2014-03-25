@@ -32,9 +32,32 @@ document.body.appendChild( app.editor.domElement );
 document.body.appendChild( app.statusBar.domElement );
 
 setTimeout( function() {
+    app.events.fire( 'toggleSettingsPanel', null, app.settings.domElement.classList.contains( 'closed' ) );
     app.statusBar.registerStatusElements();
-
     app.settings.scroller.refresh();
-    // app.editor.start();
+    app.editor.start();
     app.events.fire( 'menu:new' );
+
+    setTimeout( function() {
+        document.querySelector( '.loader' ).style.opacity = 0;
+
+        setTimeout( function() {
+            app.menu.domElement.style.opacity = 1;
+        }, 300 );
+
+        setTimeout( function() {
+            app.settings.domElement.style.opacity = 1;
+        }, 500 );
+
+        setTimeout( function() {
+            app.statusBar.domElement.style.opacity = 1;
+        }, 750 );
+
+        setTimeout( function() {
+            app.editor.renderer.domElement.style.opacity = 1;
+            document.querySelector( '.loader' ).style.display = 'none';
+        }, 1000 );
+    }, 1000 );
+
+
 }, 50 );

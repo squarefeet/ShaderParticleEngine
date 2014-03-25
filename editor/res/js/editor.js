@@ -65,7 +65,7 @@ Editor.prototype = {
         this.controls.addEventListener( 'change', function() {
             var absScale = self.camera.position.distanceTo( self.particleEmitter.position );
 
-            self.worldAxis.scale.set( 
+            self.worldAxis.scale.set(
                 absScale, absScale, absScale
             ).divideScalar( 5 );
         });
@@ -93,6 +93,7 @@ Editor.prototype = {
 
         rendererEl.style.position = 'absolute';
         rendererEl.style.top = '0';
+        rendererEl.style.opacity = '0';
 
         this.camera.position.y = 5;
         this.camera.position.z = 10;

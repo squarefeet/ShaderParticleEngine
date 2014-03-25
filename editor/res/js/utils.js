@@ -166,5 +166,9 @@ var utils = {
 
     addStatusTextAttribute: function( el, text ) {
         el.setAttribute( CONFIG.statusTextAttribute, text );
+    },
+
+    captializeString: function( str ) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
 };

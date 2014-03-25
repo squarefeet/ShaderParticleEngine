@@ -18,6 +18,8 @@
 
     SettingsPanel.prototype = {
         _refreshScroller: function() {
+            if( !this.scroller ) return;
+
             var currentY = Math.abs( this.scroller.y ),
                 pastCenter = currentY > ( Math.abs( this.scroller.maxScrollY ) * 0.5 ),
                 self = this,
@@ -164,6 +166,8 @@
 
                     content.appendChild( select );
 
+                    this.attributes[ i ] = select;
+
                     if( group[ i ].type === 'texture-select' ) {
                         var file = document.createElement( 'input' );
                         file.type = 'file';
@@ -176,19 +180,49 @@
                     }
                 }
 
-                rollup = new Rollup({
-                    title: group[ i ].title,
-                    content: content,
-                    group: groupName,
-                    callback: this._refreshScroller,
-                    solo: CONFIG.soloSettingGroupRollups
-                });
+                else if( group[ i ].type === 'checkbox' ) {
+                    var checkbox = document.createElement( 'input' );
+                    checkbox.type = 'checkbox';
+                    checkbox.action = group[ i ].action;
+                    content.appendChild( checkbox );
 
-                utils.addStatusTextAttribute( rollup.domElement, group[ i ].statusText );
+                    checkbox.addEventListener( 'change', function( e ) {
+                        this.action( this.checked );
+                    }, false );
 
-                this.rollups[ group[ i ].title ] = rollup;
+                    this.attributes[ i ] = checkbox;
+                }
 
-                wrapper.appendChild( rollup.domElement );
+                if( group[ i ].type !== 'checkbox' && group[ i ].type !== 'select' ) {
+                    rollup = new Rollup({
+                        title: group[ i ].title,
+                        content: content,
+                        group: groupName,
+                        callback: this._refreshScroller,
+                        solo: CONFIG.soloSettingGroupRollups
+                    });
+
+                    utils.addStatusTextAttribute( rollup.domElement, group[ i ].statusText );
+                    this.rollups[ group[ i ].title ] = rollup;
+                    wrapper.appendChild( rollup.domElement );
+                }
+                else {
+                    var contentWrapper = document.createElement( 'div' ),
+                        title = document.createElement( 'h4' );
+
+                    contentWrapper.classList.add( 'roll-up', 'clear-fix' );
+                    title.classList.add( 'title', 'float-left' );
+                    content.classList.add( 'inline', 'float-right' );
+
+                    title.textContent = group[ i ].title;
+
+                    contentWrapper.appendChild( title );
+                    contentWrapper.appendChild( content );
+
+                    utils.addStatusTextAttribute( contentWrapper, group[ i ].statusText );
+
+                    wrapper.appendChild( contentWrapper );
+                }
             }
 
 
@@ -239,6 +273,16 @@
                     if( attribute instanceof Slider ) {
                         attribute._setValue( groupAttributes[ i ] );
                     }
+                    else if( attribute.tagName) {
+                        if( attribute.tagName === 'SELECT' ) {
+                            if( i === 'blending' ) {
+                                this.attributes[ i ].value = CONFIG.editor.blendModes[ groupAttributes[ i ] ];
+                            }
+                        }
+                        else {
+                            this.attributes[ i ].checked = !!groupAttributes[ i ];
+                        }
+                    }
                 }
             }
 
@@ -250,9 +294,22 @@
                         attribute.y._setValue( emitterAttributes[ i ].y );
                         attribute.z._setValue( emitterAttributes[ i ].z );
                     }
+                    else if( attribute.tagName ) {
+                        if( attribute.tagName === 'SELECT' ) {
+                            if( i === 'type' ) {
+                                this.attributes[ i ].value = utils.captializeString( emitterAttributes[ i ] );
+                            }
+                        }
+                        else {
+                            console.log( i, emitterAttributes[ i ] );
+                            this.attributes[ i ].checked = !!emitterAttributes[ i ];
+                        }
+                    }
+
                     else if( typeof emitterAttributes[ i ] === 'number' ) {
                         attribute._setValue( emitterAttributes [ i ] );
                     }
+
                 }
                 else {
                     attribute = i.replace( 'Spread', '' );
@@ -271,6 +328,12 @@
                         else if( ~i.indexOf( 'End' ) && this.attributes[ subAttribute + 'Spread' ] ) {
                             this.attributes[ subAttribute + additionalString ][ 'End' ]._setValue( emitterAttributes[ i ] );
                         }
+                    }
+                    else {
+                         // else if( i === 'type' ) {
+                                // this.attributes[ i ].value = CONFIG.editor.types[ groupAttributes[ i ] ];
+                                console.log( i, CONFIG.editor.types[ emitterAttributes[ i ] ] );
+                            // }
                     }
                 }
             }
@@ -335,6 +398,8 @@
                     rollups[ i ].domElement.style.display = 'none';
                 }
             }
+
+            this._refreshScroller();
         }
 
     };

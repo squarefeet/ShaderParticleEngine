@@ -11,6 +11,7 @@ var CONFIG = CONFIG || {};
             minValue: min,
             maxValue: max,
             round: !!round,
+            eventName: eventName,
             statusText: CONFIG.statusText.settingsPanel[ eventName ],
             action: function() {
                 app.events.fire.apply( app.events, [ 'setting:' + eventName, null ].concat( Array.prototype.slice.call( arguments ) ) );
@@ -24,7 +25,7 @@ var CONFIG = CONFIG || {};
             maxAge: makeSetting( 'Age', 'maxAge', 'slider', [''], 0, 10 ),
             hasPerspective: makeSetting( 'Has Perspective', 'hasPerspective', 'checkbox', [''], 0, 1 ),
             colorize: makeSetting( 'Colorize', 'colorize', 'checkbox', [''], 0, 1 ),
-            blending: makeSetting( 'Blending', 'blending', 'select', [ 'None', 'Normal', 'Additive', 'Subtractive', 'Multiply' ] ),
+            blending: makeSetting( 'Blending', 'blending', 'select', CONFIG.editor.blendModes ),
             transparent: makeSetting( 'Transparent', 'transparent', 'checkbox', [''], 0, 1 ),
             alphaTest: makeSetting( 'Alpha Test', 'alphaTest', 'slider', [''], 0, 1 ),
             depthWrite: makeSetting( 'Depth Write', 'depthWrite', 'checkbox', [''], false, true ),

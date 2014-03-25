@@ -12,6 +12,11 @@
 * Save file
 * Save As...
 
+* Undo / Redo
+    * Create History constructor to keep track of changes.
+    * History#back
+    * History#forwards.
+
 * Compress group & emitter settings
 	* LZMA didn't work out, esp. when adding in b64 image string.
 
@@ -22,9 +27,9 @@
 * Support multiple emitters
     * Set name on creating new emitter
         * Default: "Emitter #"
-    * Segregate group settings from emitter settings
+    * **DONE** Segregate group settings from emitter settings
     * Once segregated, have emitter selector below group settings
-    * One axis helper per smitter
+    * One axis helper per emitter
 
 * **DONE** Fix iScroll bug when using select boxes
 
@@ -32,4 +37,6 @@
 
 * View menu: Show / hide axis helper(s)
 
-* Implement rest of the group settings events.
+* **DONE** Implement rest of the group settings events.
+
+* Make sure axis helper moves with emitter position.

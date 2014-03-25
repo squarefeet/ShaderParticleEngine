@@ -56,11 +56,16 @@
         app.settings.showOnlyApplicableRollups( value );
 
         if( value === 'disk' || value === 'sphere' ) {
-            var velocity = app.editor.particleEmitter.attributes.velocity.value;
+            var velocity = app.editor.particleEmitter.attributes.velocity.value,
+                acceleration = app.editor.particleEmitter.attributes.acceleration.value;
 
             for( var i = 0; i < velocity.length; ++i ) {
                 velocity[ i ].set( 0, 0, 0 );
+                acceleration[ i ].set( 0, 0, 0 );
             }
+
+            CONFIG.editor.emitter.acceleration.set( 0, 0, 0 );
+            CONFIG.editor.emitter.velocity.set( 0, 0, 0 );
         }
     } );
 
@@ -70,7 +75,6 @@
         if( value !== 'custom' ) {
             value = THREE.ImageUtils.loadTexture( 'res/img/' + value + '.png' );
             CONFIG.editor.group.texture = value;
-            app.editor.particleEmitter.type = value;
             app.editor.particleGroup.uniforms.texture.value = value;
         }
     } );
@@ -97,6 +101,50 @@
         app.editor.particleEmitter.duration = value || null;
         app.editor.particleEmitter.alive = 1;
     } );
+
+    app.events.on( 'setting:hasPerspective', function( value, title ) {
+        CONFIG.editor.group.hasPerspective = Number( !!value );
+        app.editor.particleGroup.uniforms.hasPerspective.value = value;
+    } );
+
+
+    app.events.on( 'setting:colorize', function( value, title ) {
+        CONFIG.editor.group.colorize = Number( !!value );
+        app.editor.particleGroup.uniforms.colorize.value = value;
+    } );
+
+    app.events.on( 'setting:transparent', function( value, title ) {
+        CONFIG.editor.group.transparent = Number( !!value );
+        app.editor._createParticles();
+    } );
+
+
+    app.events.on( 'setting:depthWrite', function( value, title ) {
+        CONFIG.editor.group.depthWrite = !!value;
+        app.editor._createParticles();
+    } );
+
+
+    app.events.on( 'setting:depthTest', function( value, title ) {
+        CONFIG.editor.group.depthTest = !!value;
+        app.editor._createParticles();
+    } );
+
+
+    app.events.on( 'setting:blending', function( value, title ) {
+        CONFIG.editor.group.blending = THREE[ value + 'Blending' ];
+        app.editor.particleGroup.material.blending = THREE[ value + 'Blending' ];
+        app.editor.particleGroup.material.needsUpdate = true;
+    } );
+
+    app.events.on( 'setting:alphaTest', function( value, title ) {
+        CONFIG.editor.group.alphaTest = value;
+        // app.editor._createParticles();
+        app.editor.particleGroup.material.alphaTest = value;
+        app.editor.particleGroup.material.needsUpdate = true;
+    } );
+
+
 
 
     // Positioning

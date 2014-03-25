@@ -6,8 +6,9 @@ section.settings-panel {
     width: 20rem;
     margin-top: 2px;
     background: rgba( 0, 0, 0, 0.8 );
-    -webkit-transition: width 500ms ease;
+    -webkit-transition: all 500ms ease;
     border-left: 1px solid rgba(255, 255, 255, 0.3);
+    opacity: 0;
     z-index: 2;
 }
 

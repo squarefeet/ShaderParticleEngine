@@ -14,6 +14,9 @@ nav.menu {
     color: #bdbdbd;
     border-bottom: 1px solid rgba(38, 161, 255, 0.3);
     z-index: 5;
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.5);
+    -webkit-transition: all 500ms ease !important;
+    opacity: 0;
 }
 
 nav.menu > .logo {

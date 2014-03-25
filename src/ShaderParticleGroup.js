@@ -154,17 +154,18 @@ SPE.Group.prototype = {
             if( emitter.type === 'sphere' ) {
                 vertices[i]         = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
                 velocity[i]         = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+                acceleration[i]     = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
             }
             else if( emitter.type === 'disk' ) {
                 vertices[i]         = that._randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
                 velocity[i]         = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+                acceleration[i]     = new THREE.Vector3();
             }
             else {
                 vertices[i]         = that._randomVector3( emitter.position, emitter.positionSpread );
                 velocity[i]         = that._randomVector3( emitter.velocity, emitter.velocitySpread );
+                acceleration[i]     = new THREE.Vector3();
             }
-
-            acceleration[i]         = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
             size[i]                 = new THREE.Vector3(
                 Math.abs( that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) ),

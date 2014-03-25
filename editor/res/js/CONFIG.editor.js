@@ -5,7 +5,14 @@ var CONFIG = CONFIG || {};
 	CONFIG.editor = {
 		group: {
 			texture: THREE.ImageUtils.loadTexture( 'res/img/smoke.png' ),
-	        maxAge: 5
+	        maxAge: 5,
+	        hasPerspective: 1,
+	        colorize: 1,
+			blending: THREE.AdditiveBlending,
+			transparent: 1,
+			alphaTest: 0.5,
+			depthWrite: false,
+			depthTest: true
 		},
 
 		packagedTextures: [
@@ -13,6 +20,20 @@ var CONFIG = CONFIG || {};
 			'cloud',
 			'smoke',
 			'star'
+		],
+
+		blendModes: [
+			'None',
+			'Normal',
+			'Additive',
+			'Subtractive',
+			'Multiply'
+		],
+
+		types: [
+			'Cube',
+			'Sphere',
+			'Disk'
 		],
 
 		groupCompressed: {
