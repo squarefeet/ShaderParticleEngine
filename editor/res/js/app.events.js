@@ -93,7 +93,7 @@
         var emitter = utils.getCurrentEmitter();
 
         emitter.config.alive = value;
-        emitter.instance.particleEmitter.alive = value;
+        emitter.instance.alive = value;
     } );
 
     app.events.on( 'setting:maxAge', function( value, title ) {
