@@ -123,19 +123,19 @@
 
     app.events.on( 'setting:transparent', function( value, title ) {
         CONFIG.editor.group.transparent = Number( !!value );
-        app.editor._createParticles();
+        app.editor.recreateEmitters();
     } );
 
 
     app.events.on( 'setting:depthWrite', function( value, title ) {
         CONFIG.editor.group.depthWrite = !!value;
-        app.editor._createParticles();
+        app.editor.recreateEmitters();
     } );
 
 
     app.events.on( 'setting:depthTest', function( value, title ) {
         CONFIG.editor.group.depthTest = !!value;
-        app.editor._createParticles();
+        app.editor.recreateEmitters();
     } );
 
 
