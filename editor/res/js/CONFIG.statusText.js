@@ -13,6 +13,8 @@ CONFIG.statusText = {
 	},
 
 	settingsPanel: {
+		handle: "Set emitter panel's visibility.",
+
 		texture: 'Choose preset texture, or upload your own custom image.',
 		maxAge: "The age of this group's particles",
 		hasPerspective: "Whether the group's particles should attenuate their size based on distance from the camera.",

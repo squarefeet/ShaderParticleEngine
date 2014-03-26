@@ -178,6 +178,8 @@
             this.scrollWrapper.classList.add( 'scroll-wrapper' );
             this.scrollContainer.classList.add( 'scroll-container' );
 
+            utils.addStatusTextAttribute( this.handle, CONFIG.statusText.settingsPanel.handle );
+
             this.scrollWrapper.appendChild( this.scrollContainer );
             this.domElement.appendChild( this.handle );
             this.domElement.appendChild( this.scrollWrapper );
