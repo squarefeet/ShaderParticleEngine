@@ -96,12 +96,16 @@ Slider.prototype = {
         this.valueSlider = document.createElement( 'div' );
         this.readout = document.createElement( 'div' );
         this.title = document.createElement( 'div' );
+        this.resetButton = document.createElement( 'div' );
+        var clearfix = document.createElement( 'div' );
 
         this.wrapper.className = this.options.className;
         this.handle.className = 'slider-handle';
         this.valueSlider.className = 'slider-value';
         this.readout.className = 'slider-readout';
         this.title.className = 'slider-title';
+        this.resetButton.className = 'reset-button';
+        clearfix.className = 'clear-fix';
 
         if( this.options.title ) {
             this.title.textContent = this.options.title;
@@ -126,8 +130,15 @@ Slider.prototype = {
             self.enableInteraction();
         }, false );
 
+        this.resetButton.addEventListener( 'click', function() {
+            self._setValue( self.options.startValue );
+        }, false );
+
         this.wrapper.style.width = this.options.width + 'px';
         this.wrapper.style.height = this.options.height + 'px';
+
+        this.resetButton.style.width = this.options.height + 'px';
+        this.resetButton.style.height = this.options.height + 'px';
 
         this.handle.style.width = this.options.handleWidth + 'px';
         this.handle.style.height = this.options.handleHeight + 'px';
@@ -153,6 +164,8 @@ Slider.prototype = {
         this.wrapper.appendChild( this.readout );
         this.options.parent.appendChild( this.title );
         this.options.parent.appendChild( this.wrapper );
+        this.options.parent.appendChild( this.resetButton );
+        this.options.parent.appendChild( clearfix );
     },
 
     _calculateOffset: function() {

@@ -70,6 +70,10 @@
             emitter.config.acceleration.set( 0, 0, 0 );
             emitter.config.velocity.set( 0, 0, 0 );
         }
+
+        if( utils.getCurrentEmitter().instance.isStatic ) {
+            app.editor.recreateEmitters();
+        }
     } );
 
     app.events.on( 'setting:texture', function( value, event ) {
@@ -152,6 +156,13 @@
     } );
 
 
+    app.events.on( 'setting:static', function( value, title ) {
+        var emitter = utils.getCurrentEmitter();
+
+        emitter.config.isStatic = Number( value );
+        emitter.instance.isStatic = Number( value );
+        app.editor.recreateEmitters();
+    } );
 
 
     // Positioning
@@ -537,6 +548,8 @@
         app.settings.emitterSelector.updateName();
         app.settings.setAttributesFromMap( CONFIG.editor );
         app.settings.emitterSelector.updateArrows();
+        app.settings.showOnlyApplicableRollups( utils.getCurrentEmitter().instance.type );
+
     } );
 
 

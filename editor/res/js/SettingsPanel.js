@@ -223,6 +223,7 @@
             groupTitle.textContent = groupName;
             wrapper.appendChild( groupTitle );
 
+            // console.log( group );
 
             for( i in group ) {
                 content = document.createElement( 'div' );
@@ -235,12 +236,16 @@
                     }
 
                     for( var j = 0, el; j < numChildren; ++j ) {
+
+                        var defaultValue = utils.getDefaultValue( group[ i ].eventName, group[ i ].children[ j ] );
+
                         el = new Slider({
                             parent: content,
                             title: group[ i ].children[ j ] ? group[ i ].children[ j ] + ':' : '',
-                            width: Math.min(window.innerWidth, window.innerHeight) * 0.25,
+                            width: 180,
                             fromValue: group[ i ].minValue,
                             toValue: group[ i ].maxValue,
+                            startValue: Number( defaultValue ),
                             round: group[ i ].round,
                             name: i
                         });
@@ -257,6 +262,7 @@
                 }
 
                 else if( group[ i ].type === 'color' ) {
+
                     if( numChildren > 1 ) {
                         this.attributes[ i ] = {};
                     }

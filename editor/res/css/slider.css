@@ -10,6 +10,7 @@
     border-top: 1px solid #142029;
     border-bottom: 1px solid #233948;
     cursor: ew-resize;
+    float: left;
 }
 
 
@@ -49,4 +50,13 @@
     margin: 0 0.5rem;
     line-height: 25px;
     font-size: 0.75rem;
+    width: 2.3rem;
+    text-align: right;
+}
+
+.reset-button {
+    position: relative;
+    float: left;
+    border: 1px solid #fff;
+    margin-left: 0.5rem;
 }

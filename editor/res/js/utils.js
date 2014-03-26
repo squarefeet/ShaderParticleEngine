@@ -1,6 +1,71 @@
 var utils = {
     noop: function() {},
 
+    getDefaultValue: function( property, component ) {
+        var defaultGroup = CONFIG.editor.defaultGroup,
+            defaultEmitter = CONFIG.editor.defaultEmitter;
+
+        if( typeof defaultGroup[ property ] !== 'undefined' ) {
+            if( component && typeof defaultGroup[ property ][ component ] !== 'undefined' ) {
+                return defaultGroup[ property ][ component ];
+            }
+            else {
+                return defaultGroup[ property ]
+            }
+        }
+
+        else if( typeof defaultEmitter[ property ] !== 'undefined' ) {
+            if( component && typeof defaultEmitter[ property ][ component ] !== 'undefined' ) {
+                return defaultEmitter[ property ][ component ];
+            }
+            else {
+                return defaultEmitter[ property ]
+            }
+        }
+
+        else {
+            var startSpreadProp = property.replace( 'Spread', component + 'Spread' ),
+                startProp = property + component,
+                vecComponent = utils.lifecycleComponentToVectorComponent( component );
+
+            if( typeof defaultEmitter[ startSpreadProp ] !== 'undefined' ) {
+                // console.log('utils', startSpreadProp, vecComponent );
+
+                if( component && typeof defaultEmitter[ startSpreadProp ][ vecComponent ] !== 'undefined' ) {
+                    return defaultEmitter[ startSpreadProp ][ vecComponent ];
+                }
+                else {
+                    return defaultEmitter[ startSpreadProp ];
+                }
+            }
+            else if( typeof defaultEmitter[ startProp ] !== 'undefined' ) {
+                return defaultEmitter[ startProp ];
+            }
+        }
+
+        return undefined;
+    },
+
+    lifecycleComponentToVectorComponent: function( component ) {
+        var out;
+
+        switch( component ) {
+            case 'Start':
+                out = 'x';
+                break;
+
+            case 'Middle':
+                out = 'y';
+                break;
+
+            case 'End':
+                out = 'z';
+                break;
+        }
+
+        return out;
+    },
+
     settingIsEqual: function( a, b ) {
         if( typeof a === 'number' ) {
             return a === b;
