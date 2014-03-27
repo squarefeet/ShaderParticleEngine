@@ -15,6 +15,79 @@ Files.prototype = {
 
 	},
 
+	_getLineFeed: function() {
+		return '\r\n';
+	},
+
+	_getIndentation: function() {
+		return CONFIG.spacesOrTabs === 'spaces' ? (new Array( CONFIG.tabWidth + 1 )).join( ' ' ) : '\t';
+	},
+
+	_getBlendingString: function() {
+		return CONFIG.editor.blendStrings[ CONFIG.editor.group.blending ];
+	},
+
+	_getGroupExport: function( callback ) {
+		var group = CONFIG.editor.group,
+			outputArray = [],
+			indent = this._getIndentation(),
+			lineFeed = this._getLineFeed(),
+			self = this;
+
+		utils.getBase64Texture( function( b64Str ) {
+			outputArray.push( '// Create particle group' );
+			outputArray.push( 'var particleGroup = new SPE.Group({' );
+			outputArray.push( indent + 'texture: THREE.ImageUtils.loadTexture("' + b64Str + '")' );
+			outputArray.push( indent + 'maxAge: ' + group.maxAge + ',' );
+			outputArray.push( indent + 'hasPerspective: ' + group.hasPerspective + ',' );
+			outputArray.push( indent + 'colorize: ' + group.colorize + ',' );
+			outputArray.push( indent + 'transparent: ' + group.transparent + ',' );
+			outputArray.push( indent + 'alphaTest: ' + group.alphaTest + ',' );
+			outputArray.push( indent + 'depthWrite: ' + group.depthWrite + ',' );
+			outputArray.push( indent + 'depthTest: ' + group.depthTest + ',' );
+			outputArray.push( indent + 'blending: ' + self._getBlendingString() );
+			outputArray.push( '});' );
+
+			callback( outputArray );
+		} );
+	},
+
+	_getEmitterExport: function( callback ) {
+		var emitter = CONFIG.editor.emitter,
+			outputArray = [],
+			indent = this._getIndentation(),
+			lineFeed = this._getLineFeed(),
+			self = this,
+			emitterArray;
+
+		for( var i = 0; i < emitter.length; ++i ) {
+			emitterArray = [];
+
+			emitterArray.push( '// Create particle emitter ' + i );
+			emitterArray.push( 'var ' + CONFIG.editor.names[ i ].replace( /-/g, '' ) + 'Emitter = new SPE.Emitter( {' );
+
+			for( var property in emitter[ i ] ) {
+				var setting = emitter[ i ][ property ];
+
+				if( utils.settingAdheresToType( property, emitter[ i ].type ) ) {
+					emitterArray.push( indent + utils.stringifySetting( property, setting ) + ',' );
+				}
+			}
+
+			length = emitterArray.length - 1;
+
+			// Remove trailing comma.
+			emitterArray[ length ] = emitterArray[ length ].substr(0, emitterArray[ length ].length - 1 );
+			emitterArray.push( '} );' );
+			emitterArray.push( lineFeed );
+			emitterArray.push( 'particleGroup.addEmitter( ' + CONFIG.editor.names[ i ].replace( /-/g, '' ) + 'Emitter );' );
+
+			outputArray.push( emitterArray );
+		}
+
+		return outputArray;
+	},
+
 	_createZipArchive: function() {
 
 	},
@@ -34,64 +107,29 @@ Files.prototype = {
 	},
 
 	export: function( groupSettings, emitterSettings ) {
-		var groupArray = [],
-			emitterArray = [],
-			group = CONFIG.editor.group,
-			emitter = CONFIG.editor.emitter,
-			lineFeed = '\r\n',
-			tab = CONFIG.spacesOrTabs === 'spaces' ? (new Array( CONFIG.tabWidth + 1 )).join( ' ' ) : '\t',
-			length, output;
+		var lineFeed = this._getLineFeed(),
+			self = this;
 
-		groupArray.push( '// Create particle group' );
-		groupArray.push( 'var particleGroup = new SPE.Group({' );
-		groupArray.push( tab + 'maxAge:' + group.maxAge + ',' );
-		groupArray.push( tab + 'texture: THREE.ImageUtils.loadTexture("' + group.texture.sourceFile + '")' );
-		groupArray.push( '});' );
-		groupArray.join( lineFeed );
+		this._getGroupExport( function( group ) {
+			var emitter = self._getEmitterExport(),
+				out = '';
 
-		emitterArray.push( '// Create particle emitter' );
-		emitterArray.push( '' );
+			out += group.join( lineFeed );
+			out += lineFeed;
+			out += lineFeed;
 
-		for( var i in emitter ) {
-			var setting = emitter[ i ];
-
-			if( !utils.settingIsEqual( setting, CONFIG.editor.defaultEmitter[ i ] ) &&
-				utils.settingAdheresToType( i, emitter.type )
-			) {
-				emitterArray.push( tab + utils.stringifySetting( i, setting ) + ',' );
+			for( var i = 0; i < emitter.length; ++i ) {
+				out += emitter[ i ].join( lineFeed );
+				out += lineFeed;
+				out += lineFeed;
 			}
-		}
 
-		length = emitterArray.length - 1;
+			out += '// Add mesh to your scene. Adjust as necessary.' + lineFeed;
+			out += 'scene.add( particleGroup.mesh );';
 
-		// Remove trailing comma.
-		if( length > 1 ) {
-			emitterArray[ 1 ] = 'var particleEmitter = new SPE.Emitter({' ;
-			emitterArray[ length ] = emitterArray[ length ].substr(0, emitterArray[ length ].length - 1 );
-			emitterArray.push( '});' );
-		}
-		else {
-			emitterArray[ 1 ] = 'var particleEmitter = new SPE.Emitter();';
-		}
-
-
-		output = groupArray.join( lineFeed );
-		output += lineFeed;
-		output += lineFeed;
-		output += emitterArray.join( lineFeed );
-		output += lineFeed;
-		output += lineFeed;
-		output += '// Add emitter to group.' + lineFeed;
-		output += 'particleGroup.addEmitter( particleEmitter );';
-		output += lineFeed;
-		output += lineFeed;
-		output += '// Add mesh to your scene. Adjust as necessary.' + lineFeed;
-		output += 'scene.add( particleGroup.mesh );';
-
-		// window.open( 'data:,' + encodeURI( output ) );
-
-		app.popupWindows.export.setContent( '<pre>' + output + '</pre>' );
-		app.popupWindows.export.show();
+			app.popupWindows.export.setContent( '<pre>' + out + '</pre>' );
+			app.popupWindows.export.show();
+		});
 	},
 
 	import: function() {

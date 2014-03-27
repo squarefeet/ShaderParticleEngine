@@ -1,6 +1,7 @@
 var utils = {
     noop: function() {},
 
+    // This is a bit of a tangled mess... Should refactor at some point...
     getDefaultValue: function( property, component ) {
         var defaultGroup = CONFIG.editor.defaultGroup,
             defaultEmitter = CONFIG.editor.defaultEmitter;
@@ -139,6 +140,8 @@ var utils = {
         return false;
     },
 
+    // Keeping this for its use of LZMA. Will delete when other "compressor"
+    // is finalized.
     compressSettings_old: (function() {
         var lzma;
 

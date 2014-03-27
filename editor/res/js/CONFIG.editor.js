@@ -30,6 +30,14 @@ var CONFIG = CONFIG || {};
 			'Multiply'
 		],
 
+		blendStrings: [
+			'THREE.NoBlending',
+			'THREE.NormalBlending',
+			'THREE.AdditiveBlending',
+			'THREE.SubtractiveBlending',
+			'THREE.MultiplyBlending'
+		],
+
 		types: [
 			'Cube',
 			'Sphere',

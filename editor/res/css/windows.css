@@ -25,6 +25,7 @@
     position: relative;
     min-width: 10rem;
     max-width: 45rem;
+    max-height: 30rem;
     margin: 0 auto;
     background-color: rgba( 150, 150, 150, 0.9 );
     border: 1px solid rgba( 100, 100, 100, 1 );
@@ -68,6 +69,8 @@
     position: relative;
     padding: 1rem 0.5rem;
     background: rgba( 255, 255, 255, 0.5 );
+    overflow: scroll;
+    height: 25rem;
 }
 
 .popup-window > .button-wrapper {
