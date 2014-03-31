@@ -26,9 +26,15 @@ History.prototype = {
         //
         // Snapshot emitter settings
         //  All emitters: CONFIG.editor.emitter and CONFIG.editor.group
+        //
+        // Store snapshots as compressed objects using utils.compress
     },
 
-    restoreLastSnapshot: function() {
+    prev: function() {
+
+    },
+
+    next: function() {
 
     }
 };
