@@ -57,8 +57,9 @@ var CONFIG = CONFIG || {};
 
             View: {
                 "Show Grid": makeMenuItem( 'showGrid', 'menu-show-grid.png', true ),
-                "Adaptive Grid": makeMenuItem( 'adaptiveGrid', 'menu-adaptive-grid.png', true ),
                 "Show Bounding Box": makeMenuItem( 'showEmitterBoundingBox', 'menu-bounding-box.png', true ),
+                "Show Axis Helper": makeMenuItem( 'showAxisHelper', 'menu-axis-helper.png', true ),
+                "Adaptive Grid": makeMenuItem( 'adaptiveGrid', 'menu-adaptive-grid.png', true ),
                 "Set Slider Value on Mousedown": makeMenuItem( 'slidersSetValueOnMouseDown', 'menu-bounding-box.png', true ),
             },
 

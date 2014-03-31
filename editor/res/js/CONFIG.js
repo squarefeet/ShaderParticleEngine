@@ -8,6 +8,7 @@ var CONFIG = {
     showGrid: true,
     adaptiveGrid: true,
     showEmitterBoundingBox: true,
+    showAxisHelper: true,
     emitterBoundingBoxOpacity: 0.4,
 
 

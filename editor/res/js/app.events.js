@@ -439,6 +439,20 @@
         }
     } );
 
+
+    app.events.on( 'menu:showAxisHelper', function() {
+        var active = utils.menuItemHasClass( 'showAxisHelper', 'on' );
+
+        CONFIG.showAxisHelper = active;
+
+        if( active ) {
+            app.editor.worldAxis.material.opacity = 1;
+        }
+        else {
+            app.editor.worldAxis.material.opacity = 0;
+        }
+    } );
+
     app.events.on( 'menu:slidersSetValueOnMouseDown', function() {
         var active = utils.menuItemHasClass( 'slidersSetValueOnMouseDown', 'on' );
 

@@ -63,6 +63,7 @@ Editor.prototype = {
         this.worldAxis.material.linewidth = 1;
         this.worldAxis.material.depthTest = false;
         this.worldAxis.material.depthWrite = false;
+        this.worldAxis.material.transparent = true;
 
         this.controls.addEventListener( 'change', function() {
             var absScale = self.camera.position.distanceTo( self.particleEmitters[ app.currentEmitterIndex ].position );

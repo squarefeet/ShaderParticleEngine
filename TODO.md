@@ -9,8 +9,8 @@
 ### Editor ###
 
 * Open file
-* Save file
-* Save As...
+* Save local
+* Save
 
 * Undo / Redo
     * Create History constructor to keep track of changes.
@@ -24,22 +24,21 @@
 
 * Options menu: Round values to 2 decimal places on export / save
 
-* Support multiple emitters
-    * Set name on creating new emitter
-        * Default: "Emitter #"
+* **DONE** Support multiple emitters
+    * **DONE** Set name on creating new emitter
+        * **DONE** Default: "Untitled-#"
     * **DONE** Segregate group settings from emitter settings
-    * Once segregated, have emitter selector below group settings
-    * One axis helper per emitter
+    * **DONE** Once segregated, have emitter selector below group settings
 
 * **DONE** Fix iScroll bug when using select boxes
 
 * **DONE** Set correct FPS z-index
 
-* View menu: Show / hide axis helper(s)
+* **DONE** View menu: Show / hide axis helper(s)
 
 * **DONE** Implement rest of the group settings events.
 
-* Make sure axis helper moves with emitter position.
+* **DONE** Make sure axis helper moves with emitter position.
 
 * Finish making menu icons.
 

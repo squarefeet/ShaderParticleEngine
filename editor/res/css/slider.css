@@ -52,11 +52,24 @@
     font-size: 0.75rem;
     width: 2.3rem;
     text-align: right;
+    color: rgba( 255, 255, 255, 0.7 );
 }
 
 .reset-button {
     position: relative;
     float: left;
-    border: 1px solid #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin-left: 0.5rem;
+    text-align: center;
+    line-height: 1.5rem;
+    font-size: 1rem;
+}
+.reset-button::after {
+    content: "↻";
+}
+.reset-button:hover {
+    border: 1px solid rgba(38, 161, 255, 0.5);
+}
+.reset-button:active {
+    background: rgba(38, 161, 255, 0.3);
 }

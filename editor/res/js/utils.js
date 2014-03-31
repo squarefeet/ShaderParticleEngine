@@ -248,5 +248,7 @@ var utils = {
             config: CONFIG.editor.emitter[ app.currentEmitterIndex ],
             instance: app.editor.particleEmitters[ app.currentEmitterIndex ]
         };
-    }
+    },
+
+
 };
