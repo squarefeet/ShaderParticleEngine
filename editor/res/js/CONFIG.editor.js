@@ -48,7 +48,14 @@ var CONFIG = CONFIG || {};
 
 		groupCompressed: {
 			texture: 't',
-			maxAge: 'a'
+			maxAge: 'a',
+			hasPerspective: 'h',
+			colorize: 'c',
+			blending: 'b',
+			transparent: 'tr',
+			alphaTest: 'al',
+			depthWrite: 'dw',
+			depthTest: 'dt'
 		},
 
 		emitter: [ {

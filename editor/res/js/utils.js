@@ -30,7 +30,6 @@ var utils = {
                 vecComponent = utils.lifecycleComponentToVectorComponent( component );
 
             if( typeof defaultEmitter[ startSpreadProp ] !== 'undefined' ) {
-                // console.log('utils', startSpreadProp, vecComponent );
 
                 if( component && typeof defaultEmitter[ startSpreadProp ][ vecComponent ] !== 'undefined' ) {
                     return defaultEmitter[ startSpreadProp ][ vecComponent ];
@@ -197,7 +196,7 @@ var utils = {
             emitter = CONFIG.editor.emitter,
             emitterCompressKeys = CONFIG.editor.emitterCompressed,
             groupCompressed = {},
-            emitterCompressed = {},
+            emitterCompressed = [],
             full = {},
             b64 = utils.getBase64Texture( function( b64Str ) {
 
@@ -211,12 +210,18 @@ var utils = {
                     }
                 }
 
-                for( var i in emitter ) {
-                    if( emitter[ i ] instanceof THREE.Vector3 || emitter[ i ] instanceof THREE.Color ) {
-                        emitterCompressed[ emitterCompressKeys[ i ] ] = emitter[ i ].toArray().toString();
-                    }
-                    else {
-                        emitterCompressed[ emitterCompressKeys[ i ] ] = emitter[ i ];
+                for( var i = 0; i < emitter.length; ++i ) {
+
+                    var currentEmitter = emitter[ i ];
+                    emitterCompressed[ i ] = {};
+
+                    for( var prop in currentEmitter ) {
+                        if( currentEmitter[ prop ] instanceof THREE.Vector3 || currentEmitter[ prop ] instanceof THREE.Color ) {
+                            emitterCompressed[ i ][ emitterCompressKeys[ prop ] ] = currentEmitter[ prop ].toArray().toString();
+                        }
+                        else {
+                            emitterCompressed[ i ] [ emitterCompressKeys[ prop ] ] = currentEmitter[ prop ];
+                        }
                     }
                 }
 

@@ -30,6 +30,17 @@ History.prototype = {
         // Store snapshots as compressed objects using utils.compress
     },
 
+    restoreSnapshot: function( snapshot ) {
+        // decompress snapshot.
+        //
+        // Restore menu settings
+        //
+        // restore all emitter settings
+        //  re-create all emmiters.
+        //
+        //
+    },
+
     prev: function() {
 
     },
