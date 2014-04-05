@@ -17,6 +17,7 @@ app.editor = new Editor();
 app.settings = new SettingsPanel();
 app.files = new Files();
 app.statusBar = new StatusBar();
+app.history = new History();
 
 app.popupWindows = {
     export: new PopupWindow( {

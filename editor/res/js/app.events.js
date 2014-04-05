@@ -49,10 +49,16 @@
 
 
     // General
-    app.events.on( 'setting:type', function( value ) {
+    app.events.on( 'setting:type', function( value, isRestore ) {
         value = value.toLowerCase();
 
         var emitter = utils.getCurrentEmitter();
+
+        // Store the previous value in the history object.
+        if( !isRestore ) {
+            app.history.add( 'setting:type', emitter.config.type );
+        }
+
 
         emitter.config.type = value;
         emitter.instance.type = value;
