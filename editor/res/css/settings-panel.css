@@ -113,6 +113,7 @@ section.settings-panel .single-attribute {
     border: 1px solid rgba( 255, 255, 255, 0.15 );
     background: rgba( 0, 0, 0, 0.1 );
     -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
 }
 
 section.settings-panel .single-attribute > span {
@@ -123,6 +124,14 @@ section.settings-panel .single-attribute > span {
 
 section.settings-panel select {
     text-transform: capitalize;
+
+    /*
+     * Fix for Firefox not hiding dropdown arrows.
+     * from: https://bugzilla.mozilla.org/show_bug.cgi?id=649849#c84
+     */
+    text-indent: 0.01px;
+    text-overflow: '';
+    -moz-appearance: none;
 }
 
 
@@ -193,17 +202,4 @@ section.settings-panel .emitter-selector > input[isdisabled=true] {
 section.settings-panel .emitter-selector > input[isdisabled=false] {
     color: #eee;
     cursor: text;
-}
-
-section.settings-panel .emitter-selector > .button.left-arrow:after {
-    content: "◀";
-}
-section.settings-panel .emitter-selector > .button.add:after {
-    content: "+";
-}
-section.settings-panel .emitter-selector > .button.remove:after {
-    content: "-";
-}
-section.settings-panel .emitter-selector > .button.right-arrow:after {
-    content: "▶";
 }

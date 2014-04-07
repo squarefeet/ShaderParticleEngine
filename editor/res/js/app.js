@@ -38,7 +38,7 @@ setTimeout( function() {
     app.events.fire( 'toggleSettingsPanel', null, app.settings.domElement.classList.contains( 'closed' ) );
     app.statusBar.registerStatusElements();
     app.settings.scroller.refresh();
-    // app.editor.start();
+    app.editor.start();
     app.events.fire( 'menu:new' );
 
     setTimeout( function() {
@@ -61,6 +61,4 @@ setTimeout( function() {
             document.querySelector( '.loader' ).style.display = 'none';
         }, 1000 );
     }, 1000 );
-
-
 }, 50 );

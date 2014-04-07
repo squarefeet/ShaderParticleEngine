@@ -132,9 +132,13 @@ Editor.prototype = {
             this.particleGroup.addEmitter( this.particleEmitters[ i ] );
         }
 
-        console.log( this.particleEmitters );
-
         this.scene.add( this.particleGroup.mesh );
+    },
+
+    resetEmitters: function() {
+        this.particleEmitters.length = 0;
+        CONFIG.editor.names.length = 0;
+        this.recreateEmitters();
     },
 
     _createParticles: function() {

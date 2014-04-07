@@ -23,7 +23,7 @@ var CONFIG = CONFIG || {};
             eventName: null,
             action: utils.noop,
             rule: true
-        }
+        };
     }
 
     function makeIconItem( displayName, eventName, img ) {
@@ -41,13 +41,13 @@ var CONFIG = CONFIG || {};
         tree: {
             File: {
                 "New": makeMenuItem( 'new', 'menu-new.png', false ),
-                "Open": makeMenuItem( 'open', 'menu-open.png', false ),
-                "Save": makeMenuItem( 'save', 'menu-save.png', false ),
-                "Save As...": makeMenuItem( 'saveas', 'menu-save-as.png', false ),
-                "Revert": makeMenuItem( 'revert', 'menu-revert.png', false ),
-                "Import": makeMenuItem( 'import', 'menu-import.png', false ),
+                // "Open": makeMenuItem( 'open', 'menu-open.png', false ),
+                // "Save": makeMenuItem( 'save', 'menu-save.png', false ),
+                // "Save As...": makeMenuItem( 'saveas', 'menu-save-as.png', false ),
+                // "Revert": makeMenuItem( 'revert', 'menu-revert.png', false ),
+                // "Import": makeMenuItem( 'import', 'menu-import.png', false ),
                 "Export": makeMenuItem( 'export', 'menu-export.png', false ),
-                "Exit": makeMenuItem( 'exit', 'menu-exit.png', false )
+                // "Exit": makeMenuItem( 'exit', 'menu-exit.png', false )
             },
 
             Edit: {
@@ -66,8 +66,8 @@ var CONFIG = CONFIG || {};
             Tools: {
                 "Center Emitter": makeMenuItem( 'centerEmitter', 'menu-center-emitter.png' ),
                 "Frame Emitter": makeMenuItem( 'frameEmitter', 'menu-frame-emitter.png' ),
-                "Increase Emitter Size": makeMenuItem( 'increaseSize', 'menu-increase-size.png' ),
-                "Decrease Emitter Size": makeMenuItem( 'decreaseSize', 'menu-decrease-size.png' )
+                // "Increase Emitter Size": makeMenuItem( 'increaseSize', 'menu-increase-size.png' ),
+                // "Decrease Emitter Size": makeMenuItem( 'decreaseSize', 'menu-decrease-size.png' )
             }
         },
 

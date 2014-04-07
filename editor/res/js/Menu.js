@@ -55,13 +55,13 @@
         },
 
         _onMenuItemClick: function( e ) {
-            this._activateMenuItem( e.srcElement.parentNode );
+            this._activateMenuItem( e.target.parentNode );
         },
 
         _onMenuItemHover: function( e ) {
             if( !this.menuIsActive ) return;
 
-            this._activateMenuItem( e.srcElement.parentNode );
+            this._activateMenuItem( e.target.parentNode );
         },
 
         _onDocumentClick: function( e ) {

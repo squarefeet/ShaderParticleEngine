@@ -70,7 +70,8 @@
             this.buttonWrapper.classList.add( 'button-wrapper' );
             this.closeButton.classList.add( 'close-button' );
 
-            this.domElement.style.webkitTransform = 'translate3d(0, -' + (window.innerHeight * 0.7) + 'px, 0) scale(0.5)';
+            this.domElement.style.webkitTransform =
+                this.domElement.style.MozTransform = 'translate3d(0, -' + (window.innerHeight * 0.7) + 'px, 0) scale(0.5)';
 
             this.title.textContent = this.options.title;
             this.contentWrapper.innerHTML = this.options.content;

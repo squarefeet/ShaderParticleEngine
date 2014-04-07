@@ -7,6 +7,7 @@
     z-index: 100;
     font-size: 1rem;
     pointer-events: none;
+    display: none;
 }
 
 .window-wrapper {
@@ -31,14 +32,15 @@
     border: 1px solid rgba( 100, 100, 100, 1 );
     border-radius: 2px 2px;
     box-shadow: 0 0 20px rgba( 0, 0, 0, 0.5 );
-    /*-webkit-transform: translate3d( 0, -1000%, 0) scale(0);*/
     -webkit-transition: all 250ms ease;
+    -moz-transition: all 250ms ease;
     opacity: 0;
     pointer-events: all;
 }
 
 .popup-window.show {
     -webkit-transform: translate3d( 0, 0, 0) scale(1) !important;
+    -moz-transform: translate3d( 0, 0, 0) scale(1) !important;
     opacity: 1;
 }
 
@@ -97,6 +99,8 @@
     cursor: pointer;
     -webkit-transition: all 50ms linear;
     -webkit-user-select: none;
+    -moz-transition: all 50ms linear;
+    -moz-user-select: none;
 }
 
 .popup-window > .button-wrapper > .button:hover {
@@ -106,7 +110,6 @@
 }
 
 .popup-window > .button-wrapper > .button:active {
-    /*-webkit-transition: all 0ms linear;*/
     box-shadow: inset 0 1px 5px rgba( 0, 0, 0, 1 );
     color: rgba( 255, 255, 255, 1 );
     background-color: rgba( 0, 0, 0, 0.4 );

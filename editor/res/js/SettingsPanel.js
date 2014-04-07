@@ -21,13 +21,18 @@
                 removeButton = document.createElement( 'div' ),
                 clearfix = document.createElement( 'div' );
 
-            wrapper.classList.add( 'emitter-selector' );
-            leftArrow.classList.add( 'button', 'left-arrow', 'disabled' );
-            rightArrow.classList.add( 'button', 'right-arrow', 'disabled' );
-            input.classList.add( 'emitter-name' );
-            addButton.classList.add( 'button', 'add' );
-            removeButton.classList.add( 'button', 'remove' );
-            clearfix.classList.add( 'clear-fix' );
+            wrapper.className = 'emitter-selector';
+            leftArrow.className = 'button left-arrow disabled';
+            rightArrow.className = 'button right-arrow disabled';
+            input.className = 'emitter-name';
+            addButton.className = 'button add';
+            removeButton.className = 'button remove';
+            clearfix.className = 'clear-fix';
+
+            leftArrow.textContent = '◀';
+            rightArrow.textContent = '▶';
+            addButton.textContent = '+';
+            removeButton.textContent = '-';
 
 
             leftArrow.addEventListener( 'click', function() {
@@ -342,9 +347,9 @@
                     var contentWrapper = document.createElement( 'div' ),
                         title = document.createElement( 'h4' );
 
-                    contentWrapper.classList.add( 'roll-up', 'clear-fix' );
-                    title.classList.add( 'title', 'float-left' );
-                    content.classList.add( 'inline', 'float-right' );
+                    contentWrapper.className = 'roll-up clear-fix';
+                    title.className = 'title float-left';
+                    content.className = 'inline float-right';
 
                     title.textContent = group[ i ].title;
 
@@ -394,6 +399,45 @@
             reader.readAsDataURL( e.target.files[0] );
         },
 
+        setSingleAttribute: function( isEmitter, prop, component, value ) {
+            var map = isEmitter ? CONFIG.editor.emitter[ app.currentEmitterIndex ] : CONFIG.editor.group,
+                attribute;
+
+            console.log( arguments, this.attributes );
+
+            if( attribute = this.attributes[ prop ] ) {
+
+                // Select boxes...
+                if( attribute.tagName && attribute.tagName === 'SELECT' ) {
+                    if( prop === 'blending' ) {
+                        attribute.value = CONFIG.editor.blendModes[ value ];
+                    }
+                    else if( prop === 'type' ) {
+                        attribute.value = utils.captializeString( value );
+                    }
+                }
+
+                // Input checkboxes
+                else if( attribute.tagName && attribute.tagName === 'INPUT' ) {
+                    attribute.checked = !!value;
+                }
+
+                else if( attribute instanceof Slider ) {
+                    console.log( 'slider attribute:', prop, attribute );
+                    attribute._setValue( Number( value ) );
+                }
+
+                else if( attribute[ component ] ) {
+                    if( attribute[ component ] instanceof Slider ) {
+                        console.log( 'component', component, value )
+                        attribute[ component ]._setValue( value );
+                    }
+                }
+
+                console.log( attribute );
+            }
+        },
+
         setAttributesFromMap: function( map ) {
 
             // TODO: Set select and color values as well.
@@ -409,11 +453,11 @@
                     else if( attribute.tagName) {
                         if( attribute.tagName === 'SELECT' ) {
                             if( i === 'blending' ) {
-                                this.attributes[ i ].value = CONFIG.editor.blendModes[ groupAttributes[ i ] ];
+                                attribute.value = CONFIG.editor.blendModes[ groupAttributes[ i ] ];
                             }
                         }
                         else {
-                            this.attributes[ i ].checked = !!groupAttributes[ i ];
+                            attribute.checked = !!groupAttributes[ i ];
                         }
                     }
                 }
@@ -430,11 +474,11 @@
                     else if( attribute.tagName ) {
                         if( attribute.tagName === 'SELECT' ) {
                             if( i === 'type' ) {
-                                this.attributes[ i ].value = utils.captializeString( emitterAttributes[ i ] );
+                                attribute.value = utils.captializeString( emitterAttributes[ i ] );
                             }
                         }
                         else {
-                            this.attributes[ i ].checked = !!emitterAttributes[ i ];
+                            attribute.checked = !!emitterAttributes[ i ];
                         }
                     }
 

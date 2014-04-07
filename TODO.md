@@ -13,9 +13,9 @@
 * Save
 
 * Undo / Redo
-    * Create History constructor to keep track of changes.
-    * History#back
-    * History#forwards.
+    * **DONE** Create History constructor to keep track of changes.
+    * **DONE** History#back
+    * **DONE** History#forwards.
 
 * Compress group & emitter settings
 	* LZMA didn't work out, esp. when adding in b64 image string.

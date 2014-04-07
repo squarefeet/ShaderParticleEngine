@@ -44,6 +44,8 @@ var Slider = function( options ) {
     this.offsetX = null;
     this.offsetY = null;
 
+    this.hasMoved = false;
+
     this.active = 0;
     this.x = 0;
     this.y = 0;
@@ -131,7 +133,7 @@ Slider.prototype = {
         }, false );
 
         this.resetButton.addEventListener( 'click', function() {
-            self._setValue( self.options.startValue );
+            self._setValue( self.options.startValue, true );
         }, false );
 
         this.wrapper.style.width = this.options.width + 'px';
@@ -199,13 +201,13 @@ Slider.prototype = {
         );
     },
 
-    _callCallbacks: function() {
-        if( this.previousValue === this.value ) {
+    _callCallbacks: function( isStartEvent ) {
+        if( !isStartEvent && this.previousValue === this.value ) {
             return;
         }
 
         for( var i = 0; i < this.callbacks.length; ++i ) {
-            this.callbacks[i]( this.value, this.options.title );
+            this.callbacks[i]( this.value, this.options.title, isStartEvent );
         }
     },
 
@@ -238,7 +240,7 @@ Slider.prototype = {
         this._callCallbacks();
     },
 
-    _setValue: function( value ) {
+    _setValue: function( value, isStartEvent ) {
         this.previousValue = this.value;
 
         this.value = ( isNaN( value ) || typeof value !== 'number' ) ? this.value : value;
@@ -263,7 +265,7 @@ Slider.prototype = {
         );
 
         this._positionHandle();
-        this._callCallbacks();
+        this._callCallbacks( isStartEvent );
     },
 
     _scaleValue: function( num, lowIn, highIn, lowOut, highOut ) {
@@ -282,10 +284,17 @@ Slider.prototype = {
         if( CONFIG.slidersSetValueOnMouseDown ) {
             this._determineValue( this.startX, this.startY);
         }
+
+        this.hasMoved = false;
     },
 
     _onTouchmove: function( e ) {
         if( !this.active ) return;
+
+        if( !this.hasMoved ) {
+            this._callCallbacks( true );
+            this.hasMoved = true;
+        }
 
         e.preventDefault();
 
