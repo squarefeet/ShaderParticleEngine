@@ -1,0 +1,116 @@
+nav.menu,
+nav.menu * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+nav.menu {
+    position: absolute;
+    width: 100%;
+    background: rgba( 50, 50, 50, 0.8 );
+    font-size: 0.825rem;
+    height: 2rem;
+    color: #bdbdbd;
+    border-bottom: 1px solid rgba(38, 161, 255, 0.3);
+    z-index: 5;
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.5);
+    -webkit-transition: all 500ms ease !important;
+    opacity: 0;
+}
+
+nav.menu > .logo {
+    width: 3em;
+    height: 100%;
+    background: url( ../img/icons/logo.png ) center center no-repeat transparent;
+    background-size: contain;
+    opacity: 0.5;
+    cursor: pointer;
+}
+nav.menu > .logo:hover {
+    opacity: 0.8;
+}
+
+nav.menu > .item,
+nav.menu > .logo {
+    position: relative;
+    float: left;
+    line-height: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0);
+}
+
+nav.menu > .item > span {
+    position: relative;
+    display: inline-block;
+    height: 100%;
+    line-height: 2rem;
+    padding: 0 0.75rem;
+    cursor: pointer;
+}
+
+nav.menu > .item > span:hover,
+nav.menu > .item.active > span {
+    color: #dbdbdb;
+    margin-top: -1px;
+    border-top: 1px solid rgba(38, 161, 255, 1);
+}
+
+nav.menu > .item.active,
+nav.menu > .items-wrapper > ul {
+    background-color: #333;
+}
+
+nav.menu > .item.active {
+    color: #ebebeb;
+}
+
+nav.menu > .items-wrapper {
+    position: absolute;
+    top: 2rem;
+    width: 100%;
+}
+
+nav.menu > .items-wrapper > ul {
+    position: absolute;
+    list-style: none;
+    padding: 0;
+    display: none;
+    z-index: 2;
+    border: 1px solid #444;
+    border-top: none;
+}
+
+nav.menu > .items-wrapper > ul > li {
+    width: 100%;
+    clear: both;
+    padding: 0 1.5rem 0 0.5rem;
+    height: 2rem;
+    cursor: pointer;
+}
+
+nav.menu > .items-wrapper > ul > li.on > img {
+    background-color: rgba(38, 161, 255, 1);
+}
+
+nav.menu > .items-wrapper > ul > li:hover {
+    background: rgba(0, 0, 0, 0.3);
+    color: #ebebeb;
+}
+
+nav.menu > .items-wrapper > ul > li > img,
+nav.menu > .items-wrapper > ul > li > span {
+    position: relative;
+    float: left;
+    margin: 0 0.2rem;
+}
+
+nav.menu > .items-wrapper > ul > li > img {
+    /*width: 1.5rem;*/
+    height: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+nav.menu > .items-wrapper > ul > li > span {
+    line-height: 2rem;
+    font-size: 0.75rem;
+}

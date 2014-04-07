@@ -10,12 +10,6 @@
 <body>
     <p class="numParticles"></p>
 
-    <div class="alive-wrapper">
-        <p>Change value below to change number of particles</p>
-        <p class="small">0 = No particles; 1 = 100% of emitter's particle count</p>
-        <input type="number" min="0" max="1" step="0.05" value="1" class="alive-value">
-    </div>
-
     <!-- THREE.min.js r60 and FPS stats -->
     <script type="text/javascript" src="./js/THREE-r65.min.js"></script>
     <script type="text/javascript" src="./js/Stats.min.js"></script>
@@ -57,28 +51,34 @@
         // Create particle group and emitter
         function initParticles() {
             particleGroup = new SPE.Group({
-                texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-                maxAge: 2
+                maxAge:5,
+                texture: THREE.ImageUtils.loadTexture("img/bullet.png")
             });
 
+            // Create particle emitter
             emitter = new SPE.Emitter({
-                position: new THREE.Vector3(0, 0, 0),
-                positionSpread: new THREE.Vector3( 0, 0, 0 ),
-
-                acceleration: new THREE.Vector3(0, -10, 0),
-                accelerationSpread: new THREE.Vector3( 10, 0, 10 ),
-
-                velocity: new THREE.Vector3(0, 15, 0),
-                velocitySpread: new THREE.Vector3(10, 7.5, 10),
-
-                colorStart: new THREE.Color('white'),
-                colorEnd: new THREE.Color('red'),
-
-                sizeStart: 1,
-                sizeEnd: 1,
-
-                particleCount: 2000,
-                alive: 1
+                type: 'sphere',
+                particleCount: 50000,
+                radiusSpread: 10,
+                radiusSpreadClamp: 10,
+                speedSpread: 1.72,
+                sizeStart: 0,
+                sizeMiddle: 0,
+                sizeEnd: 0,
+                sizeEndSpread: 49.8,
+                angleStartSpread: 6.2831,
+                angleMiddleSpread: 6.28318,
+                angleEndSpread: 6.2831,
+                angleAlignVelocity: false,
+                colorStart: new THREE.Color( 0xfff60f ),
+                colorStartSpread: new THREE.Vector3( 1, 1, 1 ),
+                colorMiddle: new THREE.Color( 0x000000 ),
+                colorEnd: new THREE.Color( 0xff5c2c ),
+                colorEndSpread: new THREE.Vector3( 1, 1, 1 ),
+                opacityStart: 0,
+                opacityMiddle: 0.3,
+                opacityEndSpread: 0.03,
+                duration: null
             });
 
             particleGroup.addEmitter( emitter );
@@ -86,10 +86,6 @@
 
             document.querySelector('.numParticles').textContent =
                 'Total particles: ' + emitter.particleCount;
-
-            document.querySelector( '.alive-value' ).addEventListener( 'change', function( e ) {
-                emitter.alive = +this.value;
-            }, false );
         }
 
 
@@ -98,7 +94,7 @@
             requestAnimationFrame( animate );
 
             // Use a fixed time-step here to avoid gaps
-            render( 0.016 );
+            render( clock.getDelta() );
 
             stats.update();
         }

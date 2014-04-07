@@ -1,0 +1,105 @@
+.roll-up {
+	position: relative;
+	top: 0;
+	left: 0;
+	height: 1.5rem;
+	overflow: hidden;
+    margin: 0.2rem;
+    border: 1px solid rgba( 255, 255, 255, 0.15 );
+    background: rgba( 0, 0, 0, 0.1 );
+    -webkit-transform: translateZ(0);
+}
+
+.roll-up > .arrow {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.3rem;
+    width: 0.6rem;
+    height: 0.6rem;
+    background: url(../img/arrow.png) center center no-repeat transparent;
+    background-size: contain;
+    -webkit-transform: rotate(0deg);
+}
+
+.roll-up.open > .arrow {
+    -webkit-transform: rotate(180deg);
+}
+
+.roll-up:hover {
+    /*border: 1px solid rgba( 255, 255, 255, 0.2 );*/
+    border: 1px solid rgba(38, 161, 255, 0.5);
+    background: rgba( 20, 20, 20, 0.9 );
+}
+
+.roll-up > .title {
+	position: relative;
+	top: 0;
+	left: 0;
+	/*width: 100%;*/
+    text-align: left;
+    color: #ccc;
+    font-weight: normal;
+    padding: 0 0.3rem;
+    font-size: 0.8rem;
+    line-height: 1.5rem;
+    text-shadow: 0 1px 0 rgba( 255, 255, 255, 0.1 );
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 1);
+    cursor: pointer;
+}
+
+.roll-up > .content {
+	position: relative;
+	width: 100%;
+	padding: 0.5rem 0.3rem;
+	border-top: 1px solid rgba( 255, 255, 255, 0.1 );
+	color: #eee;
+}
+
+.roll-up > .inline {
+    height: 100%;
+    margin-right: 0.2rem;
+}
+
+.roll-up > .inline > input,
+.roll-up > .inline > select {
+    position: relative;
+    top: 0.2rem;
+    height: 1.1rem;
+    line-height: 1rem;
+    -webkit-appearance: none;
+    background: transparent;
+    border: 1px solid rgba( 255, 255, 255, 0.25 );
+    color: #ccc;
+    padding: 0 1.3rem 0 0.3rem;
+    border-radius: 0px;
+    margin-top: -1px;
+    cursor: pointer;
+}
+
+.roll-up > .inline > select {
+    background: url(../img/arrow.png) 93% center no-repeat transparent;
+    background-size: 0.7rem 0.7rem;
+}
+
+.roll-up > .inline > input {
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    line-height: 0.9rem !important;
+    text-align: center;
+    padding: 0;
+    color: #444;
+}
+
+.roll-up > .inline > input:after {
+    content: "✗";
+}
+
+.roll-up > .inline > input:checked {
+    background: rgba(38, 161, 255, 0.5);
+    color: #ccc;
+}
+
+.roll-up > .inline > input:checked:after {
+    content: "✓";
+}
