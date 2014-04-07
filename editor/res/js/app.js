@@ -11,7 +11,7 @@ var app = app || {};
 
 app.currentEmitterIndex = 0;
 
-app.events = new PubSub( { debug: true } );
+app.events = new PubSub( { debug: false } );
 app.menu = new Menu();
 app.editor = new Editor();
 app.settings = new SettingsPanel();
