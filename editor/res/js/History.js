@@ -31,8 +31,6 @@ History.prototype = {
 
     // Just store the eventName and the old value...
     add: function( eventName ) {
-
-        console.log( arguments );
         var args = Array.prototype.slice.call( arguments, 1 );
 
         // If the currentIndex is not at the end of the snapshots array, then

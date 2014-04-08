@@ -392,8 +392,10 @@
             reader.onload = function( e ) {
                 var texture = THREE.ImageUtils.loadTexture( e.target.result );
                 CONFIG.editor.group.texture = texture;
-                app.editor.particleEmitter.type = texture;
-                app.editor.particleGroup.uniforms.texture.value = texture;
+                // app.editor.particleEmitters[ app.currentEmitterIndex ].type = texture;
+                // app.editor.particleGroup.uniforms.texture.value = texture;
+
+                app.editor.recreateEmitters();
             };
 
             reader.readAsDataURL( e.target.files[0] );
