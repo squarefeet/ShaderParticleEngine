@@ -198,6 +198,10 @@ var utils = {
             groupCompressed = {},
             emitterCompressed = [],
             full = {},
+
+            groupString = '',
+            emitterString = '',
+            splitter = ';',
             b64 = utils.getBase64Texture( function( b64Str ) {
 
                 for( var i in group ) {
@@ -225,8 +229,26 @@ var utils = {
                     }
                 }
 
+
+                for( var i in groupCompressed ) {
+                    if( i === 't' ) continue;
+
+                    groupString += i + ':' + groupCompressed[ i ] + splitter;
+                }
+
+                for( var i = 0; i < emitterCompressed.length; ++i ) {
+                    emitterString += '=';
+
+                    for( var j in emitterCompressed[ i ] ) {
+                        emitterString += j + ':' + emitterCompressed[ i ][ j ] + splitter;
+                    }
+                }
+
                 full.g = groupCompressed;
                 full.e = emitterCompressed;
+
+                full.es = emitterString;
+                full.gs = groupString;
 
                 console.log( full, JSON.stringify( full ).length );
             } );

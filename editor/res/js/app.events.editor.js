@@ -423,7 +423,7 @@
 
 
 
-        var component = 'size' + title + 'Spread';
+        var component = 'size' + title;
 
         emitter.config[ component ] = value;
         emitter.instance[ component ] = value;
@@ -468,7 +468,7 @@
 
 
 
-        var component = 'opacity' + title + 'Spread';
+        var component = 'opacity' + title;
 
 
         emitter.config[ component ] = value;
