@@ -134,6 +134,11 @@
                 logo = document.createElement( 'div' );
 
             logo.classList.add( 'logo' );
+
+            logo.addEventListener( 'click', function() {
+                window.open( 'https://github.com/squarefeet/ShaderParticleEngine/blob/Editor/editor/README.md', '_blank' );
+            }, false );
+
             this.domElement.appendChild( logo );
 
             for( i in this.tree ) {
