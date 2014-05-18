@@ -144,6 +144,39 @@ SPE.utils = {
         return vec ;
     },
 
+    randomVector3OnSpiral: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp, radiusMax, spiralSkew, spiralRotation ){
+        var rand = Math.random,
+            t = 6.2832 * rand(),
+            rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+        var ct  = Math.cos(t);
+        var sst = Math.sin(t) * spiralSkew;
+
+        var p = rand / radiusMax;
+        var angle = 6.2832 * p * spiralRotation;
+        var sa = Math.sin(angle);
+        var ca = Math.cos(angle);
+
+        var vec = new THREE.Vector3();
+        vec.set(
+            ca * ct - sa * sst,
+            sa * ct + ca * sst,
+            0
+        ).multiplyScalar( rand );
+
+        if ( radiusScale ) {
+            vec.multiply( radiusScale );
+        }
+
+        vec.z = (Math.random() - 0.5 ) * Math.pow(0.9975, vec.length()) * 100;
+
+        vec.add( base );
+        return vec;
+    },
 
     /**
      * Create a new THREE.Vector3 instance, and given a sphere with center `base` and
@@ -171,6 +204,23 @@ SPE.utils = {
         return direction;
     },
 
+
+    randomVelocityVector3OnSpiral: function( base, position, speed, speedSpread, radiusMax ){
+        var direction = new THREE.Vector3().subVectors( base, position );
+
+        var d = direction.length();
+        var p = d / radiusMax;
+
+        direction.normalize();
+
+        var tangent = direction.cross(new THREE.Vector3(0,0,-1));
+
+        direction.negate().multiplyScalar(3*p);
+        direction.add(tangent.multiplyScalar(2*p));
+        direction.multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
+
+        return direction;
+    },
 
 
     /**
@@ -279,11 +329,71 @@ SPE.utils = {
         v.add( base );
     },
 
+    randomizeExistingVector3OnSpiral: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp, radiusMax, spiralSkew, spiralRotation ) {
+        /// generate vertex in mostly same manner as disk...
+        var rand = Math.random,
+            t = 6.2832 * rand(),
+            rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+        /// ...except skewed to be an ellipse...
+        var ct  = Math.cos(t);
+        var sst = Math.sin(t) * spiralSkew;
+
+        /// ...thats also rotated...
+        var p = rand / radiusMax;
+        var angle = 6.2832 * p * spiralRotation;
+        var sa = Math.sin(angle);
+        var ca = Math.cos(angle);
+
+        /// apply rotational transformation on ellipse
+        v.set(
+            ca * ct - sa * sst,
+            sa * ct + ca * sst,
+            0
+        ).multiplyScalar( rand );
+
+        if ( radiusScale ) {
+            v.multiply( radiusScale );
+        }
+
+        /// randomize z position for buldge in center
+        /// TODO parameterize height
+        v.z = (Math.random() - 0.5 ) * Math.pow(0.9975, v.length()) * 100;
+
+        v.add( base );
+    },
+
+
     randomizeExistingVelocityVector3OnSphere: function( v, base, position, speed, speedSpread ) {
         v.copy(position)
             .sub(base)
             .normalize()
             .multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
+    },
+
+    randomizeExistingVelocityVector3OnSpiral: function( v, base, position, speed, speedSpread, radiusMax ) {
+        v.copy(position).sub(base);
+
+        /// scale speed w/ distance
+        var d = v.length();
+        var p = d / radiusMax;
+
+        v.normalize();
+
+        var tangent = v.cross(new THREE.Vector3(0,0,-1));
+
+        /// velocity component towards center of spiral
+        v.negate().multiplyScalar(3*p);
+
+        // tangent velocity component
+        v.add(tangent.multiplyScalar(2*p));
+
+        // total speed
+        v.multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
     },
 
     generateID: function() {

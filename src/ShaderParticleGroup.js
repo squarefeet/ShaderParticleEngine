@@ -158,8 +158,12 @@ SPE.Group.prototype = {
             else if( emitter.type === 'disk' ) {
                 vertices[i]         = that._randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
                 velocity[i]         = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
-            }
-            else {
+
+            }else if(emitter.type === 'spiral') {
+                vertices[i]         = that._randomVector3OnSpiral( emitter.position,  emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp, emitter.radiusMax, emitter.spiralSkew, emitter.spiralRotation );
+                velocity[i]         = that._randomVelocityVector3OnSpiral( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusMax );
+
+            }else {
                 vertices[i]         = that._randomVector3( emitter.position, emitter.positionSpread );
                 velocity[i]         = that._randomVector3( emitter.velocity, emitter.velocitySpread );
             }

@@ -144,6 +144,40 @@ SPE.utils = {
         return vec ;
     },
 
+    randomVector3OnSpiral: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp, radiusMax, spiralSkew, spiralRotation ){
+        var rand = Math.random,
+            t = 6.2832 * rand(),
+            rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+        var ct  = Math.cos(t);
+        var sst = Math.sin(t) * spiralSkew;
+
+        var p = rand / radiusMax;
+        var angle = 6.2832 * p * spiralRotation;
+        var sa = Math.sin(angle);
+        var ca = Math.cos(angle);
+
+        var vec = new THREE.Vector3();
+        vec.set(
+            ca * ct - sa * sst,
+            sa * ct + ca * sst,
+            0
+        ).multiplyScalar( rand );
+
+        if ( radiusScale ) {
+            vec.multiply( radiusScale );
+        }
+
+        vec.z = (Math.random() - 0.5 ) * Math.pow(0.9975, vec.length()) * 100;
+
+        vec.add( base );
+        return vec;
+    },
+
 
     /**
      * Create a new THREE.Vector3 instance, and given a sphere with center `base` and
@@ -171,7 +205,22 @@ SPE.utils = {
         return direction;
     },
 
+    randomVelocityVector3OnSpiral: function( base, position, speed, speedSpread, radiusMax ){
+        var direction = new THREE.Vector3().subVectors( base, position );
 
+        var d = direction.length();
+        var p = d / radiusMax;
+
+        direction.normalize();
+
+        var tangent = direction.cross(new THREE.Vector3(0,0,-1));
+
+        direction.negate().multiplyScalar(3*p);
+        direction.add(tangent.multiplyScalar(2*p));
+        direction.multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
+
+        return direction;
+    },
 
     /**
      * Given a base vector and a spread vector, randomise the given vector
@@ -279,11 +328,70 @@ SPE.utils = {
         v.add( base );
     },
 
+    randomizeExistingVector3OnSpiral: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp, radiusMax, spiralSkew, spiralRotation ) {
+        /// generate vertex in mostly same manner as disk...
+        var rand = Math.random,
+            t = 6.2832 * rand(),
+            rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
+
+        if( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+        /// ...except skewed to be an ellipse...
+        var ct  = Math.cos(t);
+        var sst = Math.sin(t) * spiralSkew;
+
+        /// ...thats also rotated...
+        var p = rand / radiusMax;
+        var angle = 6.2832 * p * spiralRotation;
+        var sa = Math.sin(angle);
+        var ca = Math.cos(angle);
+
+        /// apply rotational transformation on ellipse
+        v.set(
+            ca * ct - sa * sst,
+            sa * ct + ca * sst,
+            0
+        ).multiplyScalar( rand );
+
+        if ( radiusScale ) {
+            v.multiply( radiusScale );
+        }
+
+        /// randomize z position for buldge in center
+        /// TODO parameterize height
+        v.z = (Math.random() - 0.5 ) * Math.pow(0.9975, v.length()) * 100;
+
+        v.add( base );
+    },
+
     randomizeExistingVelocityVector3OnSphere: function( v, base, position, speed, speedSpread ) {
         v.copy(position)
             .sub(base)
             .normalize()
             .multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
+    },
+
+    randomizeExistingVelocityVector3OnSpiral: function( v, base, position, speed, speedSpread, radiusMax ) {
+        v.copy(position).sub(base);
+
+        /// scale speed w/ distance
+        var d = v.length();
+        var p = d / radiusMax;
+
+        v.normalize();
+
+        var tangent = v.cross(new THREE.Vector3(0,0,-1));
+
+        /// velocity component towards center of spiral
+        v.negate().multiplyScalar(3*p);
+
+        // tangent velocity component
+        v.add(tangent.multiplyScalar(2*p));
+
+        // total speed
+        v.multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
     },
 
     generateID: function() {
@@ -460,8 +568,12 @@ SPE.Group.prototype = {
             else if( emitter.type === 'disk' ) {
                 vertices[i]         = that._randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
                 velocity[i]         = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
-            }
-            else {
+
+            }else if(emitter.type === 'spiral') {
+                vertices[i]         = that._randomVector3OnSpiral( emitter.position,  emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp, emitter.radiusMax, emitter.spiralSkew, emitter.spiralRotation );
+                velocity[i]         = that._randomVelocityVector3OnSpiral( vertices[i], emitter.position, emitter.speed, emitter.speedSpread, emitter.radiusMax );
+
+            }else {
                 vertices[i]         = that._randomVector3( emitter.position, emitter.positionSpread );
                 velocity[i]         = that._randomVector3( emitter.velocity, emitter.velocitySpread );
             }
@@ -867,16 +979,17 @@ SPE.Emitter = function( options ) {
 
 
     that.particleCount          = typeof options.particleCount === 'number' ? options.particleCount : 100;
-    that.type                   = (options.type === 'cube' || options.type === 'sphere' || options.type === 'disk') ? options.type : 'cube';
+    that.type                   = (options.type === 'cube' || options.type === 'sphere' || options.type === 'disk' || options.type == 'spiral') ? options.type : 'cube';
 
     that.position               = options.position instanceof THREE.Vector3 ? options.position : new THREE.Vector3();
     that.positionSpread         = options.positionSpread instanceof THREE.Vector3 ? options.positionSpread : new THREE.Vector3();
 
-    // These two properties are only used when this.type === 'sphere' or 'disk'
+    // These two properties are only used when this.type === 'sphere', 'disk', , or 'spiral'
     that.radius                 = typeof options.radius === 'number' ? options.radius : 10;
     that.radiusSpread           = typeof options.radiusSpread === 'number' ? options.radiusSpread : 0;
     that.radiusScale            = options.radiusScale instanceof THREE.Vector3 ? options.radiusScale : new THREE.Vector3(1, 1, 1);
     that.radiusSpreadClamp      = typeof options.radiusSpreadClamp === 'number' ? options.radiusSpreadClamp : 0;
+    that.radiusMax              = that.radius + that.radiusSpread;
 
     that.acceleration           = options.acceleration instanceof THREE.Vector3 ? options.acceleration : new THREE.Vector3();
     that.accelerationSpread     = options.accelerationSpread instanceof THREE.Vector3 ? options.accelerationSpread : new THREE.Vector3();
@@ -885,10 +998,13 @@ SPE.Emitter = function( options ) {
     that.velocitySpread         = options.velocitySpread instanceof THREE.Vector3 ? options.velocitySpread : new THREE.Vector3();
 
 
-    // And again here; only used when this.type === 'sphere' or 'disk'
+    // And again here; only used when this.type === 'sphere', 'disk', or 'spiral'
     that.speed                  = parseFloat( typeof options.speed === 'number' ? options.speed : 0.0 );
     that.speedSpread            = parseFloat( typeof options.speedSpread === 'number' ? options.speedSpread : 0.0 );
 
+    /// These properties are only used when this.type === 'spiral'
+    that.spiralSkew             = parseFloat( typeof options.spiralSkew === 'number' ? options.spiralSkew : 1.0 );
+    that.spiralRotation         = parseFloat( typeof options.spiralRotation === 'number' ? options.spiralRotation : 1.0 );
 
     // Sizes
     that.sizeStart              = parseFloat( typeof options.sizeStart === 'number' ? options.sizeStart : 1.0 );
@@ -997,7 +1113,8 @@ SPE.Emitter.prototype = {
         if(
             ( type === 'cube' && spread.x === 0 && spread.y === 0 && spread.z === 0 ) ||
             ( type === 'sphere' && that.radius === 0 ) ||
-            ( type === 'disk' && that.radius === 0 )
+            ( type === 'disk' && that.radius === 0 ) ||
+            ( type === 'spiral' && that.radius === 0 )
         ) {
             particlePosition.copy( that.position );
             that._randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
@@ -1022,6 +1139,14 @@ SPE.Emitter.prototype = {
         else if( type === 'disk') {
             that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
             that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+        }
+
+        else if( type === 'spiral') {
+            that._randomizeExistingVector3OnSpiral( particlePosition, that.position, that.radius,
+                                                    that.radiusSpread, that.radiusScale, that.radiusSpreadClamp,
+                                                    that.radiusMax, that.spiralSkew, that.spiralRotation );
+            that._randomizeExistingVelocityVector3OnSpiral( particleVelocity, that.position, particlePosition,
+                                                            that.speed, that.speedSpread, that.radiusMax );
         }
     },
 
