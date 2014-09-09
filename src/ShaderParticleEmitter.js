@@ -1,4 +1,4 @@
-// ShaderParticleEmitter 0.7.5
+// ShaderParticleEmitter 0.7.6
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
