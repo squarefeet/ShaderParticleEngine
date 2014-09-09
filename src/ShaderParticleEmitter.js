@@ -110,6 +110,10 @@ SPE.Emitter = function( options ) {
     that.alive                  = parseFloat( typeof options.alive === 'number' ? options.alive : 1.0 );
     that.isStatic               = typeof options.isStatic === 'number' ? options.isStatic : 0;
 
+    // Particle spawn callback function.
+    that.onParticleSpawn = typeof options.onParticleSpawn === 'function' ? options.onParticleSpawn : null;
+
+
     // The following properties are used internally, and mostly set when this emitter
     // is added to a particle group.
     that.particlesPerSecond     = 0;
@@ -175,6 +179,10 @@ SPE.Emitter.prototype = {
         else if( type === 'disk') {
             that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
             that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+        }
+
+        if( typeof that.onParticleSpawn === 'function' ) {
+            that.onParticleSpawn( a, i );
         }
     },
 
