@@ -7,7 +7,7 @@
 	<p class="numParticles"></p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r65.min.js"></script>
+	<script type="text/javascript" src="./js/THREE-r69.min.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
@@ -22,8 +22,7 @@
 		var emitter, particleGroup;
 
         // Mouse co-ords
-        var mouseX, mouseY, mouseVector = new THREE.Vector3(),
-            projector = new THREE.Projector();
+        var mouseX, mouseY, mouseVector = new THREE.Vector3();
 
 		// Setup the scene
         function init() {
@@ -75,7 +74,7 @@
         	scene.add( particleGroup.mesh );
 
         	document.querySelector('.numParticles').textContent =
-        		'Total particles: ' + emitter.numParticles;
+        		'Total particles: ' + emitter.particleCount;
         }
 
 
@@ -103,7 +102,7 @@
                 0.5
             );
 
-            projector.unprojectVector( mouseVector, camera );
+            mouseVector.unproject( camera );
 
             emitter.position.x = mouseVector.x * camera.fov;
             emitter.position.y = mouseVector.y * camera.fov;

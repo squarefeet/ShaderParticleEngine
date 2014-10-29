@@ -6,15 +6,12 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
 
-Version 0.7.5
+Version 0.7.6
 =============
-A minor release, this changes the behaviour of the `SPE.Emitter#alive` property. It is no longer just 0 and 1.
+* Renamed THREE.ParticleSystem to THREE.PointCloud
+* Fully tested on THREE r69.
+* Ensured references to `SPE.Emitter#particleCount` are correct in all example files.
 
-`SPE.Emitter#alive`: Values between 0 and 1 now control the percentage of particles that are alive at a given moment. If you have an emitter with a `particleCount` of 1000 and you set alive to be 0.1, only 100 particles will be emitted (`1000 * 0.1 === 100`).
-
-See `examples/alive.html` for an example.
-
-Currently not at ```1.0.0```, so the API _might_ change. Please be aware of this when using this library.
 
 
 Breaking Changes
@@ -198,7 +195,7 @@ var particleEmitter = new SPE.Emitter({
 	sizeStartSpread: 0,
 
 	// [OPTIONAL] Particle middle size.
-	// If not specified, it will be set to halfway between the 
+	// If not specified, it will be set to halfway between the
 	// `sizeStart` and `sizeEnd` values.
 	sizeMiddle: 10,
 
@@ -231,7 +228,7 @@ var particleEmitter = new SPE.Emitter({
 	angleEndSpread: 0,
 
 	// [OPTIONAL] Align particle angle along its velocity vector
-	// If this property is set to `true`, then all other angle properties 
+	// If this property is set to `true`, then all other angle properties
 	// are ignored.
 	angleAlignVelocity: false,
 
@@ -243,7 +240,7 @@ var particleEmitter = new SPE.Emitter({
 	colorStartSpread: new THREE.Vector3(0, 0, 0),
 
 	// [OPTIONAL] Particle middle colour.
-	// If not specified, it will be set to halfway between the 
+	// If not specified, it will be set to halfway between the
 	// `colorStart` and `colorEnd` values.
 	colorMiddle: new THREE.Color( 'white' ),
 
@@ -317,6 +314,7 @@ Turn on a given number of emitters that live in a pool created using the method 
 
 Changelog
 =========
+
 **Version 0.7.5**
 * `SPE.Emitter#alive`: Values between 0 and 1 now control the percentage of particles that are alive at a given moment. If you have an emitter with a `particleCount` of 1000 and you set alive to be 0.1, only 100 particles will be emitted (`1000 * 0.1 === 100`).
 
