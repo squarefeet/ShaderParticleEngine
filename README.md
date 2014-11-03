@@ -6,12 +6,9 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
 
-Version 0.7.6
+Version 0.7.7
 =============
-* Renamed THREE.ParticleSystem to THREE.PointCloud
-* Fully tested on THREE r69.
-* Ensured references to `SPE.Emitter#particleCount` are correct in all example files.
-
+* Implemented a fix for emitters not smoothly emitting when frame rates aren't completely stable. Hopefully if you happen to have an issue with emitters not looking as 'smooth' as they should, and some particles are clumping together, then try updating to this version and it should make the situation a little bit better.
 
 
 Breaking Changes
@@ -314,6 +311,12 @@ Turn on a given number of emitters that live in a pool created using the method 
 
 Changelog
 =========
+
+**Version 0.7.6**
+* Renamed THREE.ParticleSystem to THREE.PointCloud
+* Fully tested on THREE r69.
+* Ensured references to `SPE.Emitter#particleCount` are correct in all example files.
+
 
 **Version 0.7.5**
 * `SPE.Emitter#alive`: Values between 0 and 1 now control the percentage of particles that are alive at a given moment. If you have an emitter with a `particleCount` of 1000 and you set alive to be 0.1, only 100 particles will be emitted (`1000 * 0.1 === 100`).

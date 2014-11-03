@@ -47,65 +47,29 @@
         // Create particle group and emitter
         function initParticles() {
             particleGroup = new SPE.Group({
-                texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
-                maxAge: 2,
-                blending: THREE.NormalBlending,
-                // colorize: 1,
-                // fixedTimeStep: 0.005
+                texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
+                maxAge: 2
             });
 
             emitter = new SPE.Emitter({
-                type: 'cube',
-
-                position: new THREE.Vector3(0, 25, 0),
+                position: new THREE.Vector3(0, 0, 0),
+                positionSpread: new THREE.Vector3( 10, 0, 0 ),
 
                 acceleration: new THREE.Vector3(0, 0, 0),
                 accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
 
-                velocity: new THREE.Vector3(0, -20, 0),
+                velocity: new THREE.Vector3(0, 15, 0),
                 velocitySpread: new THREE.Vector3(0, 0, 0),
 
-                // Color tests
-                colorStart: new THREE.Color( 'red' ),
-                colorStartSpread: new THREE.Vector3(0, 0, 0),
+                colorStart: new THREE.Color('white'),
+                colorEnd: new THREE.Color('white'),
 
-                colorMiddle: new THREE.Color( 'white' ),
-                colorMiddleSpread: new THREE.Vector3(0, 0, 0),
-
-                colorEnd: new THREE.Color( 'green' ),
-                colorEndSpread: new THREE.Vector3(0, 0, 0),
-
-                // Size tests
-                sizeStart: 5,
-                sizeStartSpread: 0,
-
-                sizeMiddle: 10,
-                sizeMiddleSpread: 0,
-
-                sizeEnd: 5,
-                sizeEndSpread: 10,
-
-                // Opacity tests
-                opacityStart: 1,
-                opacityStartSpread: 0,
-
-                opacityMiddle: 0,
-                opacityMiddleSpread: 1,
+                sizeStart: 1,
+                sizeEnd: 1,
 
                 opacityEnd: 1,
-                opacityEndSpread: 0,
 
-                particleCount: 20,
-
-                // Angle tests
-                // angleStart: Math.PI * 0.5,
-                // angleStartSpread: Math.PI * 2,
-
-                // angleMiddle: 0,
-                // angleMiddleSpread: Math.PI * 2,
-
-                // angleEnd: Math.PI * 1.5,
-                angleEndSpread: Math.PI * 1.5
+                particleCount: 2000
             });
 
             particleGroup.addEmitter( emitter );
@@ -124,6 +88,8 @@
             render( clock.getDelta() );
 
             stats.update();
+
+            // setTimeout( animate, Math.random() * (1000/30) );
         }
 
 
