@@ -1052,12 +1052,6 @@ SPE.Emitter.prototype = {
             duration = that.duration,
             pIndex = that.particleIndex;
 
-        // if( that.alive !== 1.0 && that.alive > 0.0 ) {
-        //     end *= that.alive;
-        //     pps = particleCount / that.maxAge | 0;
-        //     // console.log( end );
-        // }
-
         // Loop through all the particles in this emitter and
         // determine whether they're still alive and need advancing
         // or if they should be dead and therefore marked as such.
@@ -1089,11 +1083,14 @@ SPE.Emitter.prototype = {
             return;
         }
 
-        var n = Math.max( Math.min( end, pIndex + ppsdt ), 0);
+        var n = Math.max( Math.min( end, pIndex + ppsdt ), 0),
+            dtInc = dt / Math.abs( (n !== 0 ? n : 1) - pIndex | 0 ),
+            index = 0;
 
-        for( i = pIndex | 0; i < n; ++i ) {
+        for( i = pIndex | 0; i < n; ++i, ++index ) {
             if( alive[ i ] !== 1.0 ) {
                 alive[ i ] = 1.0;
+                age[ i ] = dtInc * index;
                 that._resetParticle( i );
             }
         }
