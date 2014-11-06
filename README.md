@@ -6,9 +6,9 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
 
-Version 0.7.7
+Version 0.7.8
 =============
-* Implemented a fix for emitters not smoothly emitting when frame rates aren't completely stable. Hopefully if you happen to have an issue with emitters not looking as 'smooth' as they should, and some particles are clumping together, then try updating to this version and it should make the situation a little bit better.
+* Hot-fix for when no particles are due to be emitted during a given frame, a particle's age might be set to NaN. Please update if you're using 0.7.7!
 
 
 Breaking Changes
@@ -311,6 +311,9 @@ Turn on a given number of emitters that live in a pool created using the method 
 
 Changelog
 =========
+
+**Version 0.7.7**
+* Implemented a fix for emitters not smoothly emitting when frame rates aren't completely stable. Hopefully if you happen to have an issue with emitters not looking as 'smooth' as they should, and some particles are clumping together, then try updating to this version and it should make the situation a little bit better.
 
 **Version 0.7.6**
 * Renamed THREE.ParticleSystem to THREE.PointCloud

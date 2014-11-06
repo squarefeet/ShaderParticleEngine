@@ -1,3 +1,4 @@
+
 <html>
 <head>
     <title>Basic Shader Particles</title>
@@ -27,12 +28,12 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
-            camera.position.z = 50;
+            camera.position.z = 20;
             camera.lookAt( scene.position );
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
-            renderer.setClearColor(0x000000);
+            renderer.setClearColor(0xffffff);
 
             stats = new Stats();
             clock = new THREE.Clock();
@@ -44,32 +45,37 @@
             document.body.appendChild( stats.domElement );
         }
 
+
         // Create particle group and emitter
         function initParticles() {
             particleGroup = new SPE.Group({
-                texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-                maxAge: 2
+                texture: THREE.ImageUtils.loadTexture('./img/cloudSml.png'),
+                blending: THREE.NormalBlending,
+                maxAge: 12
             });
 
             emitter = new SPE.Emitter({
-                position: new THREE.Vector3(0, 0, 0),
-                positionSpread: new THREE.Vector3( 10, 0, 0 ),
+                position: new THREE.Vector3(0, 0.5, 6),
+                positionSpread: new THREE.Vector3(1, 0.5, 2),
 
-                acceleration: new THREE.Vector3(0, 0, 0),
-                accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+                velocity: new THREE.Vector3(0, 0, -0.5), //0,2,0.5
+                velocitySpread: new THREE.Vector3( 0.25,0.1,0.25 ),
 
-                velocity: new THREE.Vector3(0, 15, 0),
-                velocitySpread: new THREE.Vector3(0, 0, 0),
+                acceleration: new THREE.Vector3(0, 0.1, 0),
 
-                colorStart: new THREE.Color('white'),
-                colorEnd: new THREE.Color('white'),
+                colorStart: new THREE.Color(0x333333),
+                colorStartSpread: new THREE.Vector3(0.2, 0.1, 0.1),
+                colorEnd: new THREE.Color(0x111111),
 
-                sizeStart: 1,
-                sizeEnd: 1,
+                sizeStart: 2,
+                sizeSpread: 1,
+                sizeEnd:8,
+                sizeEndSpread:2,
+                opacityStart: 0,
+                opacityMiddle: 0.5,
+                opacityEnd: 0,
 
-                opacityEnd: 1,
-
-                particleCount: 2000
+                particleCount: 600, //710
             });
 
             particleGroup.addEmitter( emitter );
@@ -88,8 +94,6 @@
             render( clock.getDelta() );
 
             stats.update();
-
-            // setTimeout( animate, Math.random() * (1000/30) );
         }
 
 

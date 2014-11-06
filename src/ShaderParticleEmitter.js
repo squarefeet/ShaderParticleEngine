@@ -1,4 +1,4 @@
-// ShaderParticleEmitter 0.7.5
+// ShaderParticleEmitter 0.7.8
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -236,15 +236,29 @@ SPE.Emitter.prototype = {
             return;
         }
 
-        var n = Math.max( Math.min( end, pIndex + ppsdt ), 0),
-            dtInc = dt / Math.abs( (n !== 0 ? n : 1) - pIndex | 0 ),
-            index = 0;
 
-        for( i = pIndex | 0; i < n; ++i, ++index ) {
+
+        var n = Math.max( Math.min( end, pIndex + ppsdt ), 0),
+            count = 0,
+            index = 0,
+            pIndexFloor = pIndex | 0,
+            dtInc;
+
+        for( i = pIndexFloor; i < n; ++i ) {
             if( alive[ i ] !== 1.0 ) {
-                alive[ i ] = 1.0;
-                age[ i ] = dtInc * index;
-                that._resetParticle( i );
+                ++count;
+            }
+        }
+
+        if( count !== 0 ) {
+            dtInc = dt / count;
+
+            for( i = pIndexFloor; i < n; ++i, ++index ) {
+                if( alive[ i ] !== 1.0 ) {
+                    alive[ i ] = 1.0;
+                    age[ i ] = dtInc * index;
+                    that._resetParticle( i );
+                }
             }
         }
 
