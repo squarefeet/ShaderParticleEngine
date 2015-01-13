@@ -10,6 +10,12 @@
 
 var SPE = SPE || {};
 
+// browserify support
+
+if (typeof(module) === 'object') {
+    module.exports = SPE;
+}
+
 SPE.utils = {
 
     /**

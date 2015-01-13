@@ -10,6 +10,12 @@
 
 var SPE = SPE || {};
 
+// browserify support
+
+if (typeof(module) === 'object') {
+    module.exports = SPE;
+}
+
 SPE.Emitter = function( options ) {
     // If no options are provided, fallback to an empty object.
     options = options || {};

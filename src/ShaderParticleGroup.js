@@ -10,6 +10,12 @@
 
 var SPE = SPE || {};
 
+// browserify support
+
+if (typeof(module) === 'object') {
+    module.exports = SPE;
+}
+
 SPE.Group = function( options ) {
     var that = this;
 

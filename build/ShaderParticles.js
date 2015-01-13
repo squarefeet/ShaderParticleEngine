@@ -1,4 +1,4 @@
-// ShaderParticleUtils 0.7.8
+// ShaderParticleUtils 0.7.7
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -9,6 +9,12 @@
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
 var SPE = SPE || {};
+
+// browserify support
+
+if (typeof(module) === 'object') {
+    module.exports = SPE;
+}
 
 SPE.utils = {
 
@@ -311,6 +317,12 @@ SPE.utils = {
 // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
 var SPE = SPE || {};
+
+// browserify support
+
+if (typeof(module) === 'object') {
+    module.exports = SPE;
+}
 
 SPE.Group = function( options ) {
     var that = this;
@@ -856,6 +868,12 @@ SPE.shaders = {
 // ShaderParticleEmitter may be freely distributed under the MIT license (See LICENSE.txt)
 
 var SPE = SPE || {};
+
+// browserify support
+
+if (typeof(module) === 'object') {
+    module.exports = SPE;
+}
 
 SPE.Emitter = function( options ) {
     // If no options are provided, fallback to an empty object.
