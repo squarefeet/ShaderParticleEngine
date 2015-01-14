@@ -308,6 +308,8 @@ module.exports = function (THREE) {
             return str;
         }
     };
+
+    return SPE;
 };;
 
 // ShaderParticleGroup 0.7.8
@@ -862,6 +864,8 @@ module.exports = function (THREE) {
             '}'
         ].join('\n')
     };
+
+    return SPE;
 };
 ;
 

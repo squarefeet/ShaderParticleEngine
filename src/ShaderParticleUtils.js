@@ -308,4 +308,6 @@ module.exports = function (THREE) {
             return str;
         }
     };
+
+    return SPE;
 };

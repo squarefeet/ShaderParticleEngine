@@ -550,4 +550,6 @@ module.exports = function (THREE) {
             '}'
         ].join('\n')
     };
+
+    return SPE;
 };
