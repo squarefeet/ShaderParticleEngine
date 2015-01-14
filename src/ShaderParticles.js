@@ -1,23 +1,15 @@
-// ShaderParticleUtils 0.7.8
-//
-// (c) 2014 Luke Moody (http://www.github.com/squarefeet)
-//     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-//
-// Based on Lee Stemkoski's original work:
-//    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
-//
-// ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
-
 module.exports = function (THREE) {
-    var SPE = SPE || {};
+    var SPE = {};
 
-    // browserify support
-
-    if (typeof(module) === 'object') {
-        module.exports = function (THREE) {
-            return SPE;
-        };
-    }
+    // ShaderParticleUtils 0.7.8
+    //
+    // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
+    //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
+    //
+    // Based on Lee Stemkoski's original work:
+    //    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
+    //
+    // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
     SPE.utils = {
 
@@ -309,29 +301,15 @@ module.exports = function (THREE) {
         }
     };
 
-    return SPE;
-};;
-
-// ShaderParticleGroup 0.7.8
-//
-// (c) 2014 Luke Moody (http://www.github.com/squarefeet)
-//     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-//
-// Based on Lee Stemkoski's original work:
-//    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
-//
-// ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
-
-module.exports = function (THREE) {
-    var SPE = SPE || {};
-
-    // browserify support
-
-    if (typeof(module) === 'object') {
-        module.exports = function (THREE) {
-            return SPE;
-        };
-    }
+    // ShaderParticleGroup 0.7.8
+    //
+    // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
+    //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
+    //
+    // Based on Lee Stemkoski's original work:
+    //    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
+    //
+    // ShaderParticleGroup may be freely distributed under the MIT license (See LICENSE.txt)
 
     SPE.Group = function( options ) {
         var that = this;
@@ -865,22 +843,15 @@ module.exports = function (THREE) {
         ].join('\n')
     };
 
-    return SPE;
-};
-;
-
-// ShaderParticleEmitter 0.7.8
-//
-// (c) 2014 Luke Moody (http://www.github.com/squarefeet)
-//     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
-//
-// Based on Lee Stemkoski's original work:
-//    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
-//
-// ShaderParticleEmitter may be freely distributed under the MIT license (See LICENSE.txt)
-
-module.exports = function (THREE) {
-    var SPE = SPE || {};
+    // ShaderParticleEmitter 0.7.8
+    //
+    // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
+    //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
+    //
+    // Based on Lee Stemkoski's original work:
+    //    (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
+    //
+    // ShaderParticleEmitter may be freely distributed under the MIT license (See LICENSE.txt)
 
     SPE.Emitter = function( options ) {
         // If no options are provided, fallback to an empty object.
@@ -1202,4 +1173,6 @@ module.exports = function (THREE) {
     for( var i in SPE.utils ) {
         SPE.Emitter.prototype[ '_' + i ] = SPE.utils[i];
     }
+
+    return SPE;
 };

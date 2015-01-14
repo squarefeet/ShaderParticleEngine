@@ -10,13 +10,8 @@ module.exports = function( grunt ) {
 
 
     // Specify input files and output paths
-    var files = [
-            'src/ShaderParticleUtils.js',
-            'src/ShaderParticleGroup.js',
-            'src/ShaderParticleEmitter.js'
-        ],
-        outputPath = 'build/ShaderParticles.js',
-        outputPathMin = outputPath.replace( '.js', '.min.js' );
+    var file = 'src/ShaderParticles.js',
+        outputPath = 'build/ShaderParticles.min.js';
 
 
     var uglifySettings = {
@@ -33,25 +28,14 @@ module.exports = function( grunt ) {
     };
 
     // Set the path for where the minified files should be saved
-    uglifySettings.min.files[ outputPathMin ] = [ outputPath ];
+    uglifySettings.min.files[ outputPath ] = [ file ];
 
 
     grunt.initConfig({
-        uglify: uglifySettings,
-
-        concat: {
-            options: {
-                separator: ';\n\n'
-            },
-            dist: {
-                src: files,
-                dest: outputPath,
-            },
-        }
+        uglify: uglifySettings
     });
 
-    grunt.loadNpmTasks( 'grunt-contrib-concat' );
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 
-    grunt.registerTask( 'default', ['concat', 'uglify'] );
+    grunt.registerTask( 'default', 'uglify');
 };
