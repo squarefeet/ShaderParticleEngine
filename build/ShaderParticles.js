@@ -12,8 +12,12 @@ var SPE = SPE || {};
 
 // browserify support
 
+var SPEConstructor = function (THREE) {
+    return SPE;
+}
+
 if (typeof(module) === 'object') {
-    module.exports = SPE;
+    module.exports = SPEConstructor;
 }
 
 SPE.utils = {
@@ -320,8 +324,12 @@ var SPE = SPE || {};
 
 // browserify support
 
+var SPEConstructor = function (THREE) {
+    return SPE;
+}
+
 if (typeof(module) === 'object') {
-    module.exports = SPE;
+    module.exports = SPEConstructor;
 }
 
 SPE.Group = function( options ) {
@@ -871,8 +879,12 @@ var SPE = SPE || {};
 
 // browserify support
 
+var SPEConstructor = function (THREE) {
+    return SPE;
+}
+
 if (typeof(module) === 'object') {
-    module.exports = SPE;
+    module.exports = SPEConstructor;
 }
 
 SPE.Emitter = function( options ) {
