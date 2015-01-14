@@ -12,12 +12,10 @@ var SPE = SPE || {};
 
 // browserify support
 
-var SPEConstructor = function (THREE) {
-    return SPE;
-}
-
 if (typeof(module) === 'object') {
-    module.exports = SPEConstructor;
+    module.exports = function (THREE) {
+        return SPE;
+    };
 }
 
 SPE.Emitter = function( options ) {
