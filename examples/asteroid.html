@@ -7,7 +7,7 @@
     <p class="numParticles"></p>
 
     <!-- THREE.min.js r60 and FPS stats -->
-    <script type="text/javascript" src="./js/THREE-r69.min.js"></script>
+    <script type="text/javascript" src="./js/THREE-r71.min.js"></script>
     <script type="text/javascript" src="./js/Stats.min.js"></script>
 
     <!-- ShaderParticles -->
@@ -131,17 +131,7 @@
                 // angleEndSpread: Math.PI * 1.5
             });
 
-
-            atmosphereBurnEmitter = new SPE.Emitter({
-                type: 'sphere',
-                position: new THREE.Vector3(0, -asteroidRadius * 1.2, 0 ),
-                acceleration: new THREE.Vector3( 0, 1, 0 ),
-                velocitySpread: new THREE.Vector3( 10, 0, 0 ),
-                particleCount: 1000
-            });
-
             particleGroup.addEmitter( emitter );
-            particleGroup.addEmitter( atmosphereBurnEmitter );
 
             scene.add( particleGroup.mesh );
 
