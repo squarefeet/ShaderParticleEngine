@@ -7,7 +7,7 @@
 	<p class="numParticles"></p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r65.min.js"></script>
+	<script type="text/javascript" src="./js/THREE-r69.min.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
@@ -29,7 +29,7 @@
             camera.lookAt( scene.position );
 
             var referenceCube = new THREE.Mesh(
-                new THREE.CubeGeometry(30, 30, 30),
+                new THREE.BoxGeometry(30, 30, 30),
                 new THREE.MeshBasicMaterial({
                     wireframe: true,
                     opacity: 0.1,
@@ -85,7 +85,7 @@
         	scene.add( particleGroup.mesh );
 
         	document.querySelector('.numParticles').textContent =
-        		'Total particles: ' + emitter.numParticles;
+        		'Total particles: ' + emitter.particleCount;
         }
 
 

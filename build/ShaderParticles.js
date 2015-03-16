@@ -1,4 +1,4 @@
-// ShaderParticleUtils 0.7.5
+// ShaderParticleUtils 0.7.8
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -298,9 +298,9 @@ SPE.utils = {
 
         return str;
     }
-};;
+};
 
-// ShaderParticleGroup 0.7.6
+// ShaderParticleGroup 0.7.8
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -386,7 +386,7 @@ SPE.Group = function( options ) {
 
     // And finally create the ParticleSystem. It's got its `dynamic` property
     // set so that THREE.js knows to update it on each frame.
-    that.mesh = new THREE.ParticleSystem( that.geometry, that.material );
+    that.mesh = new THREE.PointCloud( that.geometry, that.material );
     that.mesh.dynamic = true;
 };
 
@@ -843,9 +843,8 @@ SPE.shaders = {
         '}'
     ].join('\n')
 };
-;
 
-// ShaderParticleEmitter 0.7.6
+// ShaderParticleEmitter 0.7.8
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -1060,12 +1059,6 @@ SPE.Emitter.prototype = {
             duration = that.duration,
             pIndex = that.particleIndex;
 
-        // if( that.alive !== 1.0 && that.alive > 0.0 ) {
-        //     end *= that.alive;
-        //     pps = particleCount / that.maxAge | 0;
-        //     // console.log( end );
-        // }
-
         // Loop through all the particles in this emitter and
         // determine whether they're still alive and need advancing
         // or if they should be dead and therefore marked as such.
@@ -1097,12 +1090,29 @@ SPE.Emitter.prototype = {
             return;
         }
 
-        var n = Math.max( Math.min( end, pIndex + ppsdt ), 0);
 
-        for( i = pIndex | 0; i < n; ++i ) {
+
+        var n = Math.max( Math.min( end, pIndex + ppsdt ), 0),
+            count = 0,
+            index = 0,
+            pIndexFloor = pIndex | 0,
+            dtInc;
+
+        for( i = pIndexFloor; i < n; ++i ) {
             if( alive[ i ] !== 1.0 ) {
-                alive[ i ] = 1.0;
-                that._resetParticle( i );
+                ++count;
+            }
+        }
+
+        if( count !== 0 ) {
+            dtInc = dt / count;
+
+            for( i = pIndexFloor; i < n; ++i, ++index ) {
+                if( alive[ i ] !== 1.0 ) {
+                    alive[ i ] = 1.0;
+                    age[ i ] = dtInc * index;
+                    that._resetParticle( i );
+                }
             }
         }
 

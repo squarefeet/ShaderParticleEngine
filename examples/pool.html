@@ -8,7 +8,7 @@
 	<p class="numParticles">Click mouse or press any key to trigger an explosion.</p>
 
 	<!-- THREE.min.js r60 and FPS stats -->
-	<script type="text/javascript" src="./js/THREE-r65.min.js"></script>
+	<script type="text/javascript" src="./js/THREE-r69.min.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
     <!-- The Object Pool constructor -->
@@ -53,7 +53,7 @@
             camera.lookAt( scene.position );
 
             var referenceCube = new THREE.Mesh(
-                new THREE.CubeGeometry(300, 300, 300),
+                new THREE.BoxGeometry(300, 300, 300),
                 new THREE.MeshBasicMaterial({
                     wireframe: true,
                     opacity: 0.1,

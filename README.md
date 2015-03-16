@@ -6,15 +6,9 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
 
-Version 0.7.5
+Version 0.7.8
 =============
-A minor release, this changes the behaviour of the `SPE.Emitter#alive` property. It is no longer just 0 and 1.
-
-`SPE.Emitter#alive`: Values between 0 and 1 now control the percentage of particles that are alive at a given moment. If you have an emitter with a `particleCount` of 1000 and you set alive to be 0.1, only 100 particles will be emitted (`1000 * 0.1 === 100`).
-
-See `examples/alive.html` for an example.
-
-Currently not at ```1.0.0```, so the API _might_ change. Please be aware of this when using this library.
+* Hot-fix for when no particles are due to be emitted during a given frame, a particle's age might be set to NaN. Please update if you're using 0.7.7!
 
 
 Breaking Changes
@@ -41,7 +35,7 @@ After experimenting with Stemkoski's particle engine, I was having trouble getti
 
 Another optimisation I wanted was to be able to 'group' lots of emitters into one ```THREE.ParticleSystem```, so that if I had (for example) 20 particle emitters sharing the same texture, I could send all 20 of those emitters to the GPU at the same time via sharing the same geometry. This is where the basis for the ```ShaderParticleGroup``` comes from.
 
-This project requires THREE.js revision 58 to revision 65.
+This project requires THREE.js revision 65+. Known to work on revision 70, but in-depth testing not performed as of yet. Assuming future THREE.js versions don't remove certain methods without warning of deprecation, it *should* be future-proof to a certain extent.
 
 
 
@@ -198,7 +192,7 @@ var particleEmitter = new SPE.Emitter({
 	sizeStartSpread: 0,
 
 	// [OPTIONAL] Particle middle size.
-	// If not specified, it will be set to halfway between the 
+	// If not specified, it will be set to halfway between the
 	// `sizeStart` and `sizeEnd` values.
 	sizeMiddle: 10,
 
@@ -231,7 +225,7 @@ var particleEmitter = new SPE.Emitter({
 	angleEndSpread: 0,
 
 	// [OPTIONAL] Align particle angle along its velocity vector
-	// If this property is set to `true`, then all other angle properties 
+	// If this property is set to `true`, then all other angle properties
 	// are ignored.
 	angleAlignVelocity: false,
 
@@ -243,7 +237,7 @@ var particleEmitter = new SPE.Emitter({
 	colorStartSpread: new THREE.Vector3(0, 0, 0),
 
 	// [OPTIONAL] Particle middle colour.
-	// If not specified, it will be set to halfway between the 
+	// If not specified, it will be set to halfway between the
 	// `colorStart` and `colorEnd` values.
 	colorMiddle: new THREE.Color( 'white' ),
 
@@ -317,6 +311,16 @@ Turn on a given number of emitters that live in a pool created using the method 
 
 Changelog
 =========
+
+**Version 0.7.7**
+* Implemented a fix for emitters not smoothly emitting when frame rates aren't completely stable. Hopefully if you happen to have an issue with emitters not looking as 'smooth' as they should, and some particles are clumping together, then try updating to this version and it should make the situation a little bit better.
+
+**Version 0.7.6**
+* Renamed THREE.ParticleSystem to THREE.PointCloud
+* Fully tested on THREE r69.
+* Ensured references to `SPE.Emitter#particleCount` are correct in all example files.
+
+
 **Version 0.7.5**
 * `SPE.Emitter#alive`: Values between 0 and 1 now control the percentage of particles that are alive at a given moment. If you have an emitter with a `particleCount` of 1000 and you set alive to be 0.1, only 100 particles will be emitted (`1000 * 0.1 === 100`).
 
@@ -377,13 +381,9 @@ If you don't have grunt installed, first make sure you've got [NodeJS](http://no
 
 ```npm install -g grunt-cli```
 
-Now you can install the local grunt package
+Now you can install the local grunt package:
 
-```cd [projectFolder]```
-
-```npm install```
-
-```grunt```
+```cd [projectFolder] && npm install && grunt```
 
 
 The output of grunt will sit in the `build` folder.
