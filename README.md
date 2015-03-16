@@ -6,13 +6,15 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
 
-Version 0.7.8
+Version 0.7.9
 =============
-* Hot-fix for when no particles are due to be emitted during a given frame, a particle's age might be set to NaN. Please update if you're using 0.7.7!
+* Fixed an issue with THREE.js r71. See breaking changes notes directly below. Please update if you're planning to use THREE.js r71+.
 
 
 Breaking Changes
 ================
+* **Version 0.7.9** The ```transparent``` option/property of ```SPE.Group``` must be passed as a `Boolean` (`true` / `false`). It would previously accept numeric values (`0` for `false`, `1` for `true`), but this has been deprecated due to a change in the way THREE.js r71 handles the transparent property in materials.
+
 * **Version 0.7.4** There's a change in the way the total number of particles an emitter has is calculated, and one emitter option rename:
 	* ```SPE.Emitter#particlesPerSecond``` is now ```SPE.Emitter#particleCount```.
 		* Rather than specifying how many particles an emitter will produce per second, you now specify the total number of particles yourself.
@@ -119,6 +121,9 @@ var particleGroup = new SPE.Group({
 	blending: THREE.AdditiveBlending,
 
 	// [OPTIONAL] Should transparency be applied?
+	// As of 0.7.9+, this property can only be of type Boolean. Numeric
+	// values will not be accepted and `transparent` value will default to
+	// true.
 	transparent: true,
 
 	// [OPTIONAL] What threshold should be used to test the alpha channel?
@@ -311,6 +316,9 @@ Turn on a given number of emitters that live in a pool created using the method 
 
 Changelog
 =========
+
+**Version 0.7.8**
+* Hot-fix for when no particles are due to be emitted during a given frame, a particle's age might be set to NaN. Please update if you're using 0.7.7!
 
 **Version 0.7.7**
 * Implemented a fix for emitters not smoothly emitting when frame rates aren't completely stable. Hopefully if you happen to have an issue with emitters not looking as 'smooth' as they should, and some particles are clumping together, then try updating to this version and it should make the situation a little bit better.
