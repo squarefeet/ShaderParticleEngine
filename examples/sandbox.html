@@ -1,3 +1,4 @@
+
 <html>
 <head>
     <title>Basic Shader Particles</title>
@@ -7,7 +8,7 @@
     <p class="numParticles"></p>
 
     <!-- THREE.min.js r60 and FPS stats -->
-    <script type="text/javascript" src="./js/THREE-r65.min.js"></script>
+    <script type="text/javascript" src="./js/THREE-r69.min.js"></script>
     <script type="text/javascript" src="./js/Stats.min.js"></script>
 
     <!-- ShaderParticles -->
@@ -27,12 +28,12 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
-            camera.position.z = 50;
+            camera.position.z = 20;
             camera.lookAt( scene.position );
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
-            renderer.setClearColor(0x000000);
+            renderer.setClearColor(0xffffff);
 
             stats = new Stats();
             clock = new THREE.Clock();
@@ -44,75 +45,44 @@
             document.body.appendChild( stats.domElement );
         }
 
+
         // Create particle group and emitter
         function initParticles() {
             particleGroup = new SPE.Group({
-                texture: THREE.ImageUtils.loadTexture('./img/bullet.png'),
-                maxAge: 2,
+                texture: THREE.ImageUtils.loadTexture('./img/cloudSml.png'),
                 blending: THREE.NormalBlending,
-                // colorize: 1,
-                // fixedTimeStep: 0.005
+                maxAge: 12
             });
 
             emitter = new SPE.Emitter({
-                type: 'cube',
+                position: new THREE.Vector3(0, 0.5, 6),
+                positionSpread: new THREE.Vector3(1, 0.5, 2),
 
-                position: new THREE.Vector3(0, 25, 0),
+                velocity: new THREE.Vector3(0, 0, -0.5), //0,2,0.5
+                velocitySpread: new THREE.Vector3( 0.25,0.1,0.25 ),
 
-                acceleration: new THREE.Vector3(0, 0, 0),
-                accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+                acceleration: new THREE.Vector3(0, 0.1, 0),
 
-                velocity: new THREE.Vector3(0, -20, 0),
-                velocitySpread: new THREE.Vector3(0, 0, 0),
+                colorStart: new THREE.Color(0x333333),
+                colorStartSpread: new THREE.Vector3(0.2, 0.1, 0.1),
+                colorEnd: new THREE.Color(0x111111),
 
-                // Color tests
-                colorStart: new THREE.Color( 'red' ),
-                colorStartSpread: new THREE.Vector3(0, 0, 0),
+                sizeStart: 2,
+                sizeSpread: 1,
+                sizeEnd:8,
+                sizeEndSpread:2,
+                opacityStart: 0,
+                opacityMiddle: 0.5,
+                opacityEnd: 0,
 
-                colorMiddle: new THREE.Color( 'white' ),
-                colorMiddleSpread: new THREE.Vector3(0, 0, 0),
-
-                colorEnd: new THREE.Color( 'green' ),
-                colorEndSpread: new THREE.Vector3(0, 0, 0),
-
-                // Size tests
-                sizeStart: 5,
-                sizeStartSpread: 0,
-
-                sizeMiddle: 10,
-                sizeMiddleSpread: 0,
-
-                sizeEnd: 5,
-                sizeEndSpread: 10,
-
-                // Opacity tests
-                opacityStart: 1,
-                opacityStartSpread: 0,
-                
-                opacityMiddle: 0,
-                opacityMiddleSpread: 1,
-
-                opacityEnd: 1,
-                opacityEndSpread: 0,
-
-                particleCount: 20,
-
-                // Angle tests
-                // angleStart: Math.PI * 0.5,
-                // angleStartSpread: Math.PI * 2,
-
-                // angleMiddle: 0,
-                // angleMiddleSpread: Math.PI * 2,
-
-                // angleEnd: Math.PI * 1.5,
-                angleEndSpread: Math.PI * 1.5
+                particleCount: 600, //710
             });
 
             particleGroup.addEmitter( emitter );
             scene.add( particleGroup.mesh );
 
             document.querySelector('.numParticles').textContent =
-                'Total particles: ' + emitter.numParticles;
+                'Total particles: ' + emitter.particleCount;
         }
 
 

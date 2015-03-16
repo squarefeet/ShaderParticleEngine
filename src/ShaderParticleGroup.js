@@ -1,4 +1,4 @@
-// ShaderParticleGroup 0.7.5
+// ShaderParticleGroup 0.7.8
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -84,7 +84,7 @@ SPE.Group = function( options ) {
 
     // And finally create the ParticleSystem. It's got its `dynamic` property
     // set so that THREE.js knows to update it on each frame.
-    that.mesh = new THREE.ParticleSystem( that.geometry, that.material );
+    that.mesh = new THREE.PointCloud( that.geometry, that.material );
     that.mesh.dynamic = true;
 };
 
