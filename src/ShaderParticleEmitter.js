@@ -25,7 +25,7 @@ SPE.Emitter = function( options ) {
     that.position               = options.position instanceof THREE.Vector3 ? options.position : new THREE.Vector3();
     that.positionSpread         = options.positionSpread instanceof THREE.Vector3 ? options.positionSpread : new THREE.Vector3();
 
-    // These two properties are only used when this.type === 'sphere' or 'disk'
+    // These four properties are only used when this.type === 'sphere' or 'disk'
     that.radius                 = typeof options.radius === 'number' ? options.radius : 10;
     that.radiusSpread           = typeof options.radiusSpread === 'number' ? options.radiusSpread : 0;
     that.radiusScale            = options.radiusScale instanceof THREE.Vector3 ? options.radiusScale : new THREE.Vector3(1, 1, 1);
