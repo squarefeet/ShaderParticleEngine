@@ -282,8 +282,13 @@ SPE.Group = function( options ) {
     // Uniform properties ( applied to all particles )
     that.maxAge                 = parseFloat( options.maxAge || 3 );
     that.texture                = options.texture || null;
-    that.hasPerspective         = parseInt( typeof options.hasPerspective === 'number' ? options.hasPerspective : 1, 10 );
-    that.colorize               = parseInt( typeof options.colorize === 'number' ? options.colorize : 1, 10 );
+    that.hasPerspective         = typeof options.hasPerspective === 'boolean' ? options.hasPerspective :
+        typeof options.hasPerspective === 'number' ?
+            !!options.hasPerspective : true;
+
+    that.colorize               = typeof options.colorize === 'boolean' ? options.colorize :
+        typeof options.colorize === 'number' ?
+            !!options.colorize : true;
 
     // Material properties
     that.blending               = typeof options.blending === 'number' ? options.blending : THREE.AdditiveBlending;
@@ -318,6 +323,11 @@ SPE.Group = function( options ) {
         opacity:                { type: 'v3',   value: [] }
     };
 
+    that.defines = {
+        HAS_PERSPECTIVE: that.hasPerspective,
+        COLORIZE: that.colorize
+    };
+
     // Emitters (that aren't static) will be added to this array for
     // processing during the `tick()` function.
     that.emitters = [];
@@ -343,7 +353,8 @@ SPE.Group = function( options ) {
         transparent:    that.transparent,
         alphaTest:      that.alphaTest,
         depthWrite:     that.depthWrite,
-        depthTest:      that.depthTest
+        depthTest:      that.depthTest,
+        defines:        that.defines
     });
 
     // And finally create the ParticleSystem. It's got its `dynamic` property
@@ -365,8 +376,7 @@ SPE.Group.prototype = {
     _flagUpdate: function() {
         var that = this;
 
-        // Set flags to update (causes less garbage than
-        // ```ParticleSystem.sortParticles = true``` in THREE.r58 at least)
+        // Set flags to update
         that.attributes.age.needsUpdate = true;
         that.attributes.alive.needsUpdate = true;
         that.attributes.angle.needsUpdate = true;
@@ -762,9 +772,9 @@ SPE.shaders = {
                 '}',
 
 
-                'if( hasPerspective == 1 ) {',
+                '#ifdef HAS_PERSPECTIVE',
                     'pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
-                '}',
+                '#endif',
 
                 // Set particle size and position
                 'gl_PointSize = pointSize;',
@@ -777,6 +787,10 @@ SPE.shaders = {
                 'vColor = vec4( 0.0, 0.0, 0.0, 0.0 );',
                 'gl_Position = vec4(1000000000.0, 1000000000.0, 1000000000.0, 0.0);',
             '}',
+
+            THREE.ShaderChunk[ "logdepthbuf_vertex" ],
+            THREE.ShaderChunk[ "worldpos_vertex" ],
+            THREE.ShaderChunk[ "shadowmap_vertex" ],
         '}',
     ].join('\n'),
 
@@ -796,12 +810,11 @@ SPE.shaders = {
 
             'vec4 rotatedTexture = texture2D( texture, rotatedUV );',
 
-            'if( colorize == 1 ) {',
+            '#ifdef COLORIZE',
                 'gl_FragColor = vColor * rotatedTexture;',
-            '}',
-            'else {',
-                'gl_FragColor = rotatedTexture;',
-            '}',
+            '#else',
+                'gl_FragColor = vec4( rotatedTexture.xyz, rotatedTexture.w * vColor.w );',
+            '#endif',
         '}'
     ].join('\n')
 };
@@ -911,7 +924,7 @@ SPE.Emitter = function( options ) {
         options.opacityMiddle :
         Math.abs(that.opacityEnd + that.opacityStart) / 2
     );
-    that.opacityMiddleSpread      = parseFloat( typeof options.opacityMiddleSpread === 'number' ? options.opacityMiddleSpread : 0 );
+    that.opacityMiddleSpread    = parseFloat( typeof options.opacityMiddleSpread === 'number' ? options.opacityMiddleSpread : 0 );
 
 
     // Generic

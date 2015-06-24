@@ -48,7 +48,9 @@
         function initParticles() {
         	particleGroup = new SPE.Group({
         		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 2
+        		maxAge: 2,
+                hasPerspective: true,
+                colorize: true
         	});
 
         	emitter = new SPE.Emitter({

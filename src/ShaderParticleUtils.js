@@ -61,7 +61,7 @@ SPE.utils = {
      * @return {Number}
      */
     randomFloat: function( base, spread ) {
-        return base + spread * (Math.random() - 0.5);
+        return base + spread * ( Math.random() - 0.5 );
     },
 
     /**
@@ -126,7 +126,7 @@ SPE.utils = {
 
         this.randomizeExistingVelocityVector3OnSphere( direction, base, position, speed, speedSpread );
 
-        if( scale ) {
+        if ( scale ) {
             direction.multiply( scale );
         }
 
@@ -150,9 +150,9 @@ SPE.utils = {
     randomizeExistingVector3: function( v, base, spread ) {
         v.copy( base );
 
-        v.x += Math.random() * spread.x - (spread.x/2);
-        v.y += Math.random() * spread.y - (spread.y/2);
-        v.z += Math.random() * spread.z - (spread.z/2);
+        v.x += Math.random() * spread.x - ( spread.x / 2 );
+        v.y += Math.random() * spread.y - ( spread.y / 2 );
+        v.z += Math.random() * spread.z - ( spread.z / 2 );
     },
 
 
@@ -171,9 +171,9 @@ SPE.utils = {
     randomizeExistingColor: function( v, base, spread ) {
         v.copy( base );
 
-        v.r += (Math.random() * spread.x) - (spread.x/2);
-        v.g += (Math.random() * spread.y) - (spread.y/2);
-        v.b += (Math.random() * spread.z) - (spread.z/2);
+        v.r += ( Math.random() * spread.x ) - ( spread.x / 2 );
+        v.g += ( Math.random() * spread.y ) - ( spread.y / 2 );
+        v.b += ( Math.random() * spread.z ) - ( spread.z / 2 );
 
         v.r = Math.max( 0, Math.min( v.r, 1 ) );
         v.g = Math.max( 0, Math.min( v.g, 1 ) );
@@ -193,16 +193,15 @@ SPE.utils = {
     randomizeExistingVector3OnSphere: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var z = 2 * Math.random() - 1,
             t = 6.2832 * Math.random(),
-            r = Math.sqrt( 1 - z*z ),
+            r = Math.sqrt( 1 - z * z ),
             rand = this.randomFloat( radius, radiusSpread );
 
-        if( radiusSpreadClamp ) {
+        if ( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
         }
 
         v.set(
-            (r * Math.cos(t)) * rand,
-            (r * Math.sin(t)) * rand,
+            ( r * Math.cos( t ) ) * rand, ( r * Math.sin( t ) ) * rand,
             z * rand
         ).multiply( radiusScale );
 
@@ -224,7 +223,7 @@ SPE.utils = {
         var t = 6.2832 * Math.random(),
             rand = Math.abs( this.randomFloat( radius, radiusSpread ) );
 
-        if( radiusSpreadClamp ) {
+        if ( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
         }
 
@@ -242,8 +241,8 @@ SPE.utils = {
     },
 
     randomizeExistingVelocityVector3OnSphere: function( v, base, position, speed, speedSpread ) {
-        v.copy(position)
-            .sub(base)
+        v.copy( position )
+            .sub( base )
             .normalize()
             .multiplyScalar( Math.abs( this.randomFloat( speed, speedSpread ) ) );
     },
@@ -251,12 +250,13 @@ SPE.utils = {
     generateID: function() {
         var str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
 
-        str = str.replace(/[xy]/g, function(c) {
+        str = str.replace( /[xy]/g, function( c ) {
             var rand = Math.random();
-            var r = rand*16|0%16, v = c === 'x' ? r : (r&0x3|0x8);
+            var r = rand * 16 | 0 % 16,
+                v = c === 'x' ? r : ( r & 0x3 | 0x8 );
 
-            return v.toString(16);
-        });
+            return v.toString( 16 );
+        } );
 
         return str;
     }

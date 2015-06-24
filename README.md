@@ -5,10 +5,12 @@ A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle 
 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
-
-Version 0.7.9
+Version 0.8.0
 =============
-* Fixed an issue with THREE.js r71. See breaking changes notes directly below. Please update if you're planning to use THREE.js r71+.
+* `SPE.Group#hasPerspective` now takes `boolean` values as well as numbers. Makes more sense this way.
+* `SPE.Group#colorize` now takes `boolean` values as well as numbers as well.
+* `SPE.Group#colorize` does not ignore opacity values if set to false.
+
 
 
 Breaking Changes
@@ -105,12 +107,10 @@ var particleGroup = new SPE.Group({
 	maxAge: 3,
 
 	// [OPTIONAL] Should the particles have perspective applied when drawn?
-	// Use 0 for false and 1 for true.
-	hasPerspective: 1,
+	hasPerspective: true,
 
 	// [OPTIONAL] Should the particles in this group have a color applied?
-	// Use 0 for false and 1 for true
-	colorize: 1,
+	colorize: true,
 
 	// [OPTIONAL] What blending style should be used?
 	// THREE.NoBlending
@@ -316,6 +316,9 @@ Turn on a given number of emitters that live in a pool created using the method 
 
 Changelog
 =========
+
+**Version 0.7.9**
+* Fixed an issue with THREE.js r71. See breaking changes notes directly below. Please update if you're planning to use THREE.js r71+.
 
 **Version 0.7.8**
 * Hot-fix for when no particles are due to be emitted during a given frame, a particle's age might be set to NaN. Please update if you're using 0.7.7!
