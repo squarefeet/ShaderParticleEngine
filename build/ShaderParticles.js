@@ -25,11 +25,7 @@ SPE.utils = {
     randomVector3: function( base, spread ) {
         var v = new THREE.Vector3();
 
-        v.copy( base );
-
-        v.x += Math.random() * spread.x - (spread.x/2);
-        v.y += Math.random() * spread.y - (spread.y/2);
-        v.z += Math.random() * spread.z - (spread.z/2);
+        this.randomizeExistingVector3( v, base, spread );
 
         return v;
     },
@@ -49,15 +45,7 @@ SPE.utils = {
     randomColor: function( base, spread ) {
         var v = new THREE.Color();
 
-        v.copy( base );
-
-        v.r += (Math.random() * spread.x) - (spread.x/2);
-        v.g += (Math.random() * spread.y) - (spread.y/2);
-        v.b += (Math.random() * spread.z) - (spread.z/2);
-
-        v.r = Math.max( 0, Math.min( v.r, 1 ) );
-        v.g = Math.max( 0, Math.min( v.g, 1 ) );
-        v.b = Math.max( 0, Math.min( v.b, 1 ) );
+        this.randomizeExistingColor( v, base, spread );
 
         return v;
     },
@@ -90,26 +78,11 @@ SPE.utils = {
      * @return {THREE.Vector3}
      */
     randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
-        var z = 2 * Math.random() - 1;
-        var t = 6.2832 * Math.random();
-        var r = Math.sqrt( 1 - z*z );
-        var vec = new THREE.Vector3( r * Math.cos(t), r * Math.sin(t), z );
+        var v = new THREE.Vector3();
 
-        var rand = this._randomFloat( radius, radiusSpread );
+        this.randomizeExistingVector3OnSphere( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp );
 
-        if( radiusSpreadClamp ) {
-            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
-        }
-
-        vec.multiplyScalar( rand );
-
-        if( radiusScale ) {
-            vec.multiply( radiusScale );
-        }
-
-        vec.add( base );
-
-        return vec;
+        return v;
     },
 
     /**
@@ -126,22 +99,11 @@ SPE.utils = {
      * @return {THREE.Vector3}
      */
     randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
-        var t = 6.2832 * Math.random();
-        var rand = this._randomFloat( radius, radiusSpread );
+        var v = new THREE.Vector3();
 
-        if( radiusSpreadClamp ) {
-            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
-        }
+        this.randomizeExistingVector3OnDisk( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp );
 
-        var vec = new THREE.Vector3( Math.cos(t), Math.sin(t), 0 ).multiplyScalar( rand );
-
-        if ( radiusScale ) {
-            vec.multiply( radiusScale );
-        }
-
-        vec.add( base );
-
-        return vec ;
+        return v;
     },
 
 
@@ -160,9 +122,9 @@ SPE.utils = {
      * @return {THREE.Vector3}
      */
     randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale ) {
-        var direction = new THREE.Vector3().subVectors( base, position );
+        var direction = new THREE.Vector3();
 
-        direction.normalize().multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
+        this.randomizeExistingVelocityVector3OnSphere( direction, base, position, speed, speedSpread );
 
         if( scale ) {
             direction.multiply( scale );
@@ -232,7 +194,7 @@ SPE.utils = {
         var z = 2 * Math.random() - 1,
             t = 6.2832 * Math.random(),
             r = Math.sqrt( 1 - z*z ),
-            rand = this._randomFloat( radius, radiusSpread );
+            rand = this.randomFloat( radius, radiusSpread );
 
         if( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
@@ -260,7 +222,7 @@ SPE.utils = {
      */
     randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var t = 6.2832 * Math.random(),
-            rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
+            rand = Math.abs( this.randomFloat( radius, radiusSpread ) );
 
         if( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
@@ -283,7 +245,7 @@ SPE.utils = {
         v.copy(position)
             .sub(base)
             .normalize()
-            .multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
+            .multiplyScalar( Math.abs( this.randomFloat( speed, speedSpread ) ) );
     },
 
     generateID: function() {
@@ -454,44 +416,44 @@ SPE.Group.prototype = {
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
-                vertices[i]         = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
-                velocity[i]         = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+                vertices[i]         = that.randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[i]         = that.randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else if( emitter.type === 'disk' ) {
-                vertices[i]         = that._randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
-                velocity[i]         = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+                vertices[i]         = that.randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[i]         = that.randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else {
-                vertices[i]         = that._randomVector3( emitter.position, emitter.positionSpread );
-                velocity[i]         = that._randomVector3( emitter.velocity, emitter.velocitySpread );
+                vertices[i]         = that.randomVector3( emitter.position, emitter.positionSpread );
+                velocity[i]         = that.randomVector3( emitter.velocity, emitter.velocitySpread );
             }
 
-            acceleration[i]         = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
+            acceleration[i]         = that.randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
             size[i]                 = new THREE.Vector3(
-                Math.abs( that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) ),
-                Math.abs( that._randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ) ),
-                Math.abs( that._randomFloat( emitter.sizeEnd, emitter.sizeEndSpread ) )
+                Math.abs( that.randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) ),
+                Math.abs( that.randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ) ),
+                Math.abs( that.randomFloat( emitter.sizeEnd, emitter.sizeEndSpread ) )
             );
 
             angle[i]                = new THREE.Vector4(
-                that._randomFloat( emitter.angleStart, emitter.angleStartSpread ),
-                that._randomFloat( emitter.angleMiddle, emitter.angleMiddleSpread ),
-                that._randomFloat( emitter.angleEnd, emitter.angleEndSpread ),
+                that.randomFloat( emitter.angleStart, emitter.angleStartSpread ),
+                that.randomFloat( emitter.angleMiddle, emitter.angleMiddleSpread ),
+                that.randomFloat( emitter.angleEnd, emitter.angleEndSpread ),
                 emitter.angleAlignVelocity ? 1.0 : 0.0
             );
 
             age[i]                  = 0.0;
             alive[i]                = emitter.isStatic ? 1.0 : 0.0;
 
-            colorStart[i]           = that._randomColor( emitter.colorStart,    emitter.colorStartSpread );
-            colorMiddle[i]          = that._randomColor( emitter.colorMiddle,   emitter.colorMiddleSpread );
-            colorEnd[i]             = that._randomColor( emitter.colorEnd,      emitter.colorEndSpread );
+            colorStart[i]           = that.randomColor( emitter.colorStart,    emitter.colorStartSpread );
+            colorMiddle[i]          = that.randomColor( emitter.colorMiddle,   emitter.colorMiddleSpread );
+            colorEnd[i]             = that.randomColor( emitter.colorEnd,      emitter.colorEndSpread );
 
             opacity[i]              = new THREE.Vector3(
-                Math.abs( that._randomFloat( emitter.opacityStart, emitter.opacityStartSpread ) ),
-                Math.abs( that._randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ) ),
-                Math.abs( that._randomFloat( emitter.opacityEnd, emitter.opacityEndSpread ) )
+                Math.abs( that.randomFloat( emitter.opacityStart, emitter.opacityStartSpread ) ),
+                Math.abs( that.randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ) ),
+                Math.abs( that.randomFloat( emitter.opacityEnd, emitter.opacityEndSpread ) )
             );
         }
 
@@ -503,7 +465,7 @@ SPE.Group.prototype = {
         emitter.maxAge          = that.maxAge;
 
         // Assign a unique ID to this emitter
-        emitter.__id = that._generateID();
+        emitter.__id = that.generateID();
 
         // Save this emitter in an array for processing during this.tick()
         if( !emitter.isStatic ) {
@@ -703,7 +665,7 @@ SPE.Group.prototype = {
 
 // Extend ShaderParticleGroup's prototype with functions from utils object.
 for( var i in SPE.utils ) {
-    SPE.Group.prototype[ '_' + i ] = SPE.utils[i];
+    SPE.Group.prototype[ i ] = SPE.utils[i];
 }
 
 
@@ -1004,28 +966,28 @@ SPE.Emitter.prototype = {
             ( type === 'disk' && that.radius === 0 )
         ) {
             particlePosition.copy( that.position );
-            that._randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
+            that.randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
 
             if( type === 'cube' ) {
-                that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
+                that.randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
             }
         }
 
         // If there is a position spread, then get a new position based on this spread.
         else if( type === 'cube' ) {
-            that._randomizeExistingVector3( particlePosition, that.position, spread );
-            that._randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
-            that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
+            that.randomizeExistingVector3( particlePosition, that.position, spread );
+            that.randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
+            that.randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
         }
 
         else if( type === 'sphere') {
-            that._randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
-            that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+            that.randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
+            that.randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
         else if( type === 'disk') {
-            that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
-            that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+            that.randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
+            that.randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
         if( typeof that.onParticleSpawn === 'function' ) {
@@ -1183,5 +1145,5 @@ SPE.Emitter.prototype = {
 
 // Extend SPE.Emitter's prototype with functions from utils object.
 for( var i in SPE.utils ) {
-    SPE.Emitter.prototype[ '_' + i ] = SPE.utils[i];
+    SPE.Emitter.prototype[ i ] = SPE.utils[i];
 }
