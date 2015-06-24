@@ -1,4 +1,4 @@
-// ShaderParticleGroup 0.7.9
+// ShaderParticleGroup 0.8.0
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)

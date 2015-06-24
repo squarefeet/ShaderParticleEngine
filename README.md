@@ -10,6 +10,7 @@ Version 0.8.0
 * `SPE.Group#hasPerspective` now takes `boolean` values as well as numbers. Makes more sense this way.
 * `SPE.Group#colorize` now takes `boolean` values as well as numbers as well.
 * `SPE.Group#colorize` does not ignore opacity values if set to false.
+* `SPE.Group#fog` is now supported! *Note: Only tested with THREE.js r71.*
 
 
 
@@ -137,7 +138,10 @@ var particleGroup = new SPE.Group({
 
 	// [OPTIONAL] Specify a fixed time-step value if you're more bothered
 	// about smooth performance. Only use this if necessary. Measured in seconds.
-	fixedTimeStep: 0.016
+	fixedTimeStep: 0.016,
+
+	// [OPTIONAL] Whether this group should be affected by Fog.
+	fog: true
 });
 ```
 
