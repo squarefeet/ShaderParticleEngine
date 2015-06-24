@@ -22,6 +22,7 @@ SPE.Emitter = function( options ) {
     // so the next time a particle is reset, updates will be
     // applied.
     that._updateFlags = {};
+    that._updateCounts = {};
 
     that._particleCount = 100;
     that._type = 'cube';
@@ -246,8 +247,27 @@ SPE.Emitter.prototype = {
             that.randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
+
+        that._updateParticlesFromFlags( i );
+
+
         if ( typeof that.onParticleSpawn === 'function' ) {
             that.onParticleSpawn( a, i );
+        }
+    },
+
+    _updateParticlesFromFlags: function( i ) {
+        var that = this;
+
+        if ( that._updateFlags.sizeStart ) {
+            that.attributes.size.value[ i ].x = Math.abs( that.randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) );
+            that.attributes.size.needsUpdate = true;
+
+            if ( ++that._updateCounts.sizeStart === that._particleCount ) {
+                console.log( 'updated all', that._updateCounts.sizeStart );
+                that._updateCounts.sizeStart = 0;
+                that._updateFlags.sizeStart = false;
+            }
         }
     },
 
@@ -441,6 +461,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'position', {
         if ( value instanceof THREE.Vector3 ) {
             this._position = value;
             this._updateFlags.position = true;
+            this._updateCounts.position = 0;
         }
         else {
             console.warn( 'Invalid position specified. Must be instance of THREE.Vector3.' );
@@ -456,6 +477,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'positionSpread', {
         if ( value instanceof THREE.Vector3 ) {
             this._positionSpread = value;
             this._updateFlags.positionSpread = true;
+            this._updateCounts.positionSpread = 0;
         }
         else {
             console.warn( 'Invalid positionSpread specified. Must be instance of THREE.Vector3.' );
@@ -472,6 +494,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'radius', {
         if ( typeof value === 'number' ) {
             this._radius = value;
             this._updateFlags.radius = true;
+            this._updateCounts.radius = 0;
         }
         else {
             console.warn( 'Invalid radius specified: ' + value + '. Must be a number. radius remains at: ' + this._radius );
@@ -487,6 +510,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusSpread', {
         if ( typeof value === 'number' ) {
             this._radiusSpread = value;
             this._updateFlags.radiusSpread = true;
+            this._updateCounts.radiusSpread = 0;
         }
         else {
             console.warn( 'Invalid radiusSpread specified: ' + value + '. Must be a number. radiusSpread remains at: ' + this._radiusSpread );
@@ -502,6 +526,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusScale', {
         if ( value instanceof THREE.Vector3 ) {
             this._radiusScale = value;
             this._updateFlags.radiusScale = true;
+            this._updateCounts.radiusScale = 0;
         }
         else {
             console.warn( 'Invalid radiusScale specified. Must be instance of THREE.Vector3.' );
@@ -517,6 +542,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusSpreadClamp', {
         if ( typeof value === 'number' ) {
             this._radiusSpreadClamp = value;
             this._updateFlags.radiusSpreadClamp = true;
+            this._updateCounts.radiusSpreadClamp = 0;
         }
         else {
             console.warn( 'Invalid radiusSpreadClamp specified: ' + value + '. Must be a number. radiusSpreadClamp remains at: ' + this._radiusSpreadClamp );
@@ -533,6 +559,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'acceleration', {
         if ( value instanceof THREE.Vector3 ) {
             this._acceleration = value;
             this._updateFlags.acceleration = true;
+            this._updateCounts.acceleration = 0;
         }
         else {
             console.warn( 'Invalid acceleration specified. Must be instance of THREE.Vector3.' );
@@ -548,6 +575,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'accelerationSpread', {
         if ( value instanceof THREE.Vector3 ) {
             this._accelerationSpread = value;
             this._updateFlags.accelerationSpread = true;
+            this._updateCounts.accelerationSpread = 0;
         }
         else {
             console.warn( 'Invalid accelerationSpread specified. Must be instance of THREE.Vector3.' );
@@ -564,6 +592,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'velocity', {
         if ( value instanceof THREE.Vector3 ) {
             this._velocity = value;
             this._updateFlags.velocity = true;
+            this._updateCounts.velocity = 0;
         }
         else {
             console.warn( 'Invalid velocity specified. Must be instance of THREE.Vector3.' );
@@ -579,6 +608,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'velocitySpread', {
         if ( value instanceof THREE.Vector3 ) {
             this._velocitySpread = value;
             this._updateFlags.velocitySpread = true;
+            this._updateCounts.velocitySpread = 0;
         }
         else {
             console.warn( 'Invalid velocitySpread specified. Must be instance of THREE.Vector3.' );
@@ -595,6 +625,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'speed', {
         if ( typeof value === 'number' ) {
             this._speed = value;
             this._updateFlags.speed = true;
+            this._updateCounts.speed = 0;
         }
         else {
             console.warn( 'Invalid speed specified: ' + value + '. Must be a number. speed remains at: ' + this._speed );
@@ -610,6 +641,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'speedSpread', {
         if ( typeof value === 'number' ) {
             this._speedSpread = value;
             this._updateFlags.speedSpread = true;
+            this._updateCounts.speedSpread = 0;
         }
         else {
             console.warn( 'Invalid speedSpread specified: ' + value + '. Must be a number. speedSpread remains at: ' + this._speedSpread );
@@ -626,6 +658,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'sizeStart', {
         if ( typeof value === 'number' ) {
             this._sizeStart = value;
             this._updateFlags.sizeStart = true;
+            this._updateCounts.sizeStart = 0;
         }
         else {
             console.warn( 'Invalid sizeStart specified: ' + value + '. Must be a number. sizeStart remains at: ' + this._sizeStart );
@@ -640,6 +673,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'sizeStartSpread', {
         if ( typeof value === 'number' ) {
             this._sizeStartSpread = value;
             this._updateFlags.sizeStartSpread = true;
+            this._updateCounts.sizeStartSpread = 0;
         }
         else {
             console.warn( 'Invalid sizeStartSpread specified: ' + value + '. Must be a number. sizeStartSpread remains at: ' + this._sizeStartSpread );
