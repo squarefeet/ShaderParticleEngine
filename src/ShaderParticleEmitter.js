@@ -157,28 +157,28 @@ SPE.Emitter.prototype = {
             ( type === 'disk' && that.radius === 0 )
         ) {
             particlePosition.copy( that.position );
-            that._randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
+            that.randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
 
             if( type === 'cube' ) {
-                that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
+                that.randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
             }
         }
 
         // If there is a position spread, then get a new position based on this spread.
         else if( type === 'cube' ) {
-            that._randomizeExistingVector3( particlePosition, that.position, spread );
-            that._randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
-            that._randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
+            that.randomizeExistingVector3( particlePosition, that.position, spread );
+            that.randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
+            that.randomizeExistingVector3( that.attributes.acceleration.value[i], that.acceleration, aSpread );
         }
 
         else if( type === 'sphere') {
-            that._randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
-            that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+            that.randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
+            that.randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
         else if( type === 'disk') {
-            that._randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
-            that._randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+            that.randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
+            that.randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
         }
 
         if( typeof that.onParticleSpawn === 'function' ) {
@@ -336,5 +336,5 @@ SPE.Emitter.prototype = {
 
 // Extend SPE.Emitter's prototype with functions from utils object.
 for( var i in SPE.utils ) {
-    SPE.Emitter.prototype[ '_' + i ] = SPE.utils[i];
+    SPE.Emitter.prototype[ i ] = SPE.utils[i];
 }

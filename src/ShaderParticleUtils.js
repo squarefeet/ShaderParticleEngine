@@ -25,7 +25,7 @@ SPE.utils = {
     randomVector3: function( base, spread ) {
         var v = new THREE.Vector3();
 
-        SPE.utils.randomizeExistingVector3( v, base, spread );
+        this.randomizeExistingVector3( v, base, spread );
 
         return v;
     },
@@ -45,7 +45,7 @@ SPE.utils = {
     randomColor: function( base, spread ) {
         var v = new THREE.Color();
 
-        SPE.utils.randomizeExistingColor( v, base, spread );
+        this.randomizeExistingColor( v, base, spread );
 
         return v;
     },
@@ -80,7 +80,7 @@ SPE.utils = {
     randomVector3OnSphere: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var v = new THREE.Vector3();
 
-        SPE.utils.randomizeExistingVector3OnSphere( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp );
+        this.randomizeExistingVector3OnSphere( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp );
 
         return v;
     },
@@ -101,7 +101,7 @@ SPE.utils = {
     randomVector3OnDisk: function( base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var v = new THREE.Vector3();
 
-        SPE.utils.randomizeExistingVector3OnDisk( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp );
+        this.randomizeExistingVector3OnDisk( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp );
 
         return v;
     },
@@ -124,7 +124,7 @@ SPE.utils = {
     randomVelocityVector3OnSphere: function( base, position, speed, speedSpread, scale ) {
         var direction = new THREE.Vector3();
 
-        SPE.utils.randomizeExistingVelocityVector3OnSphere( direction, base, position, speed, speedSpread );
+        this.randomizeExistingVelocityVector3OnSphere( direction, base, position, speed, speedSpread );
 
         if( scale ) {
             direction.multiply( scale );
@@ -194,7 +194,7 @@ SPE.utils = {
         var z = 2 * Math.random() - 1,
             t = 6.2832 * Math.random(),
             r = Math.sqrt( 1 - z*z ),
-            rand = this._randomFloat( radius, radiusSpread );
+            rand = this.randomFloat( radius, radiusSpread );
 
         if( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
@@ -222,7 +222,7 @@ SPE.utils = {
      */
     randomizeExistingVector3OnDisk: function( v, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
         var t = 6.2832 * Math.random(),
-            rand = Math.abs( this._randomFloat( radius, radiusSpread ) );
+            rand = Math.abs( this.randomFloat( radius, radiusSpread ) );
 
         if( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
@@ -245,7 +245,7 @@ SPE.utils = {
         v.copy(position)
             .sub(base)
             .normalize()
-            .multiplyScalar( Math.abs( this._randomFloat( speed, speedSpread ) ) );
+            .multiplyScalar( Math.abs( this.randomFloat( speed, speedSpread ) ) );
     },
 
     generateID: function() {

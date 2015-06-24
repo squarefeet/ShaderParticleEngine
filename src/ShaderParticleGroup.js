@@ -152,44 +152,44 @@ SPE.Group.prototype = {
         for( var i = start; i < end; ++i ) {
 
             if( emitter.type === 'sphere' ) {
-                vertices[i]         = that._randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
-                velocity[i]         = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+                vertices[i]         = that.randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[i]         = that.randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else if( emitter.type === 'disk' ) {
-                vertices[i]         = that._randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
-                velocity[i]         = that._randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
+                vertices[i]         = that.randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[i]         = that.randomVelocityVector3OnSphere( vertices[i], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else {
-                vertices[i]         = that._randomVector3( emitter.position, emitter.positionSpread );
-                velocity[i]         = that._randomVector3( emitter.velocity, emitter.velocitySpread );
+                vertices[i]         = that.randomVector3( emitter.position, emitter.positionSpread );
+                velocity[i]         = that.randomVector3( emitter.velocity, emitter.velocitySpread );
             }
 
-            acceleration[i]         = that._randomVector3( emitter.acceleration, emitter.accelerationSpread );
+            acceleration[i]         = that.randomVector3( emitter.acceleration, emitter.accelerationSpread );
 
             size[i]                 = new THREE.Vector3(
-                Math.abs( that._randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) ),
-                Math.abs( that._randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ) ),
-                Math.abs( that._randomFloat( emitter.sizeEnd, emitter.sizeEndSpread ) )
+                Math.abs( that.randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) ),
+                Math.abs( that.randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ) ),
+                Math.abs( that.randomFloat( emitter.sizeEnd, emitter.sizeEndSpread ) )
             );
 
             angle[i]                = new THREE.Vector4(
-                that._randomFloat( emitter.angleStart, emitter.angleStartSpread ),
-                that._randomFloat( emitter.angleMiddle, emitter.angleMiddleSpread ),
-                that._randomFloat( emitter.angleEnd, emitter.angleEndSpread ),
+                that.randomFloat( emitter.angleStart, emitter.angleStartSpread ),
+                that.randomFloat( emitter.angleMiddle, emitter.angleMiddleSpread ),
+                that.randomFloat( emitter.angleEnd, emitter.angleEndSpread ),
                 emitter.angleAlignVelocity ? 1.0 : 0.0
             );
 
             age[i]                  = 0.0;
             alive[i]                = emitter.isStatic ? 1.0 : 0.0;
 
-            colorStart[i]           = that._randomColor( emitter.colorStart,    emitter.colorStartSpread );
-            colorMiddle[i]          = that._randomColor( emitter.colorMiddle,   emitter.colorMiddleSpread );
-            colorEnd[i]             = that._randomColor( emitter.colorEnd,      emitter.colorEndSpread );
+            colorStart[i]           = that.randomColor( emitter.colorStart,    emitter.colorStartSpread );
+            colorMiddle[i]          = that.randomColor( emitter.colorMiddle,   emitter.colorMiddleSpread );
+            colorEnd[i]             = that.randomColor( emitter.colorEnd,      emitter.colorEndSpread );
 
             opacity[i]              = new THREE.Vector3(
-                Math.abs( that._randomFloat( emitter.opacityStart, emitter.opacityStartSpread ) ),
-                Math.abs( that._randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ) ),
-                Math.abs( that._randomFloat( emitter.opacityEnd, emitter.opacityEndSpread ) )
+                Math.abs( that.randomFloat( emitter.opacityStart, emitter.opacityStartSpread ) ),
+                Math.abs( that.randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ) ),
+                Math.abs( that.randomFloat( emitter.opacityEnd, emitter.opacityEndSpread ) )
             );
         }
 
@@ -201,7 +201,7 @@ SPE.Group.prototype = {
         emitter.maxAge          = that.maxAge;
 
         // Assign a unique ID to this emitter
-        emitter.__id = that._generateID();
+        emitter.__id = that.generateID();
 
         // Save this emitter in an array for processing during this.tick()
         if( !emitter.isStatic ) {
@@ -401,7 +401,7 @@ SPE.Group.prototype = {
 
 // Extend ShaderParticleGroup's prototype with functions from utils object.
 for( var i in SPE.utils ) {
-    SPE.Group.prototype[ '_' + i ] = SPE.utils[i];
+    SPE.Group.prototype[ i ] = SPE.utils[i];
 }
 
 
