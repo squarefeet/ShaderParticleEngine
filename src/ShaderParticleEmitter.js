@@ -259,14 +259,79 @@ SPE.Emitter.prototype = {
     _updateParticlesFromFlags: function( i ) {
         var that = this;
 
-        if ( that._updateFlags.sizeStart ) {
-            that.attributes.size.value[ i ].x = Math.abs( that.randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) );
+        // Don't need to update:
+        //  - Position
+        //  - positionSpread
+        //  - velocity
+        //  - velocitySpread
+        //  - acceleration
+        //  - accelerationSpread
+        //  - radius
+        //  - radiusSpread
+        //  - radiusScale
+        //  - radiusSpreadClamp
+        //  - speed
+        //  - speedSpread
+
+        if ( that._updateFlags.sizeStart === true ) {
+            that.attributes.size.value[ i ].x = Math.abs( that.randomFloat( that.sizeStart, that.sizeStartSpread ) );
             that.attributes.size.needsUpdate = true;
 
             if ( ++that._updateCounts.sizeStart === that._particleCount ) {
-                console.log( 'updated all', that._updateCounts.sizeStart );
                 that._updateCounts.sizeStart = 0;
                 that._updateFlags.sizeStart = false;
+            }
+        }
+
+        if ( that._updateFlags.sizeMiddle === true ) {
+            that.attributes.size.value[ i ].y = Math.abs( that.randomFloat( that.sizeMiddle, that.sizeMiddleSpread ) );
+            that.attributes.size.needsUpdate = true;
+
+            if ( ++that._updateCounts.sizeMiddle === that._particleCount ) {
+                that._updateCounts.sizeMiddle = 0;
+                that._updateFlags.sizeMiddle = false;
+            }
+        }
+
+        if ( that._updateFlags.sizeEnd === true ) {
+            that.attributes.size.value[ i ].z = Math.abs( that.randomFloat( that.sizeEnd, that.sizeEndSpread ) );
+            that.attributes.size.needsUpdate = true;
+
+            if ( ++that._updateCounts.sizeEnd === that._particleCount ) {
+                that._updateCounts.sizeEnd = 0;
+                that._updateFlags.sizeEnd = false;
+            }
+        }
+
+        // TODO:
+        //  - that.randomizeExistingColor
+        if ( that._updateFlags.colorStart === true ) {
+            that.attributes.colorStart.value[ i ] = that.randomColor( that.colorStart, that.colorStartSpread );
+            that.attributes.colorStart.needsUpdate = true;
+
+            if ( ++that._updateCounts.colorStart === that._particleCount ) {
+                that._updateCounts.colorStart = 0;
+                that._updateFlags.colorStart = false;
+            }
+        }
+
+        if ( that._updateFlags.colorMiddle === true ) {
+            that.attributes.colorMiddle.value[ i ] = that.randomColor( that.colorMiddle, that.colorMiddleSpread );
+            that.attributes.colorMiddle.needsUpdate = true;
+
+            if ( ++that._updateCounts.colorMiddle === that._particleCount ) {
+                that._updateCounts.colorMiddle = 0;
+                that._updateFlags.colorMiddle = false;
+            }
+        }
+
+        if ( that._updateFlags.colorEnd === true ) {
+            that.attributes.colorEnd.value[ i ] = that.randomColor( that.colorEnd, that.colorStartSpread );
+            that.attributes.colorEnd.needsUpdate = true;
+
+            if ( ++that._updateCounts.colorEnd === that._particleCount ) {
+                that._updateCounts.colorEnd = 0;
+                that._updateFlags.colorEnd = false;
             }
         }
     },
@@ -460,8 +525,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'position', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._position = value;
-            this._updateFlags.position = true;
-            this._updateCounts.position = 0;
         }
         else {
             console.warn( 'Invalid position specified. Must be instance of THREE.Vector3.' );
@@ -476,8 +539,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'positionSpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._positionSpread = value;
-            this._updateFlags.positionSpread = true;
-            this._updateCounts.positionSpread = 0;
         }
         else {
             console.warn( 'Invalid positionSpread specified. Must be instance of THREE.Vector3.' );
@@ -493,8 +554,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'radius', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._radius = value;
-            this._updateFlags.radius = true;
-            this._updateCounts.radius = 0;
         }
         else {
             console.warn( 'Invalid radius specified: ' + value + '. Must be a number. radius remains at: ' + this._radius );
@@ -509,8 +568,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusSpread', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._radiusSpread = value;
-            this._updateFlags.radiusSpread = true;
-            this._updateCounts.radiusSpread = 0;
         }
         else {
             console.warn( 'Invalid radiusSpread specified: ' + value + '. Must be a number. radiusSpread remains at: ' + this._radiusSpread );
@@ -525,8 +582,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusScale', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._radiusScale = value;
-            this._updateFlags.radiusScale = true;
-            this._updateCounts.radiusScale = 0;
         }
         else {
             console.warn( 'Invalid radiusScale specified. Must be instance of THREE.Vector3.' );
@@ -541,8 +596,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusSpreadClamp', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._radiusSpreadClamp = value;
-            this._updateFlags.radiusSpreadClamp = true;
-            this._updateCounts.radiusSpreadClamp = 0;
         }
         else {
             console.warn( 'Invalid radiusSpreadClamp specified: ' + value + '. Must be a number. radiusSpreadClamp remains at: ' + this._radiusSpreadClamp );
@@ -558,8 +611,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'acceleration', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._acceleration = value;
-            this._updateFlags.acceleration = true;
-            this._updateCounts.acceleration = 0;
         }
         else {
             console.warn( 'Invalid acceleration specified. Must be instance of THREE.Vector3.' );
@@ -574,8 +625,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'accelerationSpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._accelerationSpread = value;
-            this._updateFlags.accelerationSpread = true;
-            this._updateCounts.accelerationSpread = 0;
         }
         else {
             console.warn( 'Invalid accelerationSpread specified. Must be instance of THREE.Vector3.' );
@@ -591,8 +640,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'velocity', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._velocity = value;
-            this._updateFlags.velocity = true;
-            this._updateCounts.velocity = 0;
         }
         else {
             console.warn( 'Invalid velocity specified. Must be instance of THREE.Vector3.' );
@@ -607,8 +654,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'velocitySpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._velocitySpread = value;
-            this._updateFlags.velocitySpread = true;
-            this._updateCounts.velocitySpread = 0;
         }
         else {
             console.warn( 'Invalid velocitySpread specified. Must be instance of THREE.Vector3.' );
@@ -624,8 +669,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'speed', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._speed = value;
-            this._updateFlags.speed = true;
-            this._updateCounts.speed = 0;
         }
         else {
             console.warn( 'Invalid speed specified: ' + value + '. Must be a number. speed remains at: ' + this._speed );
@@ -640,8 +683,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'speedSpread', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._speedSpread = value;
-            this._updateFlags.speedSpread = true;
-            this._updateCounts.speedSpread = 0;
         }
         else {
             console.warn( 'Invalid speedSpread specified: ' + value + '. Must be a number. speedSpread remains at: ' + this._speedSpread );
@@ -680,6 +721,166 @@ Object.defineProperty( SPE.Emitter.prototype, 'sizeStartSpread', {
         }
     }
 } );
+
+
+Object.defineProperty( SPE.Emitter.prototype, 'sizeMiddle', {
+    get: function() {
+        return this._sizeMiddle;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._sizeMiddle = value;
+            this._updateFlags.sizeMiddle = true;
+            this._updateCounts.sizeMiddle = 0;
+        }
+        else {
+            console.warn( 'Invalid sizeMiddle specified: ' + value + '. Must be a number. sizeMiddle remains at: ' + this._sizeMiddle );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'sizeMiddleSpread', {
+    get: function() {
+        return this._sizeMiddleSpread;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._sizeMiddleSpread = value;
+            this._updateFlags.sizeMiddleSpread = true;
+            this._updateCounts.sizeMiddleSpread = 0;
+        }
+        else {
+            console.warn( 'Invalid sizeMiddleSpread specified: ' + value + '. Must be a number. sizeMiddleSpread remains at: ' + this._sizeMiddleSpread );
+        }
+    }
+} );
+
+Object.defineProperty( SPE.Emitter.prototype, 'sizeEnd', {
+    get: function() {
+        return this._sizeEnd;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._sizeEnd = value;
+            this._updateFlags.sizeEnd = true;
+            this._updateCounts.sizeEnd = 0;
+        }
+        else {
+            console.warn( 'Invalid sizeEnd specified: ' + value + '. Must be a number. sizeEnd remains at: ' + this._sizeEnd );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'sizeEndSpread', {
+    get: function() {
+        return this._sizeEndSpread;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._sizeEndSpread = value;
+            this._updateFlags.sizeEndSpread = true;
+            this._updateCounts.sizeEndSpread = 0;
+        }
+        else {
+            console.warn( 'Invalid sizeEndSpread specified: ' + value + '. Must be a number. sizeEndSpread remains at: ' + this._sizeEndSpread );
+        }
+    }
+} );
+
+Object.defineProperty( SPE.Emitter.prototype, 'colorStart', {
+    get: function() {
+        return this._colorStart;
+    },
+    set: function( value ) {
+        if ( value instanceof THREE.Color ) {
+            this._colorStart = value;
+            this._updateFlags.colorStart = true;
+            this._updateCounts.colorStart = 0;
+        }
+        else {
+            console.warn( 'Invalid colorStart specified: ' + value + '. Must be instance of THREE.Color. colorStart remains at: ' + this._colorStart );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'colorStartSpread', {
+    get: function() {
+        return this._colorStartSpread;
+    },
+    set: function( value ) {
+        if ( value instanceof THREE.Vector3 ) {
+            this._colorStartSpread = value;
+            this._updateFlags.colorStartSpread = true;
+            this._updateCounts.colorStartSpread = 0;
+        }
+        else {
+            console.warn( 'Invalid colorStartSpread specified: ' + value + '. Must be instance of THREE.Vector3. colorStartSpread remains at: ' + this._colorStartSpread );
+        }
+    }
+} );
+
+
+Object.defineProperty( SPE.Emitter.prototype, 'colorMiddle', {
+    get: function() {
+        return this._colorMiddle;
+    },
+    set: function( value ) {
+        if ( value instanceof THREE.Color ) {
+            this._colorMiddle = value;
+            this._updateFlags.colorMiddle = true;
+            this._updateCounts.colorMiddle = 0;
+        }
+        else {
+            console.warn( 'Invalid colorMiddle specified: ' + value + '. Must be instance of THREE.Color. colorMiddle remains at: ' + this._colorMiddle );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'colorMiddleSpread', {
+    get: function() {
+        return this._colorMiddleSpread;
+    },
+    set: function( value ) {
+        if ( value instanceof THREE.Vector3 ) {
+            this._colorMiddleSpread = value;
+            this._updateFlags.colorMiddleSpread = true;
+            this._updateCounts.colorMiddleSpread = 0;
+        }
+        else {
+            console.warn( 'Invalid colorMiddleSpread specified: ' + value + '. Must be a number. colorMiddleSpread remains at: ' + this._colorMiddleSpread );
+        }
+    }
+} );
+
+Object.defineProperty( SPE.Emitter.prototype, 'colorEnd', {
+    get: function() {
+        return this._colorEnd;
+    },
+    set: function( value ) {
+        if ( value instanceof THREE.Color ) {
+            this._colorEnd = value;
+            this._updateFlags.colorEnd = true;
+            this._updateCounts.colorEnd = 0;
+        }
+        else {
+            console.warn( 'Invalid colorEnd specified: ' + value + '. Must be instance of THREE.Color. colorEnd remains at: ' + this._colorEnd );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'colorEndSpread', {
+    get: function() {
+        return this._colorEndSpread;
+    },
+    set: function( value ) {
+        if ( value instanceof THREE.Vector3 ) {
+            this._colorEndSpread = value;
+            this._updateFlags.colorEndSpread = true;
+            this._updateCounts.colorEndSpread = 0;
+        }
+        else {
+            console.warn( 'Invalid colorEndSpread specified: ' + value + '. Must be instance of THREE.Vector3. colorEndSpread remains at: ' + this._colorEndSpread );
+        }
+    }
+} );
+
+
+
 
 // Extend SPE.Emitter's prototype with functions from utils object.
 for ( var i in SPE.utils ) {
