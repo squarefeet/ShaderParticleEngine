@@ -193,7 +193,7 @@ SPE.Group.prototype = {
 
         var vertices = that.geometry.vertices,
             start = vertices.length,
-            end = emitter.particleCount + start,
+            end = emitter._particleCount + start,
             a = that.attributes,
             acceleration = a.acceleration.value,
             velocity = a.velocity.value,
