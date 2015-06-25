@@ -624,6 +624,3 @@ SPE.shaders = {
         '}'
     ].join( '\n' )
 };
-
-console.log( SPE.shaders.vertex );
-console.log( SPE.shaders.fragment );

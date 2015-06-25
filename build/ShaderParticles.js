@@ -887,10 +887,7 @@ SPE.shaders = {
         '   gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
         '}'
     ].join( '\n' )
-};
-
-console.log( SPE.shaders.vertex );
-console.log( SPE.shaders.fragment );;
+};;
 
 // ShaderParticleEmitter 0.8.0
 //
