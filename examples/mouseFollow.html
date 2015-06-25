@@ -103,9 +103,7 @@
             );
 
             mouseVector.unproject( camera );
-
-            emitter.position.x = mouseVector.x * camera.fov;
-            emitter.position.y = mouseVector.y * camera.fov;
+            emitter.position = emitter.position.set( mouseVector.x * camera.fov, mouseVector.y * camera.fov, 0 );
         }, false );
 
 

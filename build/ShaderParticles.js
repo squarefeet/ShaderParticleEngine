@@ -431,6 +431,7 @@ SPE.Group.prototype = {
         that.attributes.alive.needsUpdate = true;
         // that.attributes.angle.needsUpdate = true;
         // that.attributes.angleAlignVelocity.needsUpdate = true;
+        that.geometry.verticesNeedUpdate = true;
 
         return that;
     },
@@ -807,7 +808,7 @@ SPE.shaders = {
 
         // Determine the angle we should use for this particle.
         '       if( angle.w == 1.0 ) {',
-        '           vAngle = -atan(pos.y, pos.x);',
+        '           vAngle = -atan( pos.y, pos.x );',
         '       }',
         '       else if( positionInTime < 0.5 ) {',
         '           vAngle = mix( angle.x, angle.y, lerpAmount1 );',
@@ -934,7 +935,7 @@ SPE.Emitter = function( options ) {
 
     that._sizeStart = 1.0;
     that._sizeStartSpread = 0.0;
-    that._sizeEnd = that._sizeStart;
+    that._sizeEnd = 1.0;
     that._sizeEndSpread = 0.0;
 
     that._sizeMiddle = Math.abs( that._sizeEnd + that._sizeStart ) / 2;
@@ -966,17 +967,41 @@ SPE.Emitter = function( options ) {
     that._opacityMiddleSpread = 0.0;
 
 
+    var optionKeys = Object.keys( options ),
+        hasSizeMiddle = !!~optionKeys.indexOf( 'sizeMiddle' ),
+        hasAngleMiddle = !!~optionKeys.indexOf( 'angleMiddle' ),
+        hasColorMiddle = !!~optionKeys.indexOf( 'colorMiddle' ),
+        hasOpacityMiddle = !!~optionKeys.indexOf( 'opacityMiddle' );
+
+    // Copy over the provided options (if any).
     for ( var i in options ) {
         if ( that.hasOwnProperty( '_' + i ) ) {
             that[ i ] = options[ i ];
         }
     }
 
+    // If no middle states for various properties have been provided, then
+    // interpolate them.
+    if ( !hasSizeMiddle ) {
+        that.sizeMiddle = Math.abs( that._sizeEnd + that._sizeStart ) / 2;
+    }
+
+    if ( !hasAngleMiddle ) {
+        that.angleMiddle = Math.abs( that._angleEnd + that._angleStart ) / 2;
+    }
+
+    if ( !hasColorMiddle ) {
+        that.colorMiddle = Math.abs( that._colorEnd + that._colorStart ) / 2;
+    }
+
+    if ( !hasOpacityMiddle ) {
+        that.opacityMiddle = Math.abs( that._opacityEnd + that._opacityStart ) / 2;
+    }
 
     // Generic
     that.duration = typeof options.duration === 'number' ? options.duration : null;
     that.alive = parseFloat( typeof options.alive === 'number' ? options.alive : 1.0 );
-    that.isStatic = typeof options.isStatic === 'number' ? options.isStatic : 0;
+    that.isStatic = typeof options.isStatic === 'number' ? !!options.isStatic : typeof options.isStatic === 'boolean' ? options.isStatic : false;
 
     // Particle spawn callback function.
     that.onParticleSpawn = typeof options.onParticleSpawn === 'function' ? options.onParticleSpawn : null;
@@ -1228,7 +1253,7 @@ SPE.Emitter.prototype = {
     tick: function( dt ) {
         this.hasRendered = true;
 
-        if ( this.isStatic ) {
+        if ( this.isStatic === true ) {
             return;
         }
 
@@ -1393,10 +1418,6 @@ Object.defineProperty( SPE.Emitter.prototype, 'particleCount', {
     set: function( value ) {
         if ( typeof value === 'number' && value >= 1 ) {
             this._particleCount = Math.round( value );
-
-            if ( this.geometry ) {
-                this.geometry.verticesNeedUpdate = true;
-            }
         }
         else {
             console.warn( 'Invalid particleCount specified: ' + value + '. Must be a number >= 1. ParticleCount remains at: ' + this._particleCount );

@@ -57,7 +57,7 @@
         // Create particle group and emitter
         function initParticles() {
             particleGroup = new SPE.Group({
-                texture: THREE.ImageUtils.loadTexture('./img/star.png'),
+                texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
                 maxAge: 2,
                 hasPerspective: true,
                 colorize: true,
@@ -65,20 +65,22 @@
             });
 
             emitter = new SPE.Emitter({
-                type: 'cube',
+                type: 'sphere',
                 position: new THREE.Vector3(0, 0, 0),
                 positionSpread: new THREE.Vector3( 20, 20, 20 ),
 
                 colorStart: new THREE.Color('white'),
                 colorEnd: new THREE.Color('red'),
 
-                sizeStart: 1,
-                sizeEnd: 1,
-                opacityStart: 0,
+                sizeStart: 2,
+                sizeEnd: 2,
+                opacityStart: 1,
                 opacityMiddle: 1,
-                opacityEnd: 0,
+                opacityEnd: 1,
 
-                particleCount: 200000
+                speed: 3,
+
+                particleCount: 2000
             });
 
             particleGroup.addEmitter( emitter );
@@ -105,9 +107,21 @@
 
                 if( emitter[ i ] instanceof THREE.Vector3 ) {
                     var folder = gui.addFolder( i.replace('_', '') );
-                    folder.add( emitter[ i ], 'x', -100, 100 );
-                    folder.add( emitter[ i ], 'y', -100, 100 );
-                    folder.add( emitter[ i ], 'z', -100, 100 );
+                    folder.add( emitter[ i ], 'x', -100, 100 ).onChange((function( propName ) {
+                        return function( value ) {
+                            emitter[propName] = emitter[propName]
+                        };
+                    }( i.replace('_', '') )) );
+                    folder.add( emitter[ i ], 'y', -100, 100 ).onChange((function( propName ) {
+                        return function( value ) {
+                            emitter[propName] = emitter[propName]
+                        };
+                    }( i.replace('_', '') )) );;
+                    folder.add( emitter[ i ], 'y', -100, 100 ).onChange((function( propName ) {
+                        return function( value ) {
+                            emitter[propName] = emitter[propName]
+                        };
+                    }( i.replace('_', '') )) );;
                 }
                 else if( emitter[ i ] instanceof THREE.Color ) {
                     var folder = gui.addFolder( i.replace('_', '') );
@@ -118,7 +132,6 @@
                     }( i.replace('_', '') )) );
                     folder.add( emitter[ i ], 'g', 0, 1 ).onChange((function( propName ) {
                         return function( value ) {
-                            console.log( propName );
                             emitter[propName] = emitter[propName]
                         };
                     }( i.replace('_', '') )) );;

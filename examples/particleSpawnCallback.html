@@ -69,9 +69,9 @@
 
                 onParticleSpawn: function( attributes, particleIndex ) {
                     attributes.opacity.value[ particleIndex ].set(
-                        1, // Start opacity
-                        0, // Middle opacity
-                        0 // End opacity
+                        Math.random(), // Start opacity
+                        Math.random(), // Middle opacity
+                        Math.random() // End opacity
                     );
 
                     attributes.opacity.needsUpdate = true;

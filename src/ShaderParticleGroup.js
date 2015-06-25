@@ -167,6 +167,7 @@ SPE.Group.prototype = {
         that.attributes.alive.needsUpdate = true;
         // that.attributes.angle.needsUpdate = true;
         // that.attributes.angleAlignVelocity.needsUpdate = true;
+        that.geometry.verticesNeedUpdate = true;
 
         return that;
     },
@@ -543,7 +544,7 @@ SPE.shaders = {
 
         // Determine the angle we should use for this particle.
         '       if( angle.w == 1.0 ) {',
-        '           vAngle = -atan(pos.y, pos.x);',
+        '           vAngle = -atan( pos.y, pos.x );',
         '       }',
         '       else if( positionInTime < 0.5 ) {',
         '           vAngle = mix( angle.x, angle.y, lerpAmount1 );',

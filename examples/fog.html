@@ -26,8 +26,7 @@
         // Setup the scene
         function init() {
             scene = new THREE.Scene();
-            // scene.fog = new THREE.Fog( 0x000000, 40, 70 );
-            scene.fog = new THREE.FogExp2( 0x000000, 0.025 );
+            scene.fog = new THREE.Fog( 0x000000, 40, 70 );
 
             camera = new THREE.PerspectiveCamera(64, window.innerWidth/window.innerHeight, 0.1, 10000);
             camera.position.z = 50;
@@ -68,16 +67,8 @@
                 position: new THREE.Vector3(0, 0, 0),
                 positionSpread: new THREE.Vector3( 20, 20, 20 ),
 
-                colorStart: new THREE.Color('white'),
-                colorEnd: new THREE.Color('red'),
-
-                sizeStart: 1,
-                sizeEnd: 1,
-                opacityStart: 0,
-                opacityMiddle: 1,
-                opacityEnd: 0,
-
-                particleCount: 20000
+                particleCount: 20000,
+                isStatic: true
             });
 
             particleGroup.addEmitter( emitter );
