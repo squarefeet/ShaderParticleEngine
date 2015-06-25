@@ -754,7 +754,6 @@ SPE.shaders = {
 
 
         THREE.ShaderChunk[ "common" ],
-        THREE.ShaderChunk[ "color_pars_vertex" ],
         THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
 
@@ -782,7 +781,7 @@ SPE.shaders = {
 
 
         'void main() {',
-        THREE.ShaderChunk[ "color_vertex" ],
+
         '   float positionInTime = (age / duration);',
 
         '   float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
