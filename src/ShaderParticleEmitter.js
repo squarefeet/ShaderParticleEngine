@@ -46,7 +46,7 @@ SPE.Emitter = function( options ) {
 
     that._sizeStart = 1.0;
     that._sizeStartSpread = 0.0;
-    that._sizeEnd = that._sizeStart;
+    that._sizeEnd = 1.0;
     that._sizeEndSpread = 0.0;
 
     that._sizeMiddle = Math.abs( that._sizeEnd + that._sizeStart ) / 2;
@@ -54,6 +54,8 @@ SPE.Emitter = function( options ) {
 
     that._angleStart = 0.0;
     that._angleStartSpread = 0.0;
+    that._angleMiddle = 0.0;
+    that._angleMiddleSpread = 0.0;
     that._angleEnd = 0.0;
     that._angleEndSpread = 0.0;
     that._angleAlignVelocity = false;
@@ -76,94 +78,11 @@ SPE.Emitter = function( options ) {
     that._opacityMiddleSpread = 0.0;
 
 
-    // Generic
-    that.duration = null;
-    that.alive = 1.0;
-    that.isStatic = 0.0;
-
-    // Particle spawn callback function.
-    that.onParticleSpawn = null;
-
-
-    // for ( var i in options ) {
-    //     that[ i ] = options[ i ];
-    // }
-    that.particleCount = options.particleCount;
-    that.type = options.type;
-    that.position = options.position;
-    that.positionSpread = options.positionSpread;
-    that.radius = options.radius;
-    that.radiusSpread = options.radiusSpread;
-    that.radiusScale = options.radiusScale;
-    that.radiusSpreadClamp = options.radiusSpreadClamp;
-    that.acceleration = options.acceleration;
-    that.accelerationSpread = options.accelerationSpread;
-    that.velocity = options.velocity;
-    that.velocitySpread = options.velocitySpread;
-    that.speed = options.speed;
-    that.speedSpread = options.speedSpread;
-
-
-    // Sizes
-    that.sizeStart = options.sizeStart;
-    that.sizeStartSpread = options.sizeStartSpread;
-
-    that.sizeEnd = parseFloat( typeof options.sizeEnd === 'number' ? options.sizeEnd : that.sizeStart );
-    that.sizeEndSpread = parseFloat( typeof options.sizeEndSpread === 'number' ? options.sizeEndSpread : 0.0 );
-
-    that.sizeMiddle = parseFloat(
-        typeof options.sizeMiddle !== 'undefined' ?
-        options.sizeMiddle :
-        Math.abs( that.sizeEnd + that.sizeStart ) / 2
-    );
-    that.sizeMiddleSpread = parseFloat( typeof options.sizeMiddleSpread === 'number' ? options.sizeMiddleSpread : 0 );
-
-
-    // Angles
-    that.angleStart = parseFloat( typeof options.angleStart === 'number' ? options.angleStart : 0 );
-    that.angleStartSpread = parseFloat( typeof options.angleStartSpread === 'number' ? options.angleStartSpread : 0 );
-
-    that.angleEnd = parseFloat( typeof options.angleEnd === 'number' ? options.angleEnd : 0 );
-    that.angleEndSpread = parseFloat( typeof options.angleEndSpread === 'number' ? options.angleEndSpread : 0 );
-
-    that.angleMiddle = parseFloat(
-        typeof options.angleMiddle !== 'undefined' ?
-        options.angleMiddle :
-        Math.abs( that.angleEnd + that.angleStart ) / 2
-    );
-    that.angleMiddleSpread = parseFloat( typeof options.angleMiddleSpread === 'number' ? options.angleMiddleSpread : 0 );
-
-    that.angleAlignVelocity = options.angleAlignVelocity || false;
-
-
-    // Colors
-    that.colorStart = options.colorStart instanceof THREE.Color ? options.colorStart : new THREE.Color( 'white' );
-    that.colorStartSpread = options.colorStartSpread instanceof THREE.Vector3 ? options.colorStartSpread : new THREE.Vector3();
-
-    that.colorEnd = options.colorEnd instanceof THREE.Color ? options.colorEnd : that.colorStart.clone();
-    that.colorEndSpread = options.colorEndSpread instanceof THREE.Vector3 ? options.colorEndSpread : new THREE.Vector3();
-
-    that.colorMiddle =
-        options.colorMiddle instanceof THREE.Color ?
-        options.colorMiddle :
-        new THREE.Color().addColors( that.colorStart, that.colorEnd ).multiplyScalar( 0.5 );
-    that.colorMiddleSpread = options.colorMiddleSpread instanceof THREE.Vector3 ? options.colorMiddleSpread : new THREE.Vector3();
-
-
-
-    // Opacities
-    that.opacityStart = parseFloat( typeof options.opacityStart !== 'undefined' ? options.opacityStart : 1 );
-    that.opacityStartSpread = parseFloat( typeof options.opacityStartSpread !== 'undefined' ? options.opacityStartSpread : 0 );
-
-    that.opacityEnd = parseFloat( typeof options.opacityEnd === 'number' ? options.opacityEnd : 0 );
-    that.opacityEndSpread = parseFloat( typeof options.opacityEndSpread !== 'undefined' ? options.opacityEndSpread : 0 );
-
-    that.opacityMiddle = parseFloat(
-        typeof options.opacityMiddle !== 'undefined' ?
-        options.opacityMiddle :
-        Math.abs( that.opacityEnd + that.opacityStart ) / 2
-    );
-    that.opacityMiddleSpread = parseFloat( typeof options.opacityMiddleSpread === 'number' ? options.opacityMiddleSpread : 0 );
+    for ( var i in options ) {
+        if ( that.hasOwnProperty( '_' + i ) ) {
+            that[ i ] = options[ i ];
+        }
+    }
 
 
     // Generic
@@ -185,6 +104,7 @@ SPE.Emitter = function( options ) {
     that.maxAge = 0.0;
 
     that.particleIndex = 0.0;
+    that.hasRendered = false;
 
     that.__id = null;
 
@@ -207,7 +127,6 @@ SPE.Emitter.prototype = {
             particlePosition = that.vertices[ i ],
             a = that.attributes,
             particleVelocity = a.velocity.value[ i ],
-
             vSpread = that.velocitySpread,
             aSpread = that.accelerationSpread;
 
@@ -219,9 +138,11 @@ SPE.Emitter.prototype = {
         ) {
             particlePosition.copy( that.position );
             that.randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
+            that.attributes.velocity.needsUpdate = true;
 
             if ( type === 'cube' ) {
                 that.randomizeExistingVector3( that.attributes.acceleration.value[ i ], that.acceleration, aSpread );
+                that.attributes.acceleration.needsUpdate = true;
             }
         }
 
@@ -230,16 +151,20 @@ SPE.Emitter.prototype = {
             that.randomizeExistingVector3( particlePosition, that.position, spread );
             that.randomizeExistingVector3( particleVelocity, that.velocity, vSpread );
             that.randomizeExistingVector3( that.attributes.acceleration.value[ i ], that.acceleration, aSpread );
+            that.attributes.velocity.needsUpdate = true;
+            that.attributes.acceleration.needsUpdate = true;
         }
 
         else if ( type === 'sphere' ) {
             that.randomizeExistingVector3OnSphere( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
             that.randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+            that.attributes.velocity.needsUpdate = true;
         }
 
         else if ( type === 'disk' ) {
             that.randomizeExistingVector3OnDisk( particlePosition, that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
             that.randomizeExistingVelocityVector3OnSphere( particleVelocity, that.position, particlePosition, that.speed, that.speedSpread );
+            that.attributes.velocity.needsUpdate = true;
         }
 
 
@@ -251,82 +176,157 @@ SPE.Emitter.prototype = {
         }
     },
 
+    /**
+     * When a parameter of this emitter is changed, a flag will be set
+     * indicating this. This function takes care of updating the
+     * required attributes.
+     *
+     * It could probably be done a little better than this, but it'll
+     * do for now...
+     *
+     * @private
+     *
+     * @param  {Number} i Particle index
+     */
     _updateParticlesFromFlags: function( i ) {
-        var that = this;
+        if ( !this.hasRendered ) return;
 
-        // Don't need to update:
-        //  - Position
-        //  - positionSpread
-        //  - velocity
-        //  - velocitySpread
-        //  - acceleration
-        //  - accelerationSpread
-        //  - radius
-        //  - radiusSpread
-        //  - radiusScale
-        //  - radiusSpreadClamp
-        //  - speed
-        //  - speedSpread
+        var that = this,
+            flags = that._updateFlags,
+            counts = that._updateCounts,
+            numParticles = that._particleCount,
+            attributes = that.attributes;
 
-        if ( that._updateFlags.sizeStart === true ) {
-            that.attributes.size.value[ i ].x = Math.abs( that.randomFloat( that.sizeStart, that.sizeStartSpread ) );
-            that.attributes.size.needsUpdate = true;
+        if ( flags.sizeStart === true ) {
+            attributes.size.value[ i ].x = Math.abs( that.randomFloat( that.sizeStart, that.sizeStartSpread ) );
+            attributes.size.needsUpdate = true;
 
-            if ( ++that._updateCounts.sizeStart === that._particleCount ) {
-                that._updateCounts.sizeStart = 0;
-                that._updateFlags.sizeStart = false;
+            if ( ++counts.sizeStart === numParticles ) {
+                counts.sizeStart = 0;
+                flags.sizeStart = false;
             }
         }
 
-        if ( that._updateFlags.sizeMiddle === true ) {
-            that.attributes.size.value[ i ].y = Math.abs( that.randomFloat( that.sizeMiddle, that.sizeMiddleSpread ) );
-            that.attributes.size.needsUpdate = true;
+        if ( flags.sizeMiddle === true ) {
+            attributes.size.value[ i ].y = Math.abs( that.randomFloat( that.sizeMiddle, that.sizeMiddleSpread ) );
+            attributes.size.needsUpdate = true;
 
-            if ( ++that._updateCounts.sizeMiddle === that._particleCount ) {
-                that._updateCounts.sizeMiddle = 0;
-                that._updateFlags.sizeMiddle = false;
+            if ( ++counts.sizeMiddle === numParticles ) {
+                counts.sizeMiddle = 0;
+                flags.sizeMiddle = false;
             }
         }
 
-        if ( that._updateFlags.sizeEnd === true ) {
-            that.attributes.size.value[ i ].z = Math.abs( that.randomFloat( that.sizeEnd, that.sizeEndSpread ) );
-            that.attributes.size.needsUpdate = true;
+        if ( flags.sizeEnd === true ) {
+            attributes.size.value[ i ].z = Math.abs( that.randomFloat( that.sizeEnd, that.sizeEndSpread ) );
+            attributes.size.needsUpdate = true;
 
-            if ( ++that._updateCounts.sizeEnd === that._particleCount ) {
-                that._updateCounts.sizeEnd = 0;
-                that._updateFlags.sizeEnd = false;
+            if ( ++counts.sizeEnd === numParticles ) {
+                counts.sizeEnd = 0;
+                flags.sizeEnd = false;
             }
         }
 
-        // TODO:
-        //  - that.randomizeExistingColor
-        if ( that._updateFlags.colorStart === true ) {
-            that.attributes.colorStart.value[ i ] = that.randomColor( that.colorStart, that.colorStartSpread );
-            that.attributes.colorStart.needsUpdate = true;
 
-            if ( ++that._updateCounts.colorStart === that._particleCount ) {
-                that._updateCounts.colorStart = 0;
-                that._updateFlags.colorStart = false;
+        if ( flags.colorStart === true ) {
+            that.randomizeExistingColor(
+                attributes.colorStart.value[ i ], that.colorStart, that.colorStartSpread
+            );
+
+            attributes.colorStart.needsUpdate = true;
+
+            if ( ++counts.colorStart === numParticles ) {
+                counts.colorStart = 0;
+                flags.colorStart = false;
             }
         }
 
-        if ( that._updateFlags.colorMiddle === true ) {
-            that.attributes.colorMiddle.value[ i ] = that.randomColor( that.colorMiddle, that.colorMiddleSpread );
-            that.attributes.colorMiddle.needsUpdate = true;
+        if ( flags.colorMiddle === true ) {
+            that.randomizeExistingColor(
+                attributes.colorMiddle.value[ i ], that.colorMiddle, that.colorMiddleSpread
+            );
 
-            if ( ++that._updateCounts.colorMiddle === that._particleCount ) {
-                that._updateCounts.colorMiddle = 0;
-                that._updateFlags.colorMiddle = false;
+            attributes.colorMiddle.needsUpdate = true;
+
+            if ( ++counts.colorMiddle === numParticles ) {
+                counts.colorMiddle = 0;
+                flags.colorMiddle = false;
             }
         }
 
-        if ( that._updateFlags.colorEnd === true ) {
-            that.attributes.colorEnd.value[ i ] = that.randomColor( that.colorEnd, that.colorStartSpread );
-            that.attributes.colorEnd.needsUpdate = true;
+        if ( flags.colorEnd === true ) {
+            that.randomizeExistingColor(
+                attributes.colorEnd.value[ i ], that.colorEnd, that.colorEndSpread
+            );
 
-            if ( ++that._updateCounts.colorEnd === that._particleCount ) {
-                that._updateCounts.colorEnd = 0;
-                that._updateFlags.colorEnd = false;
+            attributes.colorEnd.needsUpdate = true;
+
+            if ( ++counts.colorEnd === numParticles ) {
+                counts.colorEnd = 0;
+                flags.colorEnd = false;
+            }
+        }
+
+
+
+        if ( flags.opacityStart === true ) {
+            attributes.opacity.value[ i ].x = Math.abs( that.randomFloat( that.opacityStart, that.opacityStartSpread ) );
+            attributes.opacity.needsUpdate = true;
+
+            if ( ++counts.opacityStart === numParticles ) {
+                counts.opacityStart = 0;
+                flags.opacityStart = false;
+            }
+        }
+
+        if ( flags.opacityMiddle === true ) {
+            attributes.opacity.value[ i ].y = Math.abs( that.randomFloat( that.opacityMiddle, that.opacityMiddleSpread ) );
+            attributes.opacity.needsUpdate = true;
+
+            if ( ++counts.opacityMiddle === numParticles ) {
+                counts.opacityMiddle = 0;
+                flags.opacityMiddle = false;
+            }
+        }
+
+        if ( flags.opacityEnd === true ) {
+            attributes.opacity.value[ i ].z = Math.abs( that.randomFloat( that.opacityEnd, that.opacityEndSpread ) );
+            attributes.opacity.needsUpdate = true;
+
+            if ( ++counts.opacityEnd === numParticles ) {
+                counts.opacityEnd = 0;
+                flags.opacityEnd = false;
+            }
+        }
+
+
+        if ( flags.angleStart === true ) {
+            attributes.angle.value[ i ].x = Math.abs( that.randomFloat( that.angleStart, that.angleStartSpread ) );
+            attributes.angle.needsUpdate = true;
+
+            if ( ++counts.angleStart === numParticles ) {
+                counts.angleStart = 0;
+                flags.angleStart = false;
+            }
+        }
+
+        if ( flags.angleMiddle === true ) {
+            attributes.angle.value[ i ].y = Math.abs( that.randomFloat( that.angleMiddle, that.angleMiddleSpread ) );
+            attributes.angle.needsUpdate = true;
+
+            if ( ++counts.angleMiddle === numParticles ) {
+                counts.angleMiddle = 0;
+                flags.angleMiddle = false;
+            }
+        }
+
+        if ( flags.angleEnd === true ) {
+            attributes.angle.value[ i ].z = Math.abs( that.randomFloat( that.angleEnd, that.angleEndSpread ) );
+            attributes.angle.needsUpdate = true;
+
+            if ( ++counts.angleEnd === numParticles ) {
+                counts.angleEnd = 0;
+                flags.angleEnd = false;
             }
         }
     },
@@ -338,6 +338,7 @@ SPE.Emitter.prototype = {
      * @param  {Number} dt
      */
     tick: function( dt ) {
+        this.hasRendered = true;
 
         if ( this.isStatic ) {
             return;
@@ -504,7 +505,10 @@ Object.defineProperty( SPE.Emitter.prototype, 'particleCount', {
     set: function( value ) {
         if ( typeof value === 'number' && value >= 1 ) {
             this._particleCount = Math.round( value );
-            this._updateFlags.particleCount = true;
+
+            if ( this.geometry ) {
+                this.geometry.verticesNeedUpdate = true;
+            }
         }
         else {
             console.warn( 'Invalid particleCount specified: ' + value + '. Must be a number >= 1. ParticleCount remains at: ' + this._particleCount );
@@ -708,8 +712,8 @@ Object.defineProperty( SPE.Emitter.prototype, 'sizeStartSpread', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._sizeStartSpread = value;
-            this._updateFlags.sizeStartSpread = true;
-            this._updateCounts.sizeStartSpread = 0;
+            this._updateFlags.sizeStart = true;
+            this._updateCounts.sizeStart = 0;
         }
         else {
             console.warn( 'Invalid sizeStartSpread specified: ' + value + '. Must be a number. sizeStartSpread remains at: ' + this._sizeStartSpread );
@@ -725,12 +729,13 @@ Object.defineProperty( SPE.Emitter.prototype, 'sizeMiddle', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._sizeMiddle = value;
-            this._updateFlags.sizeMiddle = true;
-            this._updateCounts.sizeMiddle = 0;
         }
         else {
-            console.warn( 'Invalid sizeMiddle specified: ' + value + '. Must be a number. sizeMiddle remains at: ' + this._sizeMiddle );
+            this._sizeMiddle = Math.abs( this._sizeEnd + this._sizeStart );
         }
+
+        this._updateFlags.sizeMiddle = true;
+        this._updateCounts.sizeMiddle = 0;
     }
 } );
 Object.defineProperty( SPE.Emitter.prototype, 'sizeMiddleSpread', {
@@ -740,8 +745,8 @@ Object.defineProperty( SPE.Emitter.prototype, 'sizeMiddleSpread', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._sizeMiddleSpread = value;
-            this._updateFlags.sizeMiddleSpread = true;
-            this._updateCounts.sizeMiddleSpread = 0;
+            this._updateFlags.sizeMiddle = true;
+            this._updateCounts.sizeMiddle = 0;
         }
         else {
             console.warn( 'Invalid sizeMiddleSpread specified: ' + value + '. Must be a number. sizeMiddleSpread remains at: ' + this._sizeMiddleSpread );
@@ -771,8 +776,8 @@ Object.defineProperty( SPE.Emitter.prototype, 'sizeEndSpread', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._sizeEndSpread = value;
-            this._updateFlags.sizeEndSpread = true;
-            this._updateCounts.sizeEndSpread = 0;
+            this._updateFlags.sizeEnd = true;
+            this._updateCounts.sizeEnd = 0;
         }
         else {
             console.warn( 'Invalid sizeEndSpread specified: ' + value + '. Must be a number. sizeEndSpread remains at: ' + this._sizeEndSpread );
@@ -802,8 +807,8 @@ Object.defineProperty( SPE.Emitter.prototype, 'colorStartSpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._colorStartSpread = value;
-            this._updateFlags.colorStartSpread = true;
-            this._updateCounts.colorStartSpread = 0;
+            this._updateFlags.colorStart = true;
+            this._updateCounts.colorStart = 0;
         }
         else {
             console.warn( 'Invalid colorStartSpread specified: ' + value + '. Must be instance of THREE.Vector3. colorStartSpread remains at: ' + this._colorStartSpread );
@@ -817,14 +822,15 @@ Object.defineProperty( SPE.Emitter.prototype, 'colorMiddle', {
         return this._colorMiddle;
     },
     set: function( value ) {
-        if ( value instanceof THREE.Color ) {
+        if ( value instanceof THREE.Color === false ) {
+            value = this._colorMiddle.addColors( this._colorStart, this._colorEnd ).multiplyScalar( 0.5 );
+        }
+        else if ( value instanceof THREE.Color ) {
             this._colorMiddle = value;
-            this._updateFlags.colorMiddle = true;
-            this._updateCounts.colorMiddle = 0;
         }
-        else {
-            console.warn( 'Invalid colorMiddle specified: ' + value + '. Must be instance of THREE.Color. colorMiddle remains at: ' + this._colorMiddle );
-        }
+
+        this._updateFlags.colorMiddle = true;
+        this._updateCounts.colorMiddle = 0;
     }
 } );
 Object.defineProperty( SPE.Emitter.prototype, 'colorMiddleSpread', {
@@ -834,8 +840,8 @@ Object.defineProperty( SPE.Emitter.prototype, 'colorMiddleSpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._colorMiddleSpread = value;
-            this._updateFlags.colorMiddleSpread = true;
-            this._updateCounts.colorMiddleSpread = 0;
+            this._updateFlags.colorMiddle = true;
+            this._updateCounts.colorMiddle = 0;
         }
         else {
             console.warn( 'Invalid colorMiddleSpread specified: ' + value + '. Must be a number. colorMiddleSpread remains at: ' + this._colorMiddleSpread );
@@ -865,8 +871,8 @@ Object.defineProperty( SPE.Emitter.prototype, 'colorEndSpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._colorEndSpread = value;
-            this._updateFlags.colorEndSpread = true;
-            this._updateCounts.colorEndSpread = 0;
+            this._updateFlags.colorEnd = true;
+            this._updateCounts.colorEnd = 0;
         }
         else {
             console.warn( 'Invalid colorEndSpread specified: ' + value + '. Must be instance of THREE.Vector3. colorEndSpread remains at: ' + this._colorEndSpread );
@@ -874,7 +880,196 @@ Object.defineProperty( SPE.Emitter.prototype, 'colorEndSpread', {
     }
 } );
 
+Object.defineProperty( SPE.Emitter.prototype, 'opacityStart', {
+    get: function() {
+        return this._opacityStart;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._opacityStart = value;
+            this._updateFlags.opacityStart = true;
+            this._updateCounts.opacityStart = 0;
+        }
+        else {
+            console.warn( 'Invalid opacityStart specified: ' + value + '. Must be a number. opacityStart remains at: ' + this._opacityStart );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'opacityStartSpread', {
+    get: function() {
+        return this._opacityStartSpread;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._opacityStartSpread = value;
+            this._updateFlags.opacityStart = true;
+            this._updateCounts.opacityStart = 0;
+        }
+        else {
+            console.warn( 'Invalid opacityStartSpread specified: ' + value + '. Must be a number. opacityStartSpread remains at: ' + this._opacityStartSpread );
+        }
+    }
+} );
 
+
+Object.defineProperty( SPE.Emitter.prototype, 'opacityMiddle', {
+    get: function() {
+        return this._opacityMiddle;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._opacityMiddle = value;
+        }
+        else {
+            this._opacityMiddle = Math.abs( this._opacityEnd + this._opacityStart );
+        }
+
+        this._updateFlags.opacityMiddle = true;
+        this._updateCounts.opacityMiddle = 0;
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'opacityMiddleSpread', {
+    get: function() {
+        return this._opacityMiddleSpread;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._opacityMiddleSpread = value;
+            this._updateFlags.opacityMiddle = true;
+            this._updateCounts.opacityMiddle = 0;
+        }
+        else {
+            console.warn( 'Invalid opacityMiddleSpread specified: ' + value + '. Must be a number. opacityMiddleSpread remains at: ' + this._opacityMiddleSpread );
+        }
+    }
+} );
+
+Object.defineProperty( SPE.Emitter.prototype, 'opacityEnd', {
+    get: function() {
+        return this._opacityEnd;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._opacityEnd = value;
+            this._updateFlags.opacityEnd = true;
+            this._updateCounts.opacityEnd = 0;
+        }
+        else {
+            console.warn( 'Invalid opacityEnd specified: ' + value + '. Must be a number. opacityEnd remains at: ' + this._opacityEnd );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'opacityEndSpread', {
+    get: function() {
+        return this._opacityEndSpread;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._opacityEndSpread = value;
+            this._updateFlags.opacityEnd = true;
+            this._updateCounts.opacityEnd = 0;
+        }
+        else {
+            console.warn( 'Invalid opacityEndSpread specified: ' + value + '. Must be a number. opacityEndSpread remains at: ' + this._opacityEndSpread );
+        }
+    }
+} );
+
+
+Object.defineProperty( SPE.Emitter.prototype, 'angleStart', {
+    get: function() {
+        return this._angleStart;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._angleStart = value;
+            this._updateFlags.angleStart = true;
+            this._updateCounts.angleStart = 0;
+        }
+        else {
+            console.warn( 'Invalid angleStart specified: ' + value + '. Must be a number. angleStart remains at: ' + this._angleStart );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'angleStartSpread', {
+    get: function() {
+        return this._angleStartSpread;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._angleStartSpread = value;
+            this._updateFlags.angleStart = true;
+            this._updateCounts.angleStart = 0;
+        }
+        else {
+            console.warn( 'Invalid angleStartSpread specified: ' + value + '. Must be a number. angleStartSpread remains at: ' + this._angleStartSpread );
+        }
+    }
+} );
+
+
+Object.defineProperty( SPE.Emitter.prototype, 'angleMiddle', {
+    get: function() {
+        return this._angleMiddle;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._angleMiddle = value;
+        }
+        else {
+            this._angleMiddle = Math.abs( this._angleEnd + this._angleStart );
+        }
+
+        this._updateFlags.angleMiddle = true;
+        this._updateCounts.angleMiddle = 0;
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'angleMiddleSpread', {
+    get: function() {
+        return this._angleMiddleSpread;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._angleMiddleSpread = value;
+            this._updateFlags.angleMiddle = true;
+            this._updateCounts.angleMiddle = 0;
+        }
+        else {
+            console.warn( 'Invalid angleMiddleSpread specified: ' + value + '. Must be a number. angleMiddleSpread remains at: ' + this._angleMiddleSpread );
+        }
+    }
+} );
+
+Object.defineProperty( SPE.Emitter.prototype, 'angleEnd', {
+    get: function() {
+        return this._angleEnd;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._angleEnd = value;
+            this._updateFlags.angleEnd = true;
+            this._updateCounts.angleEnd = 0;
+        }
+        else {
+            console.warn( 'Invalid angleEnd specified: ' + value + '. Must be a number. angleEnd remains at: ' + this._angleEnd );
+        }
+    }
+} );
+Object.defineProperty( SPE.Emitter.prototype, 'angleEndSpread', {
+    get: function() {
+        return this._angleEndSpread;
+    },
+    set: function( value ) {
+        if ( typeof value === 'number' ) {
+            this._angleEndSpread = value;
+            this._updateFlags.angleEndSpread = true;
+            this._updateCounts.angleEndSpread = 0;
+        }
+        else {
+            console.warn( 'Invalid angleEndSpread specified: ' + value + '. Must be a number. angleEndSpread remains at: ' + this._angleEndSpread );
+        }
+    }
+} );
 
 
 // Extend SPE.Emitter's prototype with functions from utils object.

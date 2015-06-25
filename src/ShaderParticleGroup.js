@@ -165,11 +165,8 @@ SPE.Group.prototype = {
         // Set flags to update
         that.attributes.age.needsUpdate = true;
         that.attributes.alive.needsUpdate = true;
-        that.attributes.angle.needsUpdate = true;
+        // that.attributes.angle.needsUpdate = true;
         // that.attributes.angleAlignVelocity.needsUpdate = true;
-        that.attributes.velocity.needsUpdate = true;
-        that.attributes.acceleration.needsUpdate = true;
-        that.geometry.verticesNeedUpdate = true;
 
         return that;
     },
@@ -193,7 +190,7 @@ SPE.Group.prototype = {
 
         var vertices = that.geometry.vertices,
             start = vertices.length,
-            end = emitter._particleCount + start,
+            end = emitter.particleCount + start,
             a = that.attributes,
             acceleration = a.acceleration.value,
             velocity = a.velocity.value,
@@ -258,6 +255,7 @@ SPE.Group.prototype = {
         emitter.verticesIndex = parseFloat( start );
         emitter.attributes = a;
         emitter.vertices = that.geometry.vertices;
+        emitter.geometry = that.geometry;
         emitter.maxAge = that.maxAge;
 
         // Assign a unique ID to this emitter
@@ -544,7 +542,7 @@ SPE.shaders = {
 
 
         // Determine the angle we should use for this particle.
-        '       if( angle[3] == 1.0 ) {',
+        '       if( angle.w == 1.0 ) {',
         '           vAngle = -atan(pos.y, pos.x);',
         '       }',
         '       else if( positionInTime < 0.5 ) {',

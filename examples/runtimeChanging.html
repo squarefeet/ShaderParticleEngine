@@ -57,7 +57,7 @@
         // Create particle group and emitter
         function initParticles() {
             particleGroup = new SPE.Group({
-                texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
+                texture: THREE.ImageUtils.loadTexture('./img/star.png'),
                 maxAge: 2,
                 hasPerspective: true,
                 colorize: true,
@@ -78,7 +78,7 @@
                 opacityMiddle: 1,
                 opacityEnd: 0,
 
-                particleCount: 20000
+                particleCount: 200000
             });
 
             particleGroup.addEmitter( emitter );
@@ -89,14 +89,19 @@
         }
 
         function initDAT() {
-            var gui = new dat.GUI();
+            var gui = new dat.GUI(),
+                keys = Object.keys( emitter );
 
             gui.add( emitter, 'type', [ 'cube', 'sphere', 'disk' ] );
             gui.remember( emitter );
 
+            keys.sort();
 
-            for( var i in emitter ) {
-                if( i.indexOf( '_' ) === -1 ) continue;
+
+            for( var n = 0; n < keys.length; ++n ) {
+                var i = keys[ n ];
+
+                if( i.indexOf( '_' ) === -1 || i === '_particleCount') continue;
 
                 if( emitter[ i ] instanceof THREE.Vector3 ) {
                     var folder = gui.addFolder( i.replace('_', '') );
@@ -124,7 +129,7 @@
                     }( i.replace('_', '') )) );;
                 }
                 else if( typeof emitter[ i ] === 'number' ) {
-                    gui.add( emitter, i.replace('_', '') );
+                    gui.add( emitter, i.replace('_', ''), 0 );
                 }
             }
         }
