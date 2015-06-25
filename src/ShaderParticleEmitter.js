@@ -85,14 +85,9 @@ SPE.Emitter = function( options ) {
     that.onParticleSpawn = null;
 
 
-
-    // that._particleCount = typeof options.particleCount === 'number' ? options.particleCount : 100;
-    // that._type = ( options.type === 'cube' || options.type === 'sphere' || options.type === 'disk' ) ? options.type : 'cube';
-
-    for ( var i in options ) {
-        that[ i ] = options[ i ];
-    }
-
+    // for ( var i in options ) {
+    //     that[ i ] = options[ i ];
+    // }
     that.particleCount = options.particleCount;
     that.type = options.type;
     that.position = options.position;
