@@ -753,6 +753,9 @@ SPE.shaders = {
         'varying float vAngle;',
 
 
+        THREE.ShaderChunk[ "common" ],
+        THREE.ShaderChunk[ "color_pars_vertex" ],
+        THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
 
 
@@ -779,7 +782,7 @@ SPE.shaders = {
 
 
         'void main() {',
-
+        THREE.ShaderChunk[ "color_vertex" ],
         '   float positionInTime = (age / duration);',
 
         '   float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
@@ -842,6 +845,8 @@ SPE.shaders = {
         '   }',
 
         THREE.ShaderChunk[ "logdepthbuf_vertex" ],
+        THREE.ShaderChunk[ "worldpos_vertex" ],
+        THREE.ShaderChunk[ "shadowmap_vertex" ],
 
         '}',
     ].join( '\n' ),
@@ -849,7 +854,9 @@ SPE.shaders = {
     fragment: [
         'uniform sampler2D texture;',
 
+        THREE.ShaderChunk[ "common" ],
         THREE.ShaderChunk[ "fog_pars_fragment" ],
+        THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
         THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
 
         'varying vec4 vColor;',
@@ -866,13 +873,15 @@ SPE.shaders = {
 
         '   vec4 rotatedTexture = texture2D( texture, rotatedUV );',
 
+        THREE.ShaderChunk[ "logdepthbuf_fragment" ],
+
         '   #ifdef COLORIZE',
         '      outgoingLight = vColor.xyz * rotatedTexture.xyz;',
         '   #else',
         '      outgoingLight = vec3(rotatedTexture.xyz);',
         '   #endif',
 
-        THREE.ShaderChunk[ "logdepthbuf_fragment" ],
+        THREE.ShaderChunk[ "shadowmap_fragment" ],
         THREE.ShaderChunk[ "fog_fragment" ],
 
         '   gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
