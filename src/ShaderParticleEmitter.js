@@ -129,6 +129,7 @@ SPE.Emitter = function( options ) {
 
     that.particleIndex = 0.0;
     that.hasRendered = false;
+    that.attributesNeedUpdate = false;
 
     that.__id = null;
 
@@ -208,21 +209,95 @@ SPE.Emitter.prototype = {
      * It could probably be done a little better than this, but it'll
      * do for now...
      *
+     * TODO:
+     *     - Refactor this into something more succinct.
+     *
      * @private
      *
      * @param  {Number} i Particle index
      */
-    _updateParticlesFromFlags: function( i ) {
+    _updateParticlesFromFlags: function( particleIndex ) {
         if ( !this.hasRendered ) return;
 
         var that = this,
             flags = that._updateFlags,
             counts = that._updateCounts,
             numParticles = that._particleCount,
-            attributes = that.attributes;
+            attributes = that.attributes,
+            needsUpdate = that.attributesNeedUpdate,
+            start = that.verticesIndex,
+            end = start + numParticles,
+            vertices = that.vertices,
+            type = that.type;
 
+
+        // Base attributes...
+        //
+        // This is horrible..!!
+        if ( flags.position === true && needsUpdate === true ) {
+            // No spreads...
+            if (
+                ( type === 'cube' && that.positionSpread.x === 0 && that.positionSpread.y === 0 && that.positionSpread.z === 0 ) ||
+                ( type === 'sphere' && that.radius === 0 ) ||
+                ( type === 'disk' && that.radius === 0 )
+            ) {
+                for ( var i = start, p = that.position; i < end; ++i ) {
+                    vertices[ i ].copy( p );
+                }
+            }
+
+            // Cube, and spread is !0
+            else if ( type === 'cube' ) {
+                for ( var i = start, p = that.position; i < end; ++i ) {
+                    that.randomizeExistingVector3( vertices[ i ], p, that.positionSpread );
+                }
+            }
+            else if ( type === 'sphere' ) {
+                for ( var i = start, p = that.position; i < end; ++i ) {
+                    that.randomizeExistingVector3OnSphere( vertices[ i ], that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
+                }
+            }
+
+            else if ( type === 'disk' ) {
+                for ( var i = start, p = that.position; i < end; ++i ) {
+                    that.randomizeExistingVector3OnDisk( vertices[ i ], that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
+                }
+            }
+        }
+
+
+        if ( flags.velocity === true && needsUpdate === true ) {
+            // Cube, and spread is !0
+            if ( type === 'cube' ) {
+                for ( var i = start; i < end; ++i ) {
+                    that.randomizeExistingVector3( attributes.velocity.value[ i ], that.velocity, that.velocitySpread );
+                }
+            }
+            else if ( type === 'sphere' || type === 'disk' ) {
+                for ( var i = start, p = that.position; i < end; ++i ) {
+                    that.randomizeExistingVelocityVector3OnSphere( attributes.velocity.value[ i ], p, vertices[ i ], that.speed, that.speedSpread );
+                }
+            }
+        }
+
+        if ( flags.acceleration === true && needsUpdate === true && type === 'cube' ) {
+            for ( var i = start, a = attributes.acceleration.value; i < end; ++i ) {
+                that.randomizeExistingVector3( a[ i ], that.acceleration, that.accelerationSpread );
+            }
+        }
+
+
+        // Sizes...
         if ( flags.sizeStart === true ) {
-            attributes.size.value[ i ].x = Math.abs( that.randomFloat( that.sizeStart, that.sizeStartSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.size.value; i < end; ++i ) {
+                    v[ i ].x = Math.abs( that.randomFloat( that.sizeStart, that.sizeStartSpread ) );
+                }
+            }
+            else {
+                attributes.size.value[ particleIndex ].x = Math.abs( that.randomFloat( that.sizeStart, that.sizeStartSpread ) );
+            }
+
             attributes.size.needsUpdate = true;
 
             if ( ++counts.sizeStart === numParticles ) {
@@ -232,7 +307,15 @@ SPE.Emitter.prototype = {
         }
 
         if ( flags.sizeMiddle === true ) {
-            attributes.size.value[ i ].y = Math.abs( that.randomFloat( that.sizeMiddle, that.sizeMiddleSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.size.value; i < end; ++i ) {
+                    v[ i ].y = Math.abs( that.randomFloat( that.sizeMiddle, that.sizeMiddleSpread ) );
+                }
+            }
+            else {
+                attributes.size.value[ particleIndex ].y = Math.abs( that.randomFloat( that.sizeMiddle, that.sizeMiddleSpread ) );
+            }
+
             attributes.size.needsUpdate = true;
 
             if ( ++counts.sizeMiddle === numParticles ) {
@@ -242,7 +325,15 @@ SPE.Emitter.prototype = {
         }
 
         if ( flags.sizeEnd === true ) {
-            attributes.size.value[ i ].z = Math.abs( that.randomFloat( that.sizeEnd, that.sizeEndSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.size.value; i < end; ++i ) {
+                    v[ i ].z = Math.abs( that.randomFloat( that.sizeEnd, that.sizeEndSpread ) );
+                }
+            }
+            else {
+                attributes.size.value[ particleIndex ].z = Math.abs( that.randomFloat( that.sizeEnd, that.sizeEndSpread ) );
+            }
+
             attributes.size.needsUpdate = true;
 
             if ( ++counts.sizeEnd === numParticles ) {
@@ -252,10 +343,18 @@ SPE.Emitter.prototype = {
         }
 
 
+        // Colors...
         if ( flags.colorStart === true ) {
-            that.randomizeExistingColor(
-                attributes.colorStart.value[ i ], that.colorStart, that.colorStartSpread
-            );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.colorStart.value; i < end; ++i ) {
+                    that.randomizeExistingColor( v[ i ], that.colorStart, that.colorStartSpread );
+                }
+            }
+            else {
+                that.randomizeExistingColor(
+                    attributes.colorStart.value[ particleIndex ], that.colorStart, that.colorStartSpread
+                );
+            }
 
             attributes.colorStart.needsUpdate = true;
 
@@ -266,9 +365,16 @@ SPE.Emitter.prototype = {
         }
 
         if ( flags.colorMiddle === true ) {
-            that.randomizeExistingColor(
-                attributes.colorMiddle.value[ i ], that.colorMiddle, that.colorMiddleSpread
-            );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.colorMiddle.value; i < end; ++i ) {
+                    that.randomizeExistingColor( v[ i ], that.colorMiddle, that.colorMiddleSpread );
+                }
+            }
+            else {
+                that.randomizeExistingColor(
+                    attributes.colorMiddle.value[ particleIndex ], that.colorMiddle, that.colorMiddleSpread
+                );
+            }
 
             attributes.colorMiddle.needsUpdate = true;
 
@@ -279,9 +385,16 @@ SPE.Emitter.prototype = {
         }
 
         if ( flags.colorEnd === true ) {
-            that.randomizeExistingColor(
-                attributes.colorEnd.value[ i ], that.colorEnd, that.colorEndSpread
-            );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.colorEnd.value; i < end; ++i ) {
+                    that.randomizeExistingColor( v[ i ], that.colorEnd, that.colorEndSpread );
+                }
+            }
+            else {
+                that.randomizeExistingColor(
+                    attributes.colorEnd.value[ particleIndex ], that.colorEnd, that.colorEndSpread
+                );
+            }
 
             attributes.colorEnd.needsUpdate = true;
 
@@ -292,9 +405,17 @@ SPE.Emitter.prototype = {
         }
 
 
-
+        // Opacities...
         if ( flags.opacityStart === true ) {
-            attributes.opacity.value[ i ].x = Math.abs( that.randomFloat( that.opacityStart, that.opacityStartSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.opacity.value; i < end; ++i ) {
+                    v[ i ].x = Math.abs( that.randomFloat( that.opacityStart, that.opacityStartSpread ) );
+                }
+            }
+            else {
+                attributes.opacity.value[ particleIndex ].x = Math.abs( that.randomFloat( that.opacityStart, that.opacityStartSpread ) );
+            }
+
             attributes.opacity.needsUpdate = true;
 
             if ( ++counts.opacityStart === numParticles ) {
@@ -304,7 +425,15 @@ SPE.Emitter.prototype = {
         }
 
         if ( flags.opacityMiddle === true ) {
-            attributes.opacity.value[ i ].y = Math.abs( that.randomFloat( that.opacityMiddle, that.opacityMiddleSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.opacity.value; i < end; ++i ) {
+                    v[ i ].y = Math.abs( that.randomFloat( that.opacityMiddle, that.opacityMiddleSpread ) );
+                }
+            }
+            else {
+                attributes.opacity.value[ particleIndex ].y = Math.abs( that.randomFloat( that.opacityMiddle, that.opacityMiddleSpread ) );
+            }
+
             attributes.opacity.needsUpdate = true;
 
             if ( ++counts.opacityMiddle === numParticles ) {
@@ -314,7 +443,15 @@ SPE.Emitter.prototype = {
         }
 
         if ( flags.opacityEnd === true ) {
-            attributes.opacity.value[ i ].z = Math.abs( that.randomFloat( that.opacityEnd, that.opacityEndSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.opacity.value; i < end; ++i ) {
+                    v[ i ].z = Math.abs( that.randomFloat( that.opacityEnd, that.opacityEndSpread ) );
+                }
+            }
+            else {
+                attributes.opacity.value[ particleIndex ].z = Math.abs( that.randomFloat( that.opacityEnd, that.opacityEndSpread ) );
+            }
+
             attributes.opacity.needsUpdate = true;
 
             if ( ++counts.opacityEnd === numParticles ) {
@@ -325,7 +462,15 @@ SPE.Emitter.prototype = {
 
 
         if ( flags.angleStart === true ) {
-            attributes.angle.value[ i ].x = Math.abs( that.randomFloat( that.angleStart, that.angleStartSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.angle.value; i < end; ++i ) {
+                    v[ i ].x = Math.abs( that.randomFloat( that.angleStart, that.angleStartSpread ) );
+                }
+            }
+            else {
+                attributes.angle.value[ particleIndex ].x = Math.abs( that.randomFloat( that.angleStart, that.angleStartSpread ) );
+            }
+
             attributes.angle.needsUpdate = true;
 
             if ( ++counts.angleStart === numParticles ) {
@@ -335,7 +480,16 @@ SPE.Emitter.prototype = {
         }
 
         if ( flags.angleMiddle === true ) {
-            attributes.angle.value[ i ].y = Math.abs( that.randomFloat( that.angleMiddle, that.angleMiddleSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.angle.value; i < end; ++i ) {
+                    v[ i ].y = Math.abs( that.randomFloat( that.angleMiddle, that.angleMiddleSpread ) );
+                }
+            }
+            else {
+                attributes.angle.value[ particleIndex ].y = Math.abs( that.randomFloat( that.angleMiddle, that.angleMiddleSpread ) );
+            }
+
+
             attributes.angle.needsUpdate = true;
 
             if ( ++counts.angleMiddle === numParticles ) {
@@ -345,7 +499,16 @@ SPE.Emitter.prototype = {
         }
 
         if ( flags.angleEnd === true ) {
-            attributes.angle.value[ i ].z = Math.abs( that.randomFloat( that.angleEnd, that.angleEndSpread ) );
+            if ( needsUpdate === true ) {
+                for ( var i = start, v = attributes.angle.value; i < end; ++i ) {
+                    v[ i ].z = Math.abs( that.randomFloat( that.angleEnd, that.angleEndSpread ) );
+                }
+            }
+            else {
+                attributes.angle.value[ particleIndex ].z = Math.abs( that.randomFloat( that.angleEnd, that.angleEndSpread ) );
+            }
+
+
             attributes.angle.needsUpdate = true;
 
             if ( ++counts.angleEnd === numParticles ) {
@@ -353,6 +516,8 @@ SPE.Emitter.prototype = {
                 flags.angleEnd = false;
             }
         }
+
+        that.attributesNeedUpdate = false;
     },
 
     /**
@@ -544,6 +709,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'position', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._position = value;
+            this._updateFlags.position = true;
         }
         else {
             console.warn( 'Invalid position specified. Must be instance of THREE.Vector3.' );
@@ -558,6 +724,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'positionSpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._positionSpread = value;
+            this._updateFlags.position = true;
         }
         else {
             console.warn( 'Invalid positionSpread specified. Must be instance of THREE.Vector3.' );
@@ -573,6 +740,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'radius', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._radius = value;
+            this._updateFlags.position = true;
         }
         else {
             console.warn( 'Invalid radius specified: ' + value + '. Must be a number. radius remains at: ' + this._radius );
@@ -587,6 +755,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusSpread', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._radiusSpread = value;
+            this._updateFlags.position = true;
         }
         else {
             console.warn( 'Invalid radiusSpread specified: ' + value + '. Must be a number. radiusSpread remains at: ' + this._radiusSpread );
@@ -601,6 +770,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusScale', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._radiusScale = value;
+            this._updateFlags.position = true;
         }
         else {
             console.warn( 'Invalid radiusScale specified. Must be instance of THREE.Vector3.' );
@@ -615,6 +785,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'radiusSpreadClamp', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._radiusSpreadClamp = value;
+            this._updateFlags.position = true;
         }
         else {
             console.warn( 'Invalid radiusSpreadClamp specified: ' + value + '. Must be a number. radiusSpreadClamp remains at: ' + this._radiusSpreadClamp );
@@ -630,6 +801,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'acceleration', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._acceleration = value;
+            this._updateFlags.acceleration = true;
         }
         else {
             console.warn( 'Invalid acceleration specified. Must be instance of THREE.Vector3.' );
@@ -644,6 +816,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'accelerationSpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._accelerationSpread = value;
+            this._updateFlags.acceleration = true;
         }
         else {
             console.warn( 'Invalid accelerationSpread specified. Must be instance of THREE.Vector3.' );
@@ -659,6 +832,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'velocity', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._velocity = value;
+            this._updateFlags.velocity = true;
         }
         else {
             console.warn( 'Invalid velocity specified. Must be instance of THREE.Vector3.' );
@@ -673,6 +847,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'velocitySpread', {
     set: function( value ) {
         if ( value instanceof THREE.Vector3 ) {
             this._velocitySpread = value;
+            this._updateFlags.velocity = true;
         }
         else {
             console.warn( 'Invalid velocitySpread specified. Must be instance of THREE.Vector3.' );
@@ -688,6 +863,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'speed', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._speed = value;
+            this._updateFlags.velocity = true;
         }
         else {
             console.warn( 'Invalid speed specified: ' + value + '. Must be a number. speed remains at: ' + this._speed );
@@ -702,6 +878,7 @@ Object.defineProperty( SPE.Emitter.prototype, 'speedSpread', {
     set: function( value ) {
         if ( typeof value === 'number' ) {
             this._speedSpread = value;
+            this._updateFlags.velocity = true;
         }
         else {
             console.warn( 'Invalid speedSpread specified: ' + value + '. Must be a number. speedSpread remains at: ' + this._speedSpread );
