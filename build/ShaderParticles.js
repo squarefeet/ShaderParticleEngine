@@ -1154,6 +1154,8 @@ SPE.Emitter.prototype = {
                     that.randomizeExistingVector3OnDisk( vertices[ i ], that.position, that.radius, that.radiusSpread, that.radiusScale, that.radiusSpreadClamp );
                 }
             }
+
+            flags.position = false;
         }
 
 
@@ -1169,12 +1171,18 @@ SPE.Emitter.prototype = {
                     that.randomizeExistingVelocityVector3OnSphere( attributes.velocity.value[ i ], p, vertices[ i ], that.speed, that.speedSpread );
                 }
             }
+
+            attributes.velocity.needsUpdate = true;
+            flags.velocity = false;
         }
+
 
         if ( flags.acceleration === true && needsUpdate === true && type === 'cube' ) {
             for ( var i = start, a = attributes.acceleration.value; i < end; ++i ) {
                 that.randomizeExistingVector3( a[ i ], that.acceleration, that.accelerationSpread );
             }
+            attributes.acceleration.needsUpdate = true;
+            flags.acceleration = false;
         }
 
 
