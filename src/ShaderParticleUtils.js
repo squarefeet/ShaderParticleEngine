@@ -1,4 +1,4 @@
-// ShaderParticleUtils 0.8.0
+// ShaderParticleUtils 0.8.1
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -240,8 +240,6 @@ SPE.utils = {
         v.add( base );
     },
 
-    // TODO:
-    //  - Optimise this. It's a little slow at the moment.
     randomizeExistingVelocityVector3OnSphere: function( v, base, position, speed, speedSpread ) {
         v.copy( position )
             .sub( base )

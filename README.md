@@ -1,21 +1,29 @@
 ShaderParticleEngine
 ====================
-A GLSL-heavy particle engine for THREE.js. Based on [Stemkoski's great particle engine](https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
+A GLSL-focused particle engine for THREE.js. Removes a lot of the heavy lifting away from the CPU and onto the GPU to save precious rendering time in busy scenes.
 
 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
+
+Version 0.8.1
+=============
+* Further speed improvements to the GLSL code. It's now running a few milliseconds quicker, which will make all the difference in busy scenes.
+
 Version 0.8.0
 =============
+* A big one: **almost all parameters of an emitter can now be changed at runtime**. Position, velocity, acceleration, speed, opacity, color, size, and angle, including all their relative spread properties, are all supported. This was an often requested feature and I'm happy to announce support for it. Big thanks to all the testers.
 * `SPE.Group#hasPerspective` now takes `boolean` values as well as numbers. Makes more sense this way.
 * `SPE.Group#colorize` now takes `boolean` values as well as numbers as well.
-* `SPE.Group#colorize` does not ignore opacity values if set to false.
+* `SPE.Group#colorize` does not ignore opacity values if set to `false`.
 * `SPE.Group#fog` is now supported! *Note: Only tested with THREE.js r71.*
 
 
 
 Breaking Changes
 ================
+* **Version 0.8.0** The inclusion of `fog` support might break previous versions of THREE.js. I've tested with r69 and r65 and it does seem to be okay, but try to use THREE.js r71+ where possible.
+
 * **Version 0.7.9** The ```transparent``` option/property of ```SPE.Group``` must be passed as a `Boolean` (`true` / `false`). It would previously accept numeric values (`0` for `false`, `1` for `true`), but this has been deprecated due to a change in the way THREE.js r71 handles the transparent property in materials.
 
 * **Version 0.7.4** There's a change in the way the total number of particles an emitter has is calculated, and one emitter option rename:
@@ -40,7 +48,7 @@ After experimenting with Stemkoski's particle engine, I was having trouble getti
 
 Another optimisation I wanted was to be able to 'group' lots of emitters into one ```THREE.ParticleSystem```, so that if I had (for example) 20 particle emitters sharing the same texture, I could send all 20 of those emitters to the GPU at the same time via sharing the same geometry. This is where the basis for the ```ShaderParticleGroup``` comes from.
 
-This project requires THREE.js revision 65+. Known to work on revision 70, but in-depth testing not performed as of yet. Assuming future THREE.js versions don't remove certain methods without warning of deprecation, it *should* be future-proof to a certain extent.
+This project requires THREE.js revision 71+. Assuming future THREE.js versions don't remove certain methods without warning of deprecation, it *should* be future-proof to a certain extent.
 
 
 
@@ -420,6 +428,8 @@ Just a couple of notes about submitting pull requests:
 * **JSHint**: If you can, please run JSHint over your forked copy before submitting to make sure there are no common mistakes.
 * **Description**: Please provide a full description of your changes.
 * **Comments**: Follow existing commenting conventions.
+* **Parentheses**: 1 space before and after parentheses.
+* A .jsbeautifyrc file is included for easy formatting.
 
 Thanks :)
 

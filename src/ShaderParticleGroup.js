@@ -1,4 +1,4 @@
-// ShaderParticleGroup 0.8.0
+// ShaderParticleGroup 0.8.1
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -170,9 +170,8 @@ SPE.Group.prototype = {
         // Set flags to update
         that.attributes.age.needsUpdate = true;
         that.attributes.alive.needsUpdate = true;
-        // that.attributes.angle.needsUpdate = true;
-        // that.attributes.angleAlignVelocity.needsUpdate = true;
-        that.geometry.verticesNeedUpdate = true;
+        that.attributes.pos.needsUpdate = true;
+        // that.geometry.verticesNeedUpdate = true;
 
         return that;
     },
@@ -218,46 +217,46 @@ SPE.Group.prototype = {
 
             if ( emitter.type === 'sphere' ) {
                 vertices[ i ] = basePos;
-                pos[ i ] = that.randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
-                velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter.position, emitter.speed, emitter.speedSpread );
+                pos[ i ] = that.randomVector3OnSphere( emitter._position, emitter._radius, emitter._radiusSpread, emitter._radiusScale, emitter._radiusSpreadClamp );
+                velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter._position, emitter._speed, emitter._speedSpread );
             }
             else if ( emitter.type === 'disk' ) {
                 vertices[ i ] = basePos;
-                pos[ i ] = that.randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
-                velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter.position, emitter.speed, emitter.speedSpread );
+                pos[ i ] = that.randomVector3OnDisk( emitter._position, emitter._radius, emitter._radiusSpread, emitter._radiusScale, emitter._radiusSpreadClamp );
+                velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter._position, emitter._speed, emitter._speedSpread );
             }
             else {
                 vertices[ i ] = basePos;
-                pos[ i ] = that.randomVector3( emitter.position, emitter.positionSpread );
-                velocity[ i ] = that.randomVector3( emitter.velocity, emitter.velocitySpread );
+                pos[ i ] = that.randomVector3( emitter._position, emitter._positionSpread );
+                velocity[ i ] = that.randomVector3( emitter._velocity, emitter._velocitySpread );
             }
 
-            acceleration[ i ] = that.randomVector3( emitter.acceleration, emitter.accelerationSpread );
+            acceleration[ i ] = that.randomVector3( emitter._acceleration, emitter._accelerationSpread );
 
             size[ i ] = new THREE.Vector3(
-                Math.abs( that.randomFloat( emitter.sizeStart, emitter.sizeStartSpread ) ),
-                Math.abs( that.randomFloat( emitter.sizeMiddle, emitter.sizeMiddleSpread ) ),
-                Math.abs( that.randomFloat( emitter.sizeEnd, emitter.sizeEndSpread ) )
+                Math.abs( that.randomFloat( emitter._sizeStart, emitter._sizeStartSpread ) ),
+                Math.abs( that.randomFloat( emitter._sizeMiddle, emitter._sizeMiddleSpread ) ),
+                Math.abs( that.randomFloat( emitter._sizeEnd, emitter._sizeEndSpread ) )
             );
 
             angle[ i ] = new THREE.Vector4(
-                that.randomFloat( emitter.angleStart, emitter.angleStartSpread ),
-                that.randomFloat( emitter.angleMiddle, emitter.angleMiddleSpread ),
-                that.randomFloat( emitter.angleEnd, emitter.angleEndSpread ),
+                that.randomFloat( emitter._angleStart, emitter._angleStartSpread ),
+                that.randomFloat( emitter._angleMiddle, emitter._angleMiddleSpread ),
+                that.randomFloat( emitter._angleEnd, emitter._angleEndSpread ),
                 emitter.angleAlignVelocity ? 1.0 : 0.0
             );
 
             age[ i ] = 0.0;
             alive[ i ] = emitter.isStatic ? 1.0 : 0.0;
 
-            colorStart[ i ] = that.randomColor( emitter.colorStart, emitter.colorStartSpread );
-            colorMiddle[ i ] = that.randomColor( emitter.colorMiddle, emitter.colorMiddleSpread );
-            colorEnd[ i ] = that.randomColor( emitter.colorEnd, emitter.colorEndSpread );
+            colorStart[ i ] = that.randomColor( emitter._colorStart, emitter._colorStartSpread );
+            colorMiddle[ i ] = that.randomColor( emitter._colorMiddle, emitter._colorMiddleSpread );
+            colorEnd[ i ] = that.randomColor( emitter._colorEnd, emitter._colorEndSpread );
 
             opacity[ i ] = new THREE.Vector3(
-                Math.abs( that.randomFloat( emitter.opacityStart, emitter.opacityStartSpread ) ),
-                Math.abs( that.randomFloat( emitter.opacityMiddle, emitter.opacityMiddleSpread ) ),
-                Math.abs( that.randomFloat( emitter.opacityEnd, emitter.opacityEndSpread ) )
+                Math.abs( that.randomFloat( emitter._opacityStart, emitter._opacityStartSpread ) ),
+                Math.abs( that.randomFloat( emitter._opacityMiddle, emitter._opacityMiddleSpread ) ),
+                Math.abs( that.randomFloat( emitter._opacityEnd, emitter._opacityEndSpread ) )
             );
         }
 
@@ -427,9 +426,8 @@ SPE.Group.prototype = {
             return;
         }
 
-        // TODO: Should an instanceof check happen here? Or maybe at least a typeof?
-        if ( pos ) {
-            emitter.position.copy( pos );
+        if ( pos instanceof THREE.Vector3 ) {
+            emitter._position.copy( pos );
         }
 
         emitter.enable();
@@ -493,6 +491,8 @@ SPE.shaders = {
         'attribute vec3 size;',
         'attribute vec4 angle;',
 
+        'attribute vec3 pos;',
+
         // values to be passed to the fragment shader
         'varying vec4 vColor;',
         'varying float vAngle;',
@@ -504,7 +504,7 @@ SPE.shaders = {
 
         // Integrate acceleration into velocity and apply it to the particle's position
         'vec4 GetPos() {',
-        '   vec3 newPos = vec3( position );',
+        '   vec3 newPos = vec3( pos );',
 
         // Move acceleration & velocity vectors to the value they
         // should be at the current age
@@ -538,7 +538,7 @@ SPE.shaders = {
 
         // Get the position of this particle so we can use it
         // when we calculate any perspective that might be required.
-        '       vec4 pos = GetPos();',
+        '       vec4 currentPos = GetPos();',
 
         // Lerp the color and opacity, and determine point size and angle.
         '       if( positionInTime < 0.5 ) {',
@@ -554,17 +554,17 @@ SPE.shaders = {
         '           vAngle = mix( angle.y, angle.z, lerpAmount );',
         '       }',
 
-        // '       if( angle.w == 1.0 ) {',
-        // '           vAngle = -atan( pos.y, pos.x );',
-        // '       }',
+        '       if( angle.w == 1.0 ) {',
+        '           vAngle = -atan( currentPos.y, currentPos.x );',
+        '       }',
 
         '       #ifdef HAS_PERSPECTIVE',
-        '           pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
+        '           pointSize = pointSize * ( 300.0 / length( currentPos.xyz ) );',
         '       #endif',
 
         // Set particle size and position
         '       gl_PointSize = pointSize;',
-        '       gl_Position = projectionMatrix * pos;',
+        '       gl_Position = projectionMatrix * currentPos;',
         '   }',
 
         '   else {',
@@ -590,7 +590,7 @@ SPE.shaders = {
         'varying float vAngle;',
 
         'void main() {',
-        '   vec3 outgoingLight = vec3( vColor.xyz );',
+        '   vec3 outgoingLight = vColor.xyz;',
 
         '   float c = cos( vAngle );',
         '   float s = sin( vAngle );',
