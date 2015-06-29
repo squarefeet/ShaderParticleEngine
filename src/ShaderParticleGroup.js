@@ -105,6 +105,11 @@ SPE.Group = function( options ) {
         opacity: {
             type: 'v3',
             value: []
+        },
+
+        pos: {
+            type: 'v3',
+            value: []
         }
     };
 
@@ -202,7 +207,9 @@ SPE.Group.prototype = {
             colorStart = a.colorStart.value,
             colorMiddle = a.colorMiddle.value,
             colorEnd = a.colorEnd.value,
-            opacity = a.opacity.value;
+            opacity = a.opacity.value,
+            pos = a.pos.value,
+            basePos = new THREE.Vector3();
 
         emitter.particleIndex = parseFloat( start );
 
@@ -210,15 +217,18 @@ SPE.Group.prototype = {
         for ( var i = start; i < end; ++i ) {
 
             if ( emitter.type === 'sphere' ) {
-                vertices[ i ] = that.randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
-                velocity[ i ] = that.randomVelocityVector3OnSphere( vertices[ i ], emitter.position, emitter.speed, emitter.speedSpread );
+                vertices[ i ] = basePos;
+                pos[ i ] = that.randomVector3OnSphere( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else if ( emitter.type === 'disk' ) {
-                vertices[ i ] = that.randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
-                velocity[ i ] = that.randomVelocityVector3OnSphere( vertices[ i ], emitter.position, emitter.speed, emitter.speedSpread );
+                vertices[ i ] = basePos;
+                pos[ i ] = that.randomVector3OnDisk( emitter.position, emitter.radius, emitter.radiusSpread, emitter.radiusScale, emitter.radiusSpreadClamp );
+                velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter.position, emitter.speed, emitter.speedSpread );
             }
             else {
-                vertices[ i ] = that.randomVector3( emitter.position, emitter.positionSpread );
+                vertices[ i ] = basePos;
+                pos[ i ] = that.randomVector3( emitter.position, emitter.positionSpread );
                 velocity[ i ] = that.randomVector3( emitter.velocity, emitter.velocitySpread );
             }
 
@@ -489,7 +499,6 @@ SPE.shaders = {
 
 
         THREE.ShaderChunk[ "common" ],
-        THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
 
 
@@ -518,49 +527,36 @@ SPE.shaders = {
         'void main() {',
 
         '   float positionInTime = (age / duration);',
-
-        '   float lerpAmount1 = (age / (0.5 * duration));', // percentage during first half
-        '   float lerpAmount2 = ((age - 0.5 * duration) / (0.5 * duration));', // percentage during second half
-        '   float halfDuration = duration / 2.0;',
+        '   float halfDuration = 0.5 * duration;',
+        '   float lerpAmount = 0.0;',
         '   float pointSize = 0.0;',
+        '   float deadPos = 1000000000.0;',
 
         '   vAngle = 0.0;',
 
-        '   if( alive > 0.5 ) {',
-
-        // lerp the color and opacity
-        '       if( positionInTime < 0.5 ) {',
-        '           vColor = vec4( mix(colorStart, colorMiddle, lerpAmount1), mix(opacity.x, opacity.y, lerpAmount1) );',
-        '       }',
-        '       else {',
-        '           vColor = vec4( mix(colorMiddle, colorEnd, lerpAmount2), mix(opacity.y, opacity.z, lerpAmount2) );',
-        '       }',
-
+        '   if( alive == 1.0 ) {',
 
         // Get the position of this particle so we can use it
         // when we calculate any perspective that might be required.
         '       vec4 pos = GetPos();',
 
-
-        // Determine the angle we should use for this particle.
-        '       if( angle.w == 1.0 ) {',
-        '           vAngle = -atan( pos.y, pos.x );',
-        '       }',
-        '       else if( positionInTime < 0.5 ) {',
-        '           vAngle = mix( angle.x, angle.y, lerpAmount1 );',
-        '       }',
-        '       else {',
-        '           vAngle = mix( angle.y, angle.z, lerpAmount2 );',
-        '       }',
-
-        // Determine point size.
-        '       if( positionInTime < 0.5) {',
-        '           pointSize = mix( size.x, size.y, lerpAmount1 );',
+        // Lerp the color and opacity, and determine point size and angle.
+        '       if( positionInTime < 0.5 ) {',
+        '           lerpAmount = age / halfDuration;',
+        '           vColor = vec4( mix( colorStart, colorMiddle, lerpAmount ), mix( opacity.x, opacity.y, lerpAmount ) );',
+        '           pointSize = mix( size.x, size.y, lerpAmount );',
+        '           vAngle = mix( angle.x, angle.y, lerpAmount );',
         '       }',
         '       else {',
-        '           pointSize = mix( size.y, size.z, lerpAmount2 );',
+        '           lerpAmount = ( age - halfDuration ) / halfDuration;',
+        '           vColor = vec4( mix( colorMiddle, colorEnd, lerpAmount ), mix( opacity.y, opacity.z, lerpAmount ) );',
+        '           pointSize = mix( size.y, size.z, lerpAmount );',
+        '           vAngle = mix( angle.y, angle.z, lerpAmount );',
         '       }',
 
+        // '       if( angle.w == 1.0 ) {',
+        // '           vAngle = -atan( pos.y, pos.x );',
+        // '       }',
 
         '       #ifdef HAS_PERSPECTIVE',
         '           pointSize = pointSize * ( 300.0 / length( pos.xyz ) );',
@@ -574,13 +570,11 @@ SPE.shaders = {
         '   else {',
         // Hide particle and set its position to the (maybe) glsl
         // equivalent of Number.POSITIVE_INFINITY
-        '       vColor = vec4( 0.0, 0.0, 0.0, 0.0 );',
-        '       gl_Position = vec4(1000000000.0, 1000000000.0, 1000000000.0, 0.0);',
+        '       vColor = vec4( 0.0 );',
+        '       gl_Position = vec4( deadPos, deadPos, deadPos, 0.0 );',
         '   }',
 
         THREE.ShaderChunk[ "logdepthbuf_vertex" ],
-        THREE.ShaderChunk[ "worldpos_vertex" ],
-        THREE.ShaderChunk[ "shadowmap_vertex" ],
 
         '}',
     ].join( '\n' ),
@@ -590,7 +584,6 @@ SPE.shaders = {
 
         THREE.ShaderChunk[ "common" ],
         THREE.ShaderChunk[ "fog_pars_fragment" ],
-        THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
         THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
 
         'varying vec4 vColor;',
@@ -599,11 +592,12 @@ SPE.shaders = {
         'void main() {',
         '   vec3 outgoingLight = vec3( vColor.xyz );',
 
-        '   float c = cos(vAngle);',
-        '   float s = sin(vAngle);',
+        '   float c = cos( vAngle );',
+        '   float s = sin( vAngle );',
+        '   float x = gl_PointCoord.x - 0.5;',
+        '   float y = gl_PointCoord.y - 0.5;',
 
-        '   vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,',
-        '                    c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);',
+        '   vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
 
         '   vec4 rotatedTexture = texture2D( texture, rotatedUV );',
 
@@ -612,10 +606,9 @@ SPE.shaders = {
         '   #ifdef COLORIZE',
         '      outgoingLight = vColor.xyz * rotatedTexture.xyz;',
         '   #else',
-        '      outgoingLight = vec3(rotatedTexture.xyz);',
+        '      outgoingLight = vec3( rotatedTexture.xyz );',
         '   #endif',
 
-        THREE.ShaderChunk[ "shadowmap_fragment" ],
         THREE.ShaderChunk[ "fog_fragment" ],
 
         '   gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
