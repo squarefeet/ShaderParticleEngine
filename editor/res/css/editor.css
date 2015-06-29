@@ -1,0 +1,44 @@
+section.editor-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+canvas {
+	-webkit-transition: all 500ms ease !important;
+}
+
+
+/* Stats */
+#stats {
+	position: absolute;
+	top: 0.7rem;
+	right: 0;
+	height: 0.75rem;
+	z-index: 5;
+	pointer-events: none;
+}
+
+#fps {
+	background-color: rgba(0, 0, 0, 0) !important;
+}
+
+#fpsText {
+	line-height: 0.75rem !important;
+	font-size: 0.5rem !important;
+	color: rgba(38, 161, 255, 1) !important;
+}
+
+#fpsGraph {
+	display: none !important;
+}
+
+#fpsGraph {
+	background-color: rgba(0, 0, 0, 1) !important;
+}
+
+#fpsGraph > span {
+	background-color: rgba(50, 50, 50, 1) !important;
+}

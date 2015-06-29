@@ -237,6 +237,7 @@ SPE.Group.prototype = {
                 Math.abs( that.randomFloat( emitter._sizeStart, emitter._sizeStartSpread ) ),
                 Math.abs( that.randomFloat( emitter._sizeMiddle, emitter._sizeMiddleSpread ) ),
                 Math.abs( that.randomFloat( emitter._sizeEnd, emitter._sizeEndSpread ) )
+
             );
 
             angle[ i ] = new THREE.Vector4(

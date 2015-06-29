@@ -1,0 +1,25 @@
+.icon {
+	position: relative;
+	margin: 0.25em;
+	width: 3.5em;
+	height: 3.5em;
+	background-position: left center;
+	background-repeat: no-repeat;
+	background-size: 200% 100%;
+	float: left;
+}
+.icon:hover {
+	background-position: right center;
+}
+
+.icon.reset-camera {
+	background-image: url(../img/icons/reset-camera.png);
+}
+
+.icon.decrease-size {
+	background-image: url(../img/icons/decrease-size.png);
+}
+
+.icon.increase-size {
+	background-image: url(../img/icons/increase-size.png);
+}

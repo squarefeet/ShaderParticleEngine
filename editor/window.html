@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+
+        <style type="text/css">
+            * {
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: sans-serif;
+                font-size: 62.5%;
+            }
+
+            .clearfix {
+                clear: both;
+            }
+        </style>
+
+        <link rel="stylesheet" type="text/css" href="res/css/windows.css">
+    </head>
+    <body>
+        <script type="text/javascript" src="res/js/PopupWindow.js"></script>
+
+        <script type="text/javascript">
+            
+
+            var popup = new PopupWindow( {
+                content: 'wat',
+                buttons: {
+                    'Cancel': function() {
+                        console.log( 'cancel' );
+                    },
+                    'OK': function() {
+                        console.log( 'ok' );
+                    }
+                }
+            } );
+
+        </script>
+    </body>
+</html>

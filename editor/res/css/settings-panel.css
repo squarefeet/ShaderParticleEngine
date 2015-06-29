@@ -1,0 +1,205 @@
+section.settings-panel {
+    position: absolute;
+    top: 3em;
+    right: 0px;
+    bottom: 1.25rem;
+    width: 20rem;
+    margin-top: 2px;
+    background: rgba( 0, 0, 0, 0.8 );
+    -webkit-transition: all 500ms ease;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    z-index: 2;
+}
+
+section.settings-panel.closed {
+    width: 0rem;
+}
+
+section.settings-panel > .scroll-wrapper {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 20rem;
+    height: 100%;
+    overflow: hidden;
+}
+
+section.settings-panel > .scroll-wrapper > .scroll-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 9px;
+}
+
+section.settings-panel .group-wrapper,
+section.settings-panel .emitter-selector {
+    margin: 0.1rem 0.1rem 0.4rem;
+    border: 1px solid rgba( 255, 255, 255, 0.2 );
+    background: rgba( 0, 0, 0, 0.6 );
+    -webkit-transform: translateZ(0);
+}
+
+section.settings-panel .group-wrapper > .group-title {
+    color: #eee;
+    padding: 0.2rem 0.4rem;
+    font-weight: normal;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-transform: capitalize;
+    background: rgba( 50, 50, 50, 0.6 );
+}
+
+section.settings-panel > .handle {
+    position: absolute;
+    top: 50%;
+    left: -2rem;
+    width: 2rem;
+    height: 4rem;
+    background: rgba( 0, 0, 0, 0.8 );
+    cursor: pointer;
+    border-top-left-radius: 0.3rem;
+    border-bottom-left-radius: 0.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-right: none;
+}
+
+section.settings-panel > .handle::after {
+    position: absolute;
+    content: ">";
+    width: 100%;
+    line-height: 4rem;
+    font-size: 1.5rem;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 2px 0 0px rgba( 255, 255, 255, 0.2 );
+    color: rgba(0, 0, 0, 0);
+}
+
+section.settings-panel.closed > .handle::after {
+    content: "<";
+    text-shadow: -2px 0 0px rgba( 255, 255, 255, 0.2 );
+}
+
+section.settings-panel.closed > .handle {
+    background: rgba(38, 161, 255, 0.3);
+}
+
+section.settings-panel > .handle:hover {
+    border: 1px solid rgba(38, 161, 255, 0.5);
+    border-right: none;
+}
+section.settings-panel:hover {
+    border-left: 1px solid rgba(38, 161, 255, 0.5);
+}
+
+.iScrollIndicator {
+    border: 1px solid rgba( 255, 255, 255, 0.4 ) !important;
+    cursor: pointer;
+}
+
+.iScrollIndicator:hover,
+.iScrollIndicator:active {
+    background: rgba(38, 161, 255, 0.2) !important;
+    border: 1px solid rgba(38, 161, 255, 0.8) !important;
+}
+
+
+section.settings-panel .single-attribute {
+    position: relative;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    margin: 0.2rem;
+    border: 1px solid rgba( 255, 255, 255, 0.15 );
+    background: rgba( 0, 0, 0, 0.1 );
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+}
+
+section.settings-panel .single-attribute > span {
+    color: #aaa;
+    float: left;
+    line-height: 2rem;
+}
+
+section.settings-panel select {
+    text-transform: capitalize;
+
+    /*
+     * Fix for Firefox not hiding dropdown arrows.
+     * from: https://bugzilla.mozilla.org/show_bug.cgi?id=649849#c84
+     */
+    text-indent: 0.01px;
+    text-overflow: '';
+    -moz-appearance: none;
+}
+
+
+section.settings-panel .emitter-selector {
+    position: relative;
+    margin-top: 1rem;
+    padding: 0.2rem;
+    margin-bottom: 0;
+}
+
+section.settings-panel .emitter-selector > .button,
+section.settings-panel .emitter-selector > input {
+    position: relative;
+    float: left;
+    height: 2rem;
+    border: 1px solid rgba( 255, 255, 255, 0.15 );
+    margin: 0 0.2rem;
+    color: #bbb;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+section.settings-panel .emitter-selector > input:hover,
+section.settings-panel .emitter-selector > input:active,
+section.settings-panel .emitter-selector > .button:hover {
+    border: 1px solid rgba(38, 161, 255, 0.5);
+}
+
+section.settings-panel .emitter-selector > .button {
+    width: 1.6rem;
+    line-height: 2rem;
+    text-align: center;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+section.settings-panel .emitter-selector > .button.disabled {
+    opacity: 0.3;
+}
+
+section.settings-panel .emitter-selector > .button.add,
+section.settings-panel .emitter-selector > .button.remove,
+section.settings-panel .emitter-selector > .button.right-arrow {
+    float: right;
+}
+
+section.settings-panel .emitter-selector > .button.left-arrow {
+    margin: 0 0.2rem 0 0;
+}
+
+section.settings-panel .emitter-selector > .button.right-arrow {
+    margin: 0 0 0 0.2rem;
+}
+
+section.settings-panel .emitter-selector > input {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background: transparent;
+    padding: 0 0.4rem;
+    width: 10.7rem;
+}
+
+section.settings-panel .emitter-selector > input[isdisabled=true] {
+    color: #aaa;
+}
+section.settings-panel .emitter-selector > input[isdisabled=false] {
+    color: #eee;
+    cursor: text;
+}

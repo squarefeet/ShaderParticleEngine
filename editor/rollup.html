@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+	<head>
+		<title></title>
+		<style type="text/css">
+			* {
+                margin: 0;
+                -webkit-box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Lucida Grande", sans-serif;
+                font-size: 62.5%;
+                background: #222;
+            }
+		</style>
+
+        <link rel="stylesheet" type="text/css" href="res/css/slider.css">
+        <link rel="stylesheet" type="text/css" href="res/css/rollup.css">
+
+	</head>
+	<body>
+		<script type="text/javascript" src="res/js/slider.js"></script>
+		<script type="text/javascript" src="res/js/Rollup.js"></script>
+		<script type="text/javascript">
+
+			for( var i = 0; i < 10; ++i ) {
+				var content = document.createElement( 'div' );
+				var slider = new Slider( {
+					parent: content,
+					fromValue: Math.random() * -1000,
+					toValue: Math.random() * 1000
+				} );
+
+				var rollup = new Rollup( {
+					title: 'Hello',
+					content: content
+				} );
+
+				document.body.appendChild( rollup.domElement );
+			}
+		</script>
+	</body>
+</html>

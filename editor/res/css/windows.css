@@ -1,0 +1,116 @@
+.window-wrapper,
+.window-container {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    font-size: 1rem;
+    pointer-events: none;
+    display: none;
+}
+
+.window-wrapper {
+    position: absolute;
+    display: table;
+}
+
+.window-container {
+    position: relative;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+
+.popup-window {
+    position: relative;
+    min-width: 10rem;
+    max-width: 45rem;
+    max-height: 30rem;
+    margin: 0 auto;
+    background-color: rgba( 150, 150, 150, 0.9 );
+    border: 1px solid rgba( 100, 100, 100, 1 );
+    border-radius: 2px 2px;
+    box-shadow: 0 0 20px rgba( 0, 0, 0, 0.5 );
+    -webkit-transition: all 250ms ease;
+    -moz-transition: all 250ms ease;
+    opacity: 0;
+    pointer-events: all;
+}
+
+.popup-window.show {
+    -webkit-transform: translate3d( 0, 0, 0) scale(1) !important;
+    -moz-transform: translate3d( 0, 0, 0) scale(1) !important;
+    opacity: 1;
+}
+
+.popup-window > .title-bar {
+    position: relative;
+    width: 100%;
+    padding: 0.3em;
+    background: rgba( 100, 100, 100, 0.5 );
+    border-bottom: 1px solid rgba( 0, 0, 0, 0.3 );
+}
+
+.popup-window > .title-bar > h3 {
+    color: rgba( 0, 0, 0, 0.8 );
+    text-shadow: 0 1px 0 rgba( 255, 255, 255, 0.3 );
+}
+
+.popup-window > .title-bar > .close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4rem;
+    height: 100%;
+    background-color: rgba( 0, 0, 0, 0.1 );
+}
+
+
+.popup-window > .content-wrapper {
+    position: relative;
+    padding: 1rem 0.5rem;
+    background: rgba( 255, 255, 255, 0.5 );
+    overflow: scroll;
+    height: 25rem;
+}
+
+.popup-window > .button-wrapper {
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 100%;
+}
+
+.popup-window > .button-wrapper > .button {
+    position: relative;
+    padding: 0.2rem 0.5rem;
+    float: right;
+    margin: 0.2rem 0.3rem;
+    background-color: rgba( 0, 0, 0, 0.5 );
+    color: rgba( 220, 220, 220, 1 );
+    text-shadow: 0 1px 0 rgba( 0, 0, 0, 0.7 );
+    border-radius: 4px 4px;
+    border-top: 1px solid rgba( 255, 255, 255, 0.6 );
+    border-left: 1px solid rgba( 255, 255, 255, 0.5 );
+    border-right: 1px solid rgba( 255, 255, 255, 0.5 );
+    border-bottom: 1px solid rgba( 30, 30, 30, 1 );
+    box-shadow: inset 0 1px 5px rgba( 0, 0, 0, 0.4 );
+    cursor: pointer;
+    -webkit-transition: all 50ms linear;
+    -webkit-user-select: none;
+    -moz-transition: all 50ms linear;
+    -moz-user-select: none;
+}
+
+.popup-window > .button-wrapper > .button:hover {
+    box-shadow: inset 0 1px 5px rgba( 0, 0, 0, 0.2 );
+    color: rgba( 255, 255, 255, 1 );
+    background-color: rgba( 0, 0, 0, 0.3 );
+}
+
+.popup-window > .button-wrapper > .button:active {
+    box-shadow: inset 0 1px 5px rgba( 0, 0, 0, 1 );
+    color: rgba( 255, 255, 255, 1 );
+    background-color: rgba( 0, 0, 0, 0.4 );
+}
