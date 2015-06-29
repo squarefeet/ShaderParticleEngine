@@ -1,4 +1,4 @@
-// ShaderParticleUtils 0.8.0
+// ShaderParticleUtils 0.8.1
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -262,7 +262,7 @@ SPE.utils = {
     }
 };;
 
-// ShaderParticleGroup 0.8.0
+// ShaderParticleGroup 0.8.1
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -880,7 +880,7 @@ SPE.shaders = {
     ].join( '\n' )
 };;
 
-// ShaderParticleEmitter 0.8.0
+// ShaderParticleEmitter 0.8.1
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
