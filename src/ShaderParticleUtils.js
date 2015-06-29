@@ -240,6 +240,8 @@ SPE.utils = {
         v.add( base );
     },
 
+    // TODO:
+    //  - Optimise this. It's a little slow at the moment.
     randomizeExistingVelocityVector3OnSphere: function( v, base, position, speed, speedSpread ) {
         v.copy( position )
             .sub( base )
