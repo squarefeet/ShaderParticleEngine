@@ -1,4 +1,4 @@
-(function() {
+( function() {
 
     var setShaderStartMiddleEndAttribute = function( attributeName ) {
         var emitter = utils.getCurrentEmitter().instance,
@@ -6,9 +6,9 @@
             end = start + emitter.particleCount,
             attributeValue = emitter.attributes[ attributeName ] ? emitter.attributes[ attributeName ].value : null;
 
-        for( var i = start; i < end; ++i ) {
+        for ( var i = start; i < end; ++i ) {
 
-            if( emitter.attributes[ attributeName + 'Start' ] ) {
+            if ( emitter.attributes[ attributeName + 'Start' ] ) {
                 emitter.attributes[ attributeName + 'Start' ].value[ i ] =
                     emitter.randomColor( emitter[ attributeName + 'Start' ], emitter[ attributeName + 'StartSpread' ] );
 
@@ -22,20 +22,20 @@
                 emitter.attributes[ attributeName + 'Middle' ].needsUpdate = true;
                 emitter.attributes[ attributeName + 'End' ].needsUpdate = true;
             }
-            else if( emitter.attributes[ attributeName ].value instanceof THREE.Vector3 ) {
+            else if ( emitter.attributes[ attributeName ].value instanceof THREE.Vector3 ) {
                 attributeValue[ i ].set(
-                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'Start' ],     emitter[ attributeName + 'StartSpread' ] ) ),
-                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'Middle' ],    emitter[ attributeName + 'MiddleSpread' ] ) ),
-                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'End' ],       emitter[ attributeName + 'EndSpread' ] ) )
+                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'Start' ], emitter[ attributeName + 'StartSpread' ] ) ),
+                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'Middle' ], emitter[ attributeName + 'MiddleSpread' ] ) ),
+                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'End' ], emitter[ attributeName + 'EndSpread' ] ) )
                 );
 
                 emitter.attributes[ attributeName ].needsUpdate = true;
             }
             else {
                 attributeValue[ i ].set(
-                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'Start' ],     emitter[ attributeName + 'StartSpread' ] ) ),
-                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'Middle' ],    emitter[ attributeName + 'MiddleSpread' ] ) ),
-                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'End' ],       emitter[ attributeName + 'EndSpread' ] ) ),
+                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'Start' ], emitter[ attributeName + 'StartSpread' ] ) ),
+                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'Middle' ], emitter[ attributeName + 'MiddleSpread' ] ) ),
+                    Math.abs( emitter.randomFloat( emitter[ attributeName + 'End' ], emitter[ attributeName + 'EndSpread' ] ) ),
                     0
                 );
 
@@ -52,7 +52,7 @@
     app.events.on( 'setting:texture', function( value, event ) {
         value = value.toLowerCase();
 
-        if( value !== 'custom' ) {
+        if ( value !== 'custom' ) {
             value = THREE.ImageUtils.loadTexture( 'res/img/' + value + '.png' );
             CONFIG.editor.group.texture = value;
             app.editor.particleGroup.uniforms.texture.value = value;
@@ -65,13 +65,15 @@
     } );
 
     app.events.on( 'setting:hasPerspective', function( value, title ) {
-        CONFIG.editor.group.hasPerspective = Number( !!value );
-        app.editor.particleGroup.uniforms.hasPerspective.value = value;
+        CONFIG.editor.group.hasPerspective = !!value;
+        app.editor.particleGroup.defines.hasPerspective = !!value;
+        app.editor.recreateEmitters();
     } );
 
     app.events.on( 'setting:colorize', function( value, title ) {
-        CONFIG.editor.group.colorize = Number( !!value );
-        app.editor.particleGroup.uniforms.colorize.value = value;
+        CONFIG.editor.group.colorize = !!value;
+        app.editor.particleGroup.defines.colorize = !!value;
+        app.editor.recreateEmitters();
     } );
 
     app.events.on( 'setting:transparent', function( value, title ) {
@@ -109,7 +111,7 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( !isRestore ) {
+        if ( !isRestore ) {
             app.history.add( 'setting:type', emitter.config.type );
         }
         else {
@@ -121,11 +123,11 @@
         emitter.instance.type = value;
         app.settings.showOnlyApplicableRollups( value );
 
-        if( value === 'disk' || value === 'sphere' ) {
+        if ( value === 'disk' || value === 'sphere' ) {
             var velocity = emitter.instance.attributes.velocity.value,
                 acceleration = emitter.instance.attributes.acceleration.value;
 
-            for( var i = 0; i < velocity.length; ++i ) {
+            for ( var i = 0; i < velocity.length; ++i ) {
                 velocity[ i ].set( 0, 0, 0 );
                 acceleration[ i ].set( 0, 0, 0 );
             }
@@ -134,7 +136,7 @@
             emitter.config.velocity.set( 0, 0, 0 );
         }
 
-        if( utils.getCurrentEmitter().instance.isStatic ) {
+        if ( utils.getCurrentEmitter().instance.isStatic ) {
             app.editor.recreateEmitters();
         }
     } );
@@ -143,10 +145,10 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:particleCount', emitter.config.particleCount, title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'particleCount', null, value );
         }
 
@@ -159,10 +161,10 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:alive', emitter.config.alive, title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'alive', null, value );
         }
 
@@ -174,10 +176,10 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:duration', emitter.config.duration, title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'duration', null, value );
         }
 
@@ -191,7 +193,7 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( !isRestore ) {
+        if ( !isRestore ) {
             app.history.add( 'setting:static', emitter.config.isStatic );
         }
         else {
@@ -211,15 +213,15 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:position', emitter.config.position[ title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'position', title, value );
         }
 
         emitter.config.position[ title ] = value;
-    	emitter.instance.position[ title ] = value;
+        emitter.instance.position[ title ] = value;
     } );
 
     app.events.on( 'setting:positionSpread', function( value, title, isStartEvent, isRestore ) {
@@ -228,10 +230,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:positionSpread', emitter.config.positionSpread[ title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'positionSpread', title, value );
         }
 
@@ -244,10 +246,10 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:radius', emitter.config.radius, title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'radius', null, value );
         }
 
@@ -259,10 +261,10 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:radiusSpread', emitter.config.radiusSpread, title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'radiusSpread', null, value );
         }
 
@@ -274,10 +276,10 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:radiusSpreadClamp', emitter.config.radiusSpreadClamp, title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'radiusSpreadClamp', null, value );
         }
 
@@ -291,10 +293,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:radiusScale', emitter.config.radiusScale[ title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'radiusScale', title, value );
         }
 
@@ -310,10 +312,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:acceleration', emitter.config.acceleration[ title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'acceleration', title, value );
         }
 
@@ -328,10 +330,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:accelerationSpread', emitter.config.accelerationSpread[ title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'accelerationSpread', title, value );
         }
 
@@ -346,10 +348,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:velocity', emitter.config.velocity[ title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'velocity', title, value );
         }
 
@@ -364,10 +366,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:velocitySpread', emitter.config.velocitySpread[ title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'velocitySpread', title, value );
         }
 
@@ -380,10 +382,10 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:speed', emitter.config.speed, title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'speed', null, value );
         }
 
@@ -395,10 +397,10 @@
         var emitter = utils.getCurrentEmitter();
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:speedSpread', emitter.config.speedSpread, title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'speedSpread', null, value );
         }
 
@@ -414,10 +416,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:size', emitter.config[ 'size' + title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'size', title, value );
         }
 
@@ -436,10 +438,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:sizeSpread', emitter.config[ 'size' + title + 'Spread' ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'sizeSpread', title, value );
         }
 
@@ -459,10 +461,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:opacity', emitter.config[ 'opacity' + title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'opacity', title, value );
         }
 
@@ -482,10 +484,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:opacitySpread', emitter.config[ 'opacity' + title + 'Spread' ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'opacitySpread', title, value );
         }
 
@@ -505,10 +507,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:angle', emitter.config[ 'angle' + title ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'angle', title, value );
         }
 
@@ -527,10 +529,10 @@
         title = title.replace( ':', '' );
 
         // Store the previous value in the history object.
-        if( isStartEvent && !isRestore ) {
+        if ( isStartEvent && !isRestore ) {
             app.history.add( 'setting:angleSpread', emitter.config[ 'angle' + title + 'Spread' ], title, isStartEvent );
         }
-        else if( isRestore ) {
+        else if ( isRestore ) {
             app.settings.setSingleAttribute( true, 'angleSpread', title, value );
         }
 
@@ -548,7 +550,7 @@
     app.events.on( 'setting:color', function( value, title ) {
         var emitter = utils.getCurrentEmitter();
 
-        for( var i = 0; i < value.length; ++i ) {
+        for ( var i = 0; i < value.length; ++i ) {
             color[ i ] = value[ i ] / 255;
         }
 
@@ -567,4 +569,4 @@
         setShaderStartMiddleEndAttribute( 'color' );
     } );
 
-}());
+}() );
