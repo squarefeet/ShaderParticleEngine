@@ -1,4 +1,4 @@
-(function() {
+( function() {
 
     var makeTreeBranch = function( branchName, menuItems ) {
 
@@ -23,8 +23,8 @@
 
 
         // Bind scope
-        for( var i in this ) {
-            if( typeof this[ i ] === 'function' ) {
+        for ( var i in this ) {
+            if ( typeof this[ i ] === 'function' ) {
                 this[ i ] = this[ i ].bind( this );
             }
         }
@@ -37,8 +37,8 @@
 
     Menu.prototype = {
         _activateMenuItem: function( menuItem ) {
-            for( var i = 0; i < this.menuItems.length; ++i ) {
-                if( typeof menuItem !== 'undefined' && this.menuItems[ i ] === menuItem ) {
+            for ( var i = 0; i < this.menuItems.length; ++i ) {
+                if ( typeof menuItem !== 'undefined' && this.menuItems[ i ] === menuItem ) {
                     this.childrenItems[ i ].style.marginLeft = this.menuItems[ i ].offsetLeft + 'px';
                     this.childrenItems[ i ].style.display = 'block';
                     this.menuItems[ i ].classList.add( 'active' );
@@ -49,7 +49,7 @@
                 }
             }
 
-            if( menuItem ) {
+            if ( menuItem ) {
                 this.menuIsActive = true;
             }
         },
@@ -59,13 +59,13 @@
         },
 
         _onMenuItemHover: function( e ) {
-            if( !this.menuIsActive ) return;
+            if ( !this.menuIsActive ) return;
 
             this._activateMenuItem( e.target.parentNode );
         },
 
         _onDocumentClick: function( e ) {
-            if( !this.menuIsActive ) return;
+            if ( !this.menuIsActive ) return;
 
             this.menuIsActive = false;
             this._activateMenuItem();
@@ -82,35 +82,35 @@
             parentMenuLabel.textContent = branchName;
 
             // Create an individual menu item, many times.
-            for( var i in menuItems ) {
+            for ( var i in menuItems ) {
                 child = document.createElement( 'li' );
-                icon = new Image();
+                // icon = new Image();
                 childLabel = document.createElement( 'span' );
 
-                if( menuItems[ i ].statusText ) {
+                if ( menuItems[ i ].statusText ) {
                     utils.addStatusTextAttribute( child, menuItems[ i ].statusText );
                 }
 
                 child.classList.add( menuItems[ i ].eventName );
 
-                if( menuItems[ i ].toggleable && CONFIG[ menuItems[ i ].eventName ] ) {
+                if ( menuItems[ i ].toggleable && CONFIG[ menuItems[ i ].eventName ] ) {
                     child.classList.add( 'on' );
                 }
 
-                icon.src = 'res/img/icons/menu/' + menuItems[ i ].image;
+                // icon.src = 'res/img/icons/menu/' + menuItems[ i ].image;
                 childLabel.textContent = i;
 
-                child.addEventListener( 'mouseup', (function( item, el ) {
+                child.addEventListener( 'mouseup', ( function( item, el ) {
                     return function( e ) {
-                        if( item.toggleable ) {
+                        if ( item.toggleable ) {
                             el.classList.toggle( 'on' );
                         }
 
                         item.action();
                     };
-                }( menuItems[ i ], child )), false );
+                }( menuItems[ i ], child ) ), false );
 
-                child.appendChild( icon );
+                // child.appendChild( icon );
                 child.appendChild( childLabel );
                 childWrapper.appendChild( child );
             }
@@ -141,7 +141,7 @@
 
             this.domElement.appendChild( logo );
 
-            for( i in this.tree ) {
+            for ( i in this.tree ) {
                 this._makeTreeBranch( i, this.tree[ i ] );
             }
         }
@@ -150,4 +150,4 @@
 
     window.Menu = Menu;
 
-}());
+}() );
