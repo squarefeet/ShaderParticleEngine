@@ -27,8 +27,8 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
-            camera.position.z = 50;
-            camera.lookAt( scene.position );
+            // camera.position.z = 50;
+            // camera.lookAt( scene.position );
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
@@ -54,7 +54,7 @@
         	});
 
         	emitter = new SPE.Emitter({
-        		position: new THREE.Vector3(0, 0, 0),
+        		position: new THREE.Vector3(0, 0, -50),
                 positionSpread: new THREE.Vector3( 0, 0, 0 ),
 
         		acceleration: new THREE.Vector3(0, -10, 0),

@@ -1,4 +1,4 @@
-// ShaderParticleEmitter 0.8.1
+// ShaderParticleEmitter 0.8.2
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -230,6 +230,7 @@ SPE.Emitter.prototype = {
             numParticles = that._particleCount,
             attributes = that.attributes,
             needsUpdate = that.attributesNeedUpdate,
+            vertices = that.vertices,
             start = that.verticesIndex,
             end = start + numParticles,
             pos = attributes.pos.value,
@@ -237,8 +238,6 @@ SPE.Emitter.prototype = {
 
 
         // Base attributes...
-        //
-        // This is horrible..!!
         if ( flags.position === true && needsUpdate === true ) {
             // No spreads...
             if (
@@ -248,6 +247,7 @@ SPE.Emitter.prototype = {
             ) {
                 for ( var i = start, p = that.position; i < end; ++i ) {
                     pos[ i ].copy( p );
+                    vertices[ i ].copy( p );
                 }
             }
 
@@ -255,19 +255,24 @@ SPE.Emitter.prototype = {
             else if ( type === 'cube' ) {
                 for ( var i = start, p = that._position; i < end; ++i ) {
                     that.randomizeExistingVector3( pos[ i ], p, that._positionSpread );
+                    vertices[ i ].copy( p );
                 }
             }
             else if ( type === 'sphere' ) {
                 for ( var i = start, p = that._position; i < end; ++i ) {
                     that.randomizeExistingVector3OnSphere( pos[ i ], that._position, that._radius, that._radiusSpread, that._radiusScale, that._radiusSpreadClamp );
+                    vertices[ i ].copy( p );
                 }
             }
 
             else if ( type === 'disk' ) {
                 for ( var i = start, p = that._position; i < end; ++i ) {
                     that.randomizeExistingVector3OnDisk( pos[ i ], that._position, that._radius, that._radiusSpread, that._radiusScale, that._radiusSpreadClamp );
+                    vertices[ i ].copy( p );
                 }
             }
+
+            that.geometry.verticesNeedUpdate = true;
 
             flags.position = false;
         }
