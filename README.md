@@ -5,18 +5,9 @@ A GLSL-focused particle engine for THREE.js. Removes a lot of the heavy lifting 
 
 Pull requests and issue reports welcome. Please see the notes on pull requests at the end of this document.
 
-
-Version 0.8.1
+Version 0.8.2
 =============
-* Further speed improvements to the GLSL code. It's now running a few milliseconds quicker, which will make all the difference in busy scenes.
-
-Version 0.8.0
-=============
-* A big one: **almost all parameters of an emitter can now be changed at runtime**. Position, velocity, acceleration, speed, opacity, color, size, and angle, including all their relative spread properties, are all supported. This was an often requested feature and I'm happy to announce support for it. Big thanks to all the testers.
-* `SPE.Group#hasPerspective` now takes `boolean` values as well as numbers. Makes more sense this way.
-* `SPE.Group#colorize` now takes `boolean` values as well as numbers as well.
-* `SPE.Group#colorize` does not ignore opacity values if set to `false`.
-* `SPE.Group#fog` is now supported! *Note: Only tested with THREE.js r71.*
+* Fix for when a camera is at vec3(0,0,0).
 
 
 
@@ -328,6 +319,17 @@ Turn on a given number of emitters that live in a pool created using the method 
 
 Changelog
 =========
+
+
+**Version 0.8.1**
+* Further speed improvements to the GLSL code. It's now running a few milliseconds quicker, which will make all the difference in busy scenes.
+
+**Version 0.8.0**
+* A big one: **almost all parameters of an emitter can now be changed at runtime**. Position, velocity, acceleration, speed, opacity, color, size, and angle, including all their relative spread properties, are all supported. This was an often requested feature and I'm happy to announce support for it. Big thanks to all the testers.
+* `SPE.Group#hasPerspective` now takes `boolean` values as well as numbers. Makes more sense this way.
+* `SPE.Group#colorize` now takes `boolean` values as well as numbers as well.
+* `SPE.Group#colorize` does not ignore opacity values if set to `false`.
+* `SPE.Group#fog` is now supported! *Note: Only tested with THREE.js r71.*
 
 **Version 0.7.9**
 * Fixed an issue with THREE.js r71. See breaking changes notes directly below. Please update if you're planning to use THREE.js r71+.

@@ -1,4 +1,4 @@
-// ShaderParticleGroup 0.8.1
+// ShaderParticleGroup 0.8.2
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
@@ -207,8 +207,7 @@ SPE.Group.prototype = {
             colorMiddle = a.colorMiddle.value,
             colorEnd = a.colorEnd.value,
             opacity = a.opacity.value,
-            pos = a.pos.value,
-            basePos = new THREE.Vector3();
+            pos = a.pos.value;
 
         emitter.particleIndex = parseFloat( start );
 
@@ -216,18 +215,18 @@ SPE.Group.prototype = {
         for ( var i = start; i < end; ++i ) {
 
             if ( emitter.type === 'sphere' ) {
-                vertices[ i ] = basePos;
                 pos[ i ] = that.randomVector3OnSphere( emitter._position, emitter._radius, emitter._radiusSpread, emitter._radiusScale, emitter._radiusSpreadClamp );
+                vertices[ i ] = pos[ i ];
                 velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter._position, emitter._speed, emitter._speedSpread );
             }
             else if ( emitter.type === 'disk' ) {
-                vertices[ i ] = basePos;
                 pos[ i ] = that.randomVector3OnDisk( emitter._position, emitter._radius, emitter._radiusSpread, emitter._radiusScale, emitter._radiusSpreadClamp );
+                vertices[ i ] = pos[ i ];
                 velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter._position, emitter._speed, emitter._speedSpread );
             }
             else {
-                vertices[ i ] = basePos;
                 pos[ i ] = that.randomVector3( emitter._position, emitter._positionSpread );
+                vertices[ i ] = pos[ i ];
                 velocity[ i ] = that.randomVector3( emitter._velocity, emitter._velocitySpread );
             }
 

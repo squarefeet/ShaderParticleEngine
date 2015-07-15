@@ -1,4 +1,4 @@
-// ShaderParticleUtils 0.8.1
+// ShaderParticleUtils 0.8.2
 //
 // (c) 2014 Luke Moody (http://www.github.com/squarefeet)
 //     & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
