@@ -1,0 +1,12 @@
+{
+  "name": "ShaderParticleEngine",
+  "version": "0.8.2",
+  "homepage": "http://squarefeet.github.io/ShaderParticleEngine/",
+  "authors": [
+    "Luke Moody"
+  ],
+  "description": "",
+  "main": "build/ShaderParticle.js",
+  "moduleType": [],
+  "license": "MIT"
+}
