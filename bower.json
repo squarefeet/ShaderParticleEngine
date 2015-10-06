@@ -1,6 +1,6 @@
 {
   "name": "ShaderParticleEngine",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "homepage": "http://squarefeet.github.io/ShaderParticleEngine/",
   "authors": [
     "Luke Moody"
@@ -10,7 +10,7 @@
     "src"
   ],
   "description": "",
-  "main": "build/ShaderParticle.js",
+  "main": "build/ShaderParticles.js",
   "moduleType": [],
   "license": "MIT"
 }
