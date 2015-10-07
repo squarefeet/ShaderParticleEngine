@@ -55,6 +55,12 @@ SPE.Group = function( options ) {
         }
     };
 
+    // Add some constants into the mix...
+    this.defines = {
+        HAS_PERSPECTIVE: this.hasPerspective,
+        COLORIZE: this.colorize
+    };
+
     // Map of all attributes to be applied to the particles.
     //
     // See SPE.ShaderAttribute for a bit more info on this bit.
@@ -76,15 +82,15 @@ SPE.Group = function( options ) {
     // particles.
     this.material = new THREE.ShaderMaterial( {
         uniforms: this.uniforms,
-        // vertexShader: SPE.shaders.vertex,
-        // fragmentShader: SPE.shaders.fragment,
-        // blending: this.blending,
-        // transparent: this.transparent,
-        // alphaTest: this.alphaTest,
-        // depthWrite: this.depthWrite,
-        // depthTest: this.depthTest,
-        // defines: this.defines,
-        // fog: this.fog
+        vertexShader: SPE.shaders.vertex,
+        fragmentShader: SPE.shaders.fragment,
+        blending: this.blending,
+        transparent: this.transparent,
+        alphaTest: this.alphaTest,
+        depthWrite: this.depthWrite,
+        depthTest: this.depthTest,
+        defines: this.defines,
+        fog: this.fog
     } );
 
     // Create the BufferGeometry and Points instances, ensuring
