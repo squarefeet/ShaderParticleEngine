@@ -5,6 +5,9 @@ SPE.Group = function( options ) {
     // Ensure we have a map of options to play with
     options = utils.ensureTypedArg( options, types.OBJECT, {} );
 
+    // Assign a UUID to this instance
+    this.uuid = THREE.Math.generateUUID();
+
     // If no `deltaTime` value is passed to the `SPE.Group.tick` function,
     // the value of this property will be used to advance the simulation.
     this.fixedTimeStep = utils.ensureTypedArg( options.fixedTimeStep, types.NUMBER, 0.016 );
