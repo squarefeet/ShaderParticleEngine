@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+	</head>
+	<body>
+		<script type="text/javascript" src="../examples/js/THREE-r72.js"></script>
+		<script type="text/javascript" src="SPE.js"></script>
+		<script type="text/javascript" src="SPE.TypedArrayHelper.js"></script>
+		<script type="text/javascript" src="SPE.ShaderAttribute.js"></script>
+		<script type="text/javascript" src="SPE.shaders.js"></script>
+		<script type="text/javascript" src="SPE.utils.js"></script>
+		<script type="text/javascript" src="SPE.Group.js"></script>
+		<script type="text/javascript" src="SPE.Emitter.js"></script>
+		<script type="text/javascript">
+			var group = new SPE.Group( {
+
+			} );
+
+			var emitter1 = new SPE.Emitter( {
+					particleCount: 1
+				} ),
+				emitter2 = new SPE.Emitter( {
+					particleCount: 1,
+					position: new SPE.Spread( new THREE.Vector3(), new THREE.Vector3( 10, 10, 10 ) ),
+					velocity: new SPE.ValueOverLifetime(
+						new THREE.Vector3( 10, 10, 0 ),
+						new THREE.Vector3( -10, -10, 0 )
+					)
+				} );
+
+			console.log( group );
+			console.log( emitter1 );
+			console.log( emitter2 );
+
+			group.addEmitter( emitter1 ).addEmitter( emitter2 );
+
+			console.log( group.attributes );
+		</script>
+	</body>
+</html>
