@@ -4,10 +4,22 @@ SPE.Emitter = function( options ) {
 
     // Ensure we have a map of options to play with
     options = utils.ensureTypedArg( options, types.OBJECT, {} );
+    options.position = utils.ensureTypedArg( options.position, types.OBJECT, {} );
+    options.velocity = utils.ensureTypedArg( options.velocity, types.OBJECT, {} );
 
     this.uuid = THREE.Math.generateUUID();
 
     this.type = utils.ensureTypedArg( options.type, types.NUMBER, SPE.emitterTypes.BOX );
+
+    this.position = {
+        value: utils.ensureInstanceOf( options.position.value, THREE.Vector3, new THREE.Vector3() ),
+        spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() )
+    };
+
+    this.velocity = {
+        value: utils.ensureInstanceOf( options.velocity.value, THREE.Vector3, new THREE.Vector3() ),
+        spread: utils.ensureInstanceOf( options.velocity.spread, THREE.Vector3, new THREE.Vector3() )
+    };
 
     this.particleCount = utils.ensureTypedArg( options.particleCount, types.NUMBER, 100 );
     this.duration = utils.ensureTypedArg( options.duration, types.NUMBER, null );

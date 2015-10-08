@@ -138,7 +138,7 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // TODO: Apply actual values from emitter, not just test data!
     // TODO: Think about attribute packing...esp. with age and alive.
     for ( var i = start; i < totalParticleCount; ++i ) {
-        utils.randomVector3( attributes.position, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
+        utils.randomVector3( attributes.position, i, emitter.position.value, emitter.position.spread );
         utils.randomVector3( attributes.velocity, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
         utils.randomVector3( attributes.acceleration, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
 
@@ -171,19 +171,27 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
 };
 
 SPE.Group.prototype._applyAttributesToGeometry = function() {
-    for ( var attr in this.attributes ) {
+    var attributes = this.attributes,
+        geometry = this.geometry,
+        geometryAttributes = geometry.attributes,
+        attribute,
+        geometryAttribute;
+
+    for ( var attr in attributes ) {
+        attribute = attributes[ attr ];
+
         // Update the array if this attribute exists on the geometry.
         //
         // This needs to be done because the attribute's typed array might have
         // been resized and reinstantiated, and might now be looking at a
         // different ArrayBuffer, so reference needs updating.
-        if ( this.geometry.attributes[ attr ] ) {
-            this.geometry.attributes[ attr ].array = this.attributes[ attr ].typedArray.array;
+        if ( geometryAttribute = geometryAttributes[ attr ] ) {
+            geometryAttribute.array = attribute.typedArray.array;
         }
 
         // Add the attribute to the geometry if it doesn't already exist.
         else {
-            this.geometry.addAttribute( attr, this.attributes[ attr ].bufferAttribute );
+            geometry.addAttribute( attr, attribute.bufferAttribute );
         }
     }
 };
