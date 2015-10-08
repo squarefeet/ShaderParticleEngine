@@ -13,7 +13,8 @@ SPE.Emitter = function( options ) {
 
     this.position = {
         value: utils.ensureInstanceOf( options.position.value, THREE.Vector3, new THREE.Vector3() ),
-        spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() )
+        spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() ),
+        valueOverLifetime: utils.ensureInstanceOf( options.position.valueOverLifetime, Array, null )
     };
 
     this.velocity = {

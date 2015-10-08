@@ -137,8 +137,16 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     //
     // TODO: Apply actual values from emitter, not just test data!
     // TODO: Think about attribute packing...esp. with age and alive.
+    // TODO: Think about values over lifetimes...
     for ( var i = start; i < totalParticleCount; ++i ) {
-        utils.randomVector3( attributes.position, i, emitter.position.value, emitter.position.spread );
+        if ( emitter.position.valueOverLifetime ) {
+            utils.randomVector3( attributes.position, i, emitter.position.value, emitter.position.spread );
+            // ...
+        }
+        else {
+            utils.randomVector3( attributes.position, i, emitter.position.value, emitter.position.spread );
+        }
+
         utils.randomVector3( attributes.velocity, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
         utils.randomVector3( attributes.acceleration, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
 

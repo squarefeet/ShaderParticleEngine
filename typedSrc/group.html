@@ -21,7 +21,12 @@
 					particleCount: 1
 				} ),
 				emitter2 = new SPE.Emitter( {
-					particleCount: 1
+					particleCount: 1,
+					position: new SPE.Spread( new THREE.Vector3(), new THREE.Vector3( 10, 10, 10 ) ),
+					velocity: new SPE.ValueOverLifetime(
+						new THREE.Vector3( 10, 10, 0 ),
+						new THREE.Vector3( -10, -10, 0 )
+					)
 				} );
 
 			console.log( group );
