@@ -2,7 +2,8 @@ SPE.Emitter = function( options ) {
     var utils = SPE.utils,
         types = utils.types;
 
-    // Ensure we have a map of options to play with
+    // Ensure we have a map of options to play with,
+    // and that each option is in the correct format.
     options = utils.ensureTypedArg( options, types.OBJECT, {} );
     options.position = utils.ensureTypedArg( options.position, types.OBJECT, {} );
     options.velocity = utils.ensureTypedArg( options.velocity, types.OBJECT, {} );
@@ -13,8 +14,7 @@ SPE.Emitter = function( options ) {
 
     this.position = {
         value: utils.ensureInstanceOf( options.position.value, THREE.Vector3, new THREE.Vector3() ),
-        spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() ),
-        valueOverLifetime: utils.ensureInstanceOf( options.position.valueOverLifetime, Array, null )
+        spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() )
     };
 
     this.velocity = {
