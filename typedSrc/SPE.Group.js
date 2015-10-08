@@ -67,8 +67,7 @@ SPE.Group = function( options ) {
     this.attributes = {
         acceleration: new SPE.ShaderAttribute( 'v3' ),
         velocity: new SPE.ShaderAttribute( 'v3' ),
-        alive: new SPE.ShaderAttribute( 'f' ),
-        age: new SPE.ShaderAttribute( 'f' ),
+        params: new SPE.ShaderAttribute( 'v3' ), // Holds (alive, age, emitterIndex)
         size: new SPE.ShaderAttribute( 'v3' ),
         angle: new SPE.ShaderAttribute( 'v4' ),
         colorStart: new SPE.ShaderAttribute( 'c' ),
@@ -161,8 +160,11 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         // that "feature".
         utils.randomVector3( attributes.angle, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
 
-        attributes.age.typedArray.setNumber( i, i ); // index, value
-        attributes.alive.typedArray.setNumber( i, i ); // index, value
+        // attributes.age.typedArray.setNumber( i, i ); // index, value
+        // attributes.alive.typedArray.setNumber( i, i ); // index, value
+
+        // alive, age, emitterIndex (used for valueOverLifetimes as array start index)
+        attributes.params.typedArray.setVec3Components( i, 0, 0, 0 );
 
         utils.randomColor( attributes.colorStart, i, new THREE.Color( Math.random(), Math.random(), Math.random() ), new THREE.Vector3() );
         utils.randomColor( attributes.colorMiddle, i, new THREE.Color( Math.random(), Math.random(), Math.random() ), new THREE.Vector3() );
