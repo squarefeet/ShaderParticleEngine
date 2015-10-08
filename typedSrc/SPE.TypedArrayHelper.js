@@ -1,5 +1,3 @@
-var SPE = SPE || {};
-
 /**
  * A helper class for TypedArrays.
  *
