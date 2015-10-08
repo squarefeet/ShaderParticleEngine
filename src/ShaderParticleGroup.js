@@ -64,51 +64,84 @@ SPE.Group = function( options ) {
     that.attributes = {
         acceleration: {
             type: 'v3',
+            size: 3,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
         velocity: {
             type: 'v3',
+            size: 3,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
 
         alive: {
             type: 'f',
+            size: 1,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
         age: {
             type: 'f',
+            size: 1,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
 
         size: {
             type: 'v3',
+            size: 3,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
         angle: {
             type: 'v4',
+            size: 4,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
 
         colorStart: {
             type: 'c',
+            size: 3,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
         colorMiddle: {
             type: 'c',
+            size: 3,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
         colorEnd: {
             type: 'c',
+            size: 3,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
 
         opacity: {
             type: 'v3',
+            size: 3,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         },
 
         pos: {
             type: 'v3',
+            size: 3,
+            bufferAttribute: null,
+            typedArray: null,
             value: []
         }
     };
@@ -117,6 +150,13 @@ SPE.Group = function( options ) {
         HAS_PERSPECTIVE: that.hasPerspective,
         COLORIZE: that.colorize
     };
+
+    that.totalAttibuteSize = 0;
+
+    // Calculate total per-particle attribute size.
+    for ( var attr in that.attributes ) {
+        that.totalAttibuteSize += that.attributes[ attr ].size;
+    }
 
     // Emitters (that aren't static) will be added to this array for
     // processing during the `tick()` function.
@@ -132,6 +172,7 @@ SPE.Group = function( options ) {
     // Each particle is a vertex pushed into this geometry's
     // vertices array.
     that.geometry = new THREE.Geometry();
+    // that.geometry = new THREE.BufferGeometry();
 
     // Create the shader material using the properties we set above.
     that.material = new THREE.ShaderMaterial( {
@@ -148,9 +189,9 @@ SPE.Group = function( options ) {
         fog: that.fog
     } );
 
-    // And finally create the ParticleSystem. It's got its `dynamic` property
+    // And finally create the Points instace. It's got its `dynamic` property
     // set so that THREE.js knows to update it on each frame.
-    that.mesh = new THREE.PointCloud( that.geometry, that.material );
+    that.mesh = new THREE.Points( that.geometry, that.material );
     that.mesh.dynamic = true;
 };
 
@@ -176,6 +217,24 @@ SPE.Group.prototype = {
         return that;
     },
 
+    _createBufferAttibute: function( parentObject, size ) {
+        var tmp;
+
+        // Make sure the size is multiplied by the number of components
+        // this array's data "type" should reflect (i.e. 3 for a vec3, 1
+        // for a float, etc.)
+        size *= parentObject.size;
+
+        // If a bufferAttribute already exists, it'll need resizing.
+        if ( parentObject.typedArray ) {
+            size += parentObject.typedArray.length;
+            tmp = new Float32Array( size );
+            tmp.set( parentObject.typedArray );
+        }
+
+        return tmp || new Float32Array( size );
+    },
+
     /**
      * Add an emitter to this particle group. Once added, an emitter will be automatically
      * updated when SPE.Group#tick() is called.
@@ -186,6 +245,9 @@ SPE.Group.prototype = {
     addEmitter: function( emitter ) {
         var that = this;
 
+        // Calculate the `particlesPerSecond` value for this emitter. It's used
+        // when determining which particles should die and which should live to
+        // see another day. Or be born, for that matter. The god property.
         if ( emitter.duration ) {
             emitter.particlesPerSecond = emitter.particleCount / ( that.maxAge < emitter.duration ? that.maxAge : emitter.duration ) | 0;
         }
@@ -193,21 +255,33 @@ SPE.Group.prototype = {
             emitter.particlesPerSecond = emitter.particleCount / that.maxAge | 0
         }
 
+        // Create, or update, the array buffers for each attribute.
+        for ( var attr in that.attributes ) {
+            that.attributes[ attr ].typedArray = that._createBufferAttibute(
+                that.attributes[ attr ],
+                emitter.particleCount
+            );
+        }
+
+        console.log( that.attributes );
+
         var vertices = that.geometry.vertices,
             start = vertices.length,
             end = emitter.particleCount + start,
             a = that.attributes,
-            acceleration = a.acceleration.value,
-            velocity = a.velocity.value,
-            alive = a.alive.value,
-            age = a.age.value,
-            size = a.size.value,
-            angle = a.angle.value,
-            colorStart = a.colorStart.value,
-            colorMiddle = a.colorMiddle.value,
-            colorEnd = a.colorEnd.value,
-            opacity = a.opacity.value,
-            pos = a.pos.value;
+            acceleration = a.acceleration.typedArray,
+            velocity = a.velocity.typedArray,
+            alive = a.alive.typedArray,
+            age = a.age.typedArray,
+            size = a.size.typedArray,
+            angle = a.angle.typedArray,
+            colorStart = a.colorStart.typedArray,
+            colorMiddle = a.colorMiddle.typedArray,
+            colorEnd = a.colorEnd.typedArray,
+            opacity = a.opacity.typedArray,
+            pos = a.pos.typedArray,
+            basePos = new THREE.Vector3(),
+            workingVector = new Three.Vector3();
 
         emitter.particleIndex = parseFloat( start );
 
@@ -215,6 +289,10 @@ SPE.Group.prototype = {
         for ( var i = start; i < end; ++i ) {
 
             if ( emitter.type === 'sphere' ) {
+                vertices[ i ] = basePos;
+                vertices[ i + 0 ] = basePos.x;
+                vertices[ i + 1 ] = basePos.y;
+                vertices[ i + 2 ] = basePos.z;
                 pos[ i ] = that.randomVector3OnSphere( emitter._position, emitter._radius, emitter._radiusSpread, emitter._radiusScale, emitter._radiusSpreadClamp );
                 vertices[ i ] = pos[ i ];
                 velocity[ i ] = that.randomVelocityVector3OnSphere( pos[ i ], emitter._position, emitter._speed, emitter._speedSpread );
