@@ -8,6 +8,12 @@
 				margin: 0;
 				overflow: hidden;
 			}
+
+			#stats {
+				position: absolute;
+				top: 0;
+				z-index: 2;
+			}
 		</style>
 
 		<script type="text/x-shader" id="vertexShader">
@@ -127,12 +133,13 @@
 			varying vec3 vColor;
 
 			void main() {
-				gl_FragColor = vec4( vColor, 1.0 );
+				gl_FragColor = vec4( vColor, 0.1 );
 			}
 		</script>
 	</head>
 	<body>
 		<script type="text/javascript" src="../../examples/js/THREE-r72.js"></script>
+		<script type="text/javascript" src="../../examples/js/Stats.min.js"></script>
 		<script type="text/javascript" src="../SPE.js"></script>
 		<script type="text/javascript" src="../SPE.TypedArrayHelper.js"></script>
 		<script type="text/javascript" src="../SPE.ShaderAttribute.js"></script>
@@ -150,18 +157,19 @@
 			var scene = new THREE.Scene(),
 				camera = new THREE.PerspectiveCamera( 64, window.innerWidth / window.innerHeight, 0.1, 10000 ),
 				renderer = new THREE.WebGLRenderer( { antialias: true } ),
+				stats = new Stats(),
+				clock = new THREE.Clock(),
 
 				group = new SPE.Group({
 					maxAge: 1
 				}),
 				emitter = new SPE.Emitter( {
-					particleCount: 100,
+					particleCount: 2000000,
 					position: {
-						value: new THREE.Vector3(),
 						spread: new THREE.Vector3( 5, 5, 5 )
 					},
 					size: {
-						spread: [50, 50, 50]
+						spread: [10, 10, 10]
 					},
 					color: {
 						value: [ new THREE.Color( 1, 0, 0 ), new THREE.Color( 0, 1, 0 ), new THREE.Color( 1, 1, 1 ) ]
@@ -177,13 +185,20 @@
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 
+			document.body.appendChild( stats.domElement );
+
 			function animate() {
 				requestAnimationFrame( animate );
+				stats.update();
+				camera.position.x = Math.cos( Date.now() * 0.0005 ) * 10;
+				camera.position.z = Math.sin( Date.now() * 0.0005 ) * 10;
+				camera.lookAt( scene.position );
 				render();
 			}
 
 			function render() {
-				group.tick();
+				var dt = clock.getDelta();
+				group.tick( dt );
 				renderer.render( scene, camera );
 			}
 
