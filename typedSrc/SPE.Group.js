@@ -18,6 +18,8 @@ SPE.Group = function( options ) {
     this.hasPerspective = utils.ensureTypedArg( options.hasPerspective, types.BOOLEAN, true );
     this.colorize = utils.ensureTypedArg( options.colorize, types.BOOLEAN, true );
 
+
+
     // Set properties used to define the ShaderMaterial's appearance.
     this.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.AdditiveBlending );
     this.transparent = utils.ensureTypedArg( options.transparent, types.BOOLEAN, true );
@@ -27,12 +29,13 @@ SPE.Group = function( options ) {
     this.fog = utils.ensureTypedArg( options.fog, types.BOOLEAN, true );
     this.fogColor = utils.ensureInstanceOf( options.fogColor, THREE.Color, new THREE.Color() );
 
+    // Where emitter's go to curl up in a warm blanket and live
+    // out their days.
+    this.emitters = [];
+    this.emitterIDs = [];
+
     // Map of uniforms to be applied to the ShaderMaterial instance.
     this.uniforms = {
-        duration: {
-            type: 'f',
-            value: this.maxAge
-        },
         texture: {
             type: 't',
             value: this.texture
@@ -52,13 +55,19 @@ SPE.Group = function( options ) {
         fogDensity: {
             type: 'f',
             value: 0.5
+        },
+
+        sizeOverLifetime: {
+            type: 'fv1',
+            value: [ 0, 2, 0 ]
         }
     };
 
-    // Add some constants into the mix...
+    // Add some defines into the mix...
     this.defines = {
         HAS_PERSPECTIVE: this.hasPerspective,
-        COLORIZE: this.colorize
+        COLORIZE: this.colorize,
+        MAX_AGE: this.maxAge
     };
 
     // Map of all attributes to be applied to the particles.
@@ -70,9 +79,7 @@ SPE.Group = function( options ) {
         params: new SPE.ShaderAttribute( 'v3' ), // Holds (alive, age, emitterIndex)
         size: new SPE.ShaderAttribute( 'v3' ),
         angle: new SPE.ShaderAttribute( 'v4' ),
-        colorStart: new SPE.ShaderAttribute( 'c' ),
-        colorMiddle: new SPE.ShaderAttribute( 'c' ),
-        colorEnd: new SPE.ShaderAttribute( 'c' ),
+        color: new SPE.ShaderAttribute( 'v3' ),
         opacity: new SPE.ShaderAttribute( 'v3' ),
         position: new SPE.ShaderAttribute( 'v3' )
     };
@@ -111,19 +118,17 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         console.error( '`emitter` argument must be instance of SPE.Emitter. Was provided with:', emitter );
         return;
     }
+    else if ( this.emitterIDs.indexOf( emitter.UUID ) > -1 ) {
+        console.warn( 'Emitter already exists in this group. Will not add again.' );
+        return;
+    }
 
-    // Set the `particlesPerSecond` value (PPS) on the emitter.
-    // It's used to determine how many particles to release
-    // on a per-frame basis.
-    emitter._calculatePPSValue( this.maxAge );
+
 
     var attributes = this.attributes,
         start = attributes.position.getLength() / 3,
         totalParticleCount = start + emitter.particleCount,
         utils = SPE.utils;
-
-    // Store the offset value in the TypedArray attributes for this emitter.
-    emitter.attributeOffset = start;
 
     // Ensure the attributes and their BufferAttributes exist, and their
     // TypedArrays are of the correct size.
@@ -138,37 +143,35 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // TODO: Think about attribute packing...esp. with age and alive.
     // TODO: Think about values over lifetimes...
     for ( var i = start; i < totalParticleCount; ++i ) {
-        if ( Array.isArray( emitter.position.value ) ) {
-            utils.randomVector3( attributes.position, i, emitter.position.value[ 0 ], emitter.position.spread );
-            // ...
-        }
-        else {
-            utils.randomVector3( attributes.position, i, emitter.position.value, emitter.position.spread );
-        }
+        utils.randomVector3( attributes.position, i, emitter.position.value, emitter.position.spread );
+        utils.randomVector3( attributes.velocity, i, emitter.velocity.value, emitter.velocity.spread );
+        utils.randomVector3( attributes.acceleration, i, emitter.acceleration.value, emitter.acceleration.spread );
 
-        utils.randomVector3( attributes.velocity, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
-        utils.randomVector3( attributes.acceleration, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
 
-        // TODO:
-        // Don't use utils.randomVector3 here. Size components need to be calculated seperately
-        // and there's no need to use a Vec3 to do it in.
-        utils.randomVector3( attributes.size, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
+        attributes.size.typedArray.setVec3Components( i,
+            Math.abs( utils.randomFloat( emitter.size.value[ 0 ], emitter.size.spread[ 0 ] ) ),
+            Math.abs( utils.randomFloat( emitter.size.value[ 1 ], emitter.size.spread[ 1 ] ) ),
+            Math.abs( utils.randomFloat( emitter.size.value[ 2 ], emitter.size.spread[ 2 ] ) )
+        );
 
-        // TODO:
-        // Don't use utils here. Use emitter's angle values. Again, no need for Vec3 instance.
-        // Also, angle is currently a Vec4, but angleAlignVelocity is borked, so I should remove
-        // that "feature".
-        utils.randomVector3( attributes.angle, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
-
-        // attributes.age.typedArray.setNumber( i, i ); // index, value
-        // attributes.alive.typedArray.setNumber( i, i ); // index, value
+        attributes.angle.typedArray.setVec3Components( i,
+            utils.randomFloat( emitter.angle.value[ 0 ], emitter.angle.spread[ 0 ] ),
+            utils.randomFloat( emitter.angle.value[ 1 ], emitter.angle.spread[ 1 ] ),
+            utils.randomFloat( emitter.angle.value[ 2 ], emitter.angle.spread[ 2 ] )
+        );
 
         // alive, age, emitterIndex (used for valueOverLifetimes as array start index)
         attributes.params.typedArray.setVec3Components( i, 0, 0, 0 );
 
-        utils.randomColor( attributes.colorStart, i, new THREE.Color( Math.random(), Math.random(), Math.random() ), new THREE.Vector3() );
-        utils.randomColor( attributes.colorMiddle, i, new THREE.Color( Math.random(), Math.random(), Math.random() ), new THREE.Vector3() );
-        utils.randomColor( attributes.colorEnd, i, new THREE.Color( Math.random(), Math.random(), Math.random() ), new THREE.Vector3() );
+        // attributes.color.typedArray.setVec3Components( i,
+        //     utils.randomFloat( emitter.color.value[ 0 ], emitter.color.spread[ 0 ] )
+        // );
+
+        utils.randomColorAsHex( attributes.color, i, emitter.color.value, emitter.color.spread );
+
+        // utils.randomColor( attributes.colorStart, i, emitter.color.value[ 0 ], emitter.color.spread[ 0 ] );
+        // utils.randomColor( attributes.colorMiddle, i, emitter.color.value[ 1 ], emitter.color.spread[ 1 ] );
+        // utils.randomColor( attributes.colorEnd, i, emitter.color.value[ 2 ], emitter.color.spread[ 2 ] );
 
         utils.randomVector3( attributes.opacity, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
     }
@@ -176,6 +179,23 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // Update the geometry and make sure the attributes are referencing
     // the typed arrays properly.
     this._applyAttributesToGeometry();
+
+    // Set the `particlesPerSecond` value (PPS) on the emitter.
+    // It's used to determine how many particles to release
+    // on a per-frame basis.
+    emitter._calculatePPSValue( this.maxAge );
+
+    // Store the offset value in the TypedArray attributes for this emitter.
+    emitter.attributeOffset = start;
+
+    // Store reference to the attributes on the emitter for
+    // easier access during the emitter's tick function.
+    emitter.attributes = this.attributes;
+    emitter.maxAge = this.maxAge;
+
+    // Store this emitter in this group's emitter's store.
+    this.emitters.push( emitter );
+    this.emitterIDs.push( emitter.uuid );
 
     return this;
 };
@@ -204,4 +224,27 @@ SPE.Group.prototype._applyAttributesToGeometry = function() {
             geometry.addAttribute( attr, attribute.bufferAttribute );
         }
     }
+};
+
+
+
+SPE.Group.prototype.tick = function( dt ) {
+    var that = this,
+        emitters = that.emitters,
+        numEmitters = emitters.length;
+
+    dt = dt || that.fixedTimeStep;
+
+    if ( numEmitters === 0 ) {
+        return;
+    }
+
+    for ( var i = 0; i < numEmitters; ++i ) {
+        emitters[ i ].tick( dt );
+    }
+
+    // this.geometry.needsUpdate = true;
+
+    // that._flagUpdate();
+    return that;
 };

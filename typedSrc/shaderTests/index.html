@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+
+		<style type="text/css">
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+
+		<script type="text/x-shader" id="vertexShader">
+			#define HEX_COLOR 16711935.0
+
+			uniform float sizeOverLifetime[3];
+
+			attribute vec3 acceleration;
+			attribute vec3 velocity;
+			attribute vec3 params;
+			attribute vec3 size;
+			attribute vec4 angle;
+			attribute vec3 color;
+			attribute vec3 opacity;
+
+			varying vec3 vColor;
+
+			// From: http://stackoverflow.com/a/12553149
+			vec3 unpackColor( in float hex ) {
+				vec3 c = vec3( 0.0 );
+			 	c.z = floor( hex / ( 256.0 * 256.0 ) );
+			    c.y = floor( (hex - c.z * 256.0 * 256.0 ) / 256.0 );
+			    c.x = floor( mod( hex, 256.0 ) );
+				return c;
+			}
+
+
+			vec3 getColorOverLifetime(
+				in float age,
+				in float maxAge,
+				in float valueOverLifetimeLength,
+				in vec3 color1,
+				in vec3 color2,
+				in vec3 color3
+			) {
+				vec3 value = vec3( 0.0 );
+	            float deltaAge = ( age / maxAge ) * ( valueOverLifetimeLength - 1.0 );
+
+	            if( deltaAge >= 0.0 && deltaAge < 1.0 ) {
+	            	value = mix(
+	            		color1,
+	            		color2,
+	            		deltaAge
+	            	);
+	            }
+	            else if( deltaAge >= 1.0 && deltaAge < 2.0 ) {
+	            	value = mix(
+	            		color2,
+	            		color3,
+	            		deltaAge - 1.0
+	            	);
+	            }
+
+	            return value;
+	        }
+
+
+			float getFloatOverLifetime(
+				in float age,
+				in float maxAge,
+				in float valueOverLifetimeLength,
+				in vec3 attr
+			) {
+				float value = 0.0;
+	            float deltaAge = ( age / maxAge ) * ( valueOverLifetimeLength - 1.0 );
+
+	            if( deltaAge >= 0.0 && deltaAge <= 1.0 ) {
+	            	value = mix(
+	            		attr.x,
+	            		attr.y,
+	            		deltaAge
+	            	);
+	            }
+	            else if( deltaAge > 1.0 && deltaAge <= 2.0 ) {
+	            	value = mix(
+	            		attr.y,
+	            		attr.z,
+	            		deltaAge - 1.0
+	            	);
+	            }
+
+	            return value;
+	        }
+
+	        float getAlive() {
+	        	return params.x;
+	        }
+
+	        float getAge() {
+	        	return params.y;
+	        }
+
+	        int getEmitterIndex() {
+	        	return int( params.z );
+	        }
+
+	        void main() {
+	        	float alive = params.x;
+	        	float age = getAge();
+	        	int emitterIndex = getEmitterIndex();
+
+	        	vColor = getColorOverLifetime(
+	        		age,
+	        		float( MAX_AGE ),
+	        		3.0,
+	        		unpackColor( color.x ),
+	        		unpackColor( color.y ),
+	        		unpackColor( color.z )
+	        	);
+
+	        	gl_PointSize = getFloatOverLifetime( age, float( MAX_AGE ), 3.0, size );
+	        	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+	        }
+		</script>
+
+		<script type="text/x-shader" id="fragmentShader">
+			varying vec3 vColor;
+
+			void main() {
+				gl_FragColor = vec4( vColor, 1.0 );
+			}
+		</script>
+	</head>
+	<body>
+		<script type="text/javascript" src="../../examples/js/THREE-r72.js"></script>
+		<script type="text/javascript" src="../SPE.js"></script>
+		<script type="text/javascript" src="../SPE.TypedArrayHelper.js"></script>
+		<script type="text/javascript" src="../SPE.ShaderAttribute.js"></script>
+		<script type="text/javascript" src="../SPE.shaders.js"></script>
+		<script type="text/javascript" src="../SPE.utils.js"></script>
+		<script type="text/javascript" src="../SPE.Group.js"></script>
+		<script type="text/javascript" src="../SPE.Emitter.js"></script>
+
+		<script type="text/javascript">
+			// Override shaders with ones above.
+			SPE.shaders.vertex = document.getElementById( 'vertexShader' ).textContent;
+			SPE.shaders.fragment = document.getElementById( 'fragmentShader' ).textContent;
+
+
+			var scene = new THREE.Scene(),
+				camera = new THREE.PerspectiveCamera( 64, window.innerWidth / window.innerHeight, 0.1, 10000 ),
+				renderer = new THREE.WebGLRenderer( { antialias: true } ),
+
+				group = new SPE.Group({
+					maxAge: 1
+				}),
+				emitter = new SPE.Emitter( {
+					particleCount: 100,
+					position: {
+						value: new THREE.Vector3(),
+						spread: new THREE.Vector3( 5, 5, 5 )
+					},
+					size: {
+						spread: [50, 50, 50]
+					},
+					color: {
+						value: [ new THREE.Color( 1, 0, 0 ), new THREE.Color( 0, 1, 0 ), new THREE.Color( 1, 1, 1 ) ]
+					}
+				});
+
+			group.addEmitter( emitter );
+			scene.add( group.mesh );
+
+			camera.position.z = 10;
+			camera.lookAt( scene.position );
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {
+				group.tick();
+				renderer.render( scene, camera );
+			}
+
+			console.log( group );
+			console.log( emitter );
+			animate();
+
+		</script>
+	</body>
+</html>

@@ -1,8 +1,9 @@
-SPE.ShaderAttribute = function( type ) {
+SPE.ShaderAttribute = function( type, arrayType ) {
     var typeMap = SPE.ShaderAttribute.typeSizeMap;
 
     this.type = typeof type === 'string' && typeMap.hasOwnProperty( type ) ? type : 'f';
     this.componentSize = typeMap[ this.type ];
+    this.arrayType = arrayType || Float32Array;
     this.typedArray = null;
     this.bufferAttribute = null;
 }
@@ -33,7 +34,7 @@ SPE.ShaderAttribute.prototype._ensureTypedArray = function( size ) {
 
     // This condition should only occur once in an attribute's lifecycle.
     else if ( this.typedArray === null ) {
-        this.typedArray = new SPE.TypedArrayHelper( Float32Array, size, this.componentSize );
+        this.typedArray = new SPE.TypedArrayHelper( this.arrayType, size, this.componentSize );
     }
 };
 

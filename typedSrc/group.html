@@ -17,10 +17,10 @@
 
 			} );
 
-			var emitter1 = new SPE.Emitter( {
-					particleCount: 1
-				} ),
-				emitter2 = new SPE.Emitter( {
+			// var emitter1 = new SPE.Emitter( {
+			// 		particleCount: 1,
+			// 	} );
+			var emitter2 = new SPE.Emitter( {
 					particleCount: 1,
 					position: {
 						value: new THREE.Vector3,
@@ -29,16 +29,23 @@
 					velocity: {
 						value: new THREE.Vector3,
 						spread: new THREE.Vector3( 5, 5, 5 )
+					},
+					size: {
+						value: [1, 5],
+						spread: [0, 50, 60, 80]
+					},
+					color: {
+						value: [ new THREE.Color( 0, 0, 0 ), new THREE.Color( 0.2, 0.2, 0.2 ) ]
 					}
 				} );
 
 			console.log( group );
-			console.log( emitter1 );
 			console.log( emitter2 );
 
-			group.addEmitter( emitter1 ).addEmitter( emitter2 );
+			// group.addEmitter( emitter1 ).addEmitter( emitter2 );
+			group.addEmitter( emitter2 );
 
-			console.log( group.attributes );
+			// console.log( group.attributes );
 		</script>
 	</body>
 </html>
