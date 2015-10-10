@@ -17,19 +17,50 @@
 		</style>
 
 		<script type="text/x-shader" id="vertexShader">
-			#define HEX_COLOR 16711935.0
-
-			uniform float sizeOverLifetime[3];
-
-			attribute vec3 acceleration;
+			attribute vec4 acceleration;
 			attribute vec3 velocity;
 			attribute vec3 params;
 			attribute vec3 size;
-			attribute vec4 angle;
+			attribute vec3 angle;
 			attribute vec3 color;
 			attribute vec3 opacity;
 
-			varying vec3 vColor;
+			varying vec4 vColor;
+			varying float vAngle;
+
+			// Branch-avoiding comparison fns
+			// - http://theorangeduck.com/page/avoiding-shader-conditionals
+			float when_gt(float x, float y) {
+			    return max(sign(x - y), 0.0);
+			}
+
+			float when_lt(float x, float y) {
+			    return min( max(1.0 - sign(x - y), 0.0), 1.0 );
+			}
+
+			float when_eq( float x, float y ) {
+			    return 1.0 - abs( sign( x - y ) );
+			}
+
+			float when_ge(float x, float y) {
+			  return 1.0 - when_lt(x, y);
+			}
+
+			float when_le(float x, float y) {
+			  return 1.0 - when_gt(x, y);
+			}
+
+			// Branch-avoiding logical operators
+			// (to be used with above comparison fns)
+			float and(float a, float b) {
+			    return a * b;
+			}
+
+			float or(float a, float b) {
+			    return min(a + b, 1.0);
+			}
+
+
 
 			// From: http://stackoverflow.com/a/12553149
 			vec3 unpackColor( in float hex ) {
@@ -42,58 +73,41 @@
 
 
 			vec3 getColorOverLifetime(
-				in float age,
-				in float maxAge,
+				in float positionInTime,
 				in float valueOverLifetimeLength,
 				in vec3 color1,
 				in vec3 color2,
 				in vec3 color3
 			) {
 				vec3 value = vec3( 0.0 );
-	            float deltaAge = ( age / maxAge ) * ( valueOverLifetimeLength - 1.0 );
+	            float deltaAge = positionInTime * ( valueOverLifetimeLength - 1.0 );
 
-	            if( deltaAge >= 0.0 && deltaAge < 1.0 ) {
-	            	value = mix(
-	            		color1,
-	            		color2,
-	            		deltaAge
-	            	);
-	            }
-	            else if( deltaAge >= 1.0 && deltaAge < 2.0 ) {
-	            	value = mix(
-	            		color2,
-	            		color3,
-	            		deltaAge - 1.0
-	            	);
-	            }
+	            value += color1 * when_eq( deltaAge, 0.0 );
+	            value += mix( color1, color2, deltaAge ) * and( when_gt( deltaAge, 0.0 ), when_lt( deltaAge, 1.0 ) );
+	            value += mix( color2, color3, deltaAge - 1.0) * and( when_ge( deltaAge, 1.0 ), when_lt( deltaAge, 2.0 ) );
+	            value += color3 * when_gt( deltaAge, 2.0 );
 
 	            return value;
 	        }
 
-
 			float getFloatOverLifetime(
-				in float age,
-				in float maxAge,
+				in float positionInTime,
 				in float valueOverLifetimeLength,
 				in vec3 attr
 			) {
 				float value = 0.0;
-	            float deltaAge = ( age / maxAge ) * ( valueOverLifetimeLength - 1.0 );
+	            float deltaAge = positionInTime * ( valueOverLifetimeLength - 1.0 );
 
-	            if( deltaAge >= 0.0 && deltaAge <= 1.0 ) {
-	            	value = mix(
-	            		attr.x,
-	            		attr.y,
-	            		deltaAge
-	            	);
-	            }
-	            else if( deltaAge > 1.0 && deltaAge <= 2.0 ) {
-	            	value = mix(
-	            		attr.y,
-	            		attr.z,
-	            		deltaAge - 1.0
-	            	);
-	            }
+	            // This might look a little odd, but it's quite elegant. Uses
+	            // basic maths to avoid branching. Nice.
+	            //
+	            // Take a look at the branch-avoidance functions defined above,
+	            // and be sure to check out The Orange Duck site where I got this
+	            // from (link above).
+	            value += attr.x * when_eq( deltaAge, 0.0 );
+	            value += mix( attr.x, attr.y, deltaAge ) * and( when_gt( deltaAge, 0.0 ), when_lt( deltaAge, 1.0 ) );
+	            value += mix( attr.y, attr.z, deltaAge - 1.0) * and( when_ge( deltaAge, 1.0 ), when_lt( deltaAge, 2.0 ) );
+	            value += attr.z * when_gt( deltaAge, 2.0 );
 
 	            return value;
 	        }
@@ -110,30 +124,117 @@
 	        	return int( params.z );
 	        }
 
+
+
+	        vec4 getPosition( in float age ) {
+	        	// vec3 pos = vec3( position );
+	        	// vec3 accel = vec3( acceleration );
+	        	// vec3 vel = vec3( velocity );
+	        	// float drag = acceleration.w;
+
+	        	// accel *= age;
+	        	// vel *= age;
+
+	        	// vel += accel * age;
+	        	// // vel *= drag * age;
+
+	        	// pos += vel;
+
+	        	return modelViewMatrix * vec4( position, 1.0 );
+	        }
+
+	        vec3 getVelocity( in float age ) {
+	        	return velocity * age;
+	        }
+
+	        vec3 getAcceleration( in float age ) {
+	        	return vec3(acceleration) * age;
+	        }
+
+
 	        void main() {
+	        	//
+	        	// Setup...
+	        	//
 	        	float alive = params.x;
 	        	float age = getAge();
 	        	int emitterIndex = getEmitterIndex();
 
-	        	vColor = getColorOverLifetime(
-	        		age,
-	        		float( MAX_AGE ),
+	        	float isAlive = when_gt( alive, 0.0 );
+	        	float positionInTime = age / float( MAX_AGE );
+
+
+	        	//
+	        	// Forces
+	        	//
+
+	        	// Get forces & position
+	        	float drag = mix( 1.0, 0.5 + acceleration.w, positionInTime);
+	        	vec3 vel = getVelocity( age );
+	        	vec3 accel = getAcceleration( age );
+	        	vec3 force = vec3( accel );
+	        	vec3 pos = vec3( position );
+
+	        	// Integrate forces...
+	        	force += vel;
+	        	force *= drag;
+	        	force += accel * age;
+	        	pos += force;
+
+	        	// Convert pos to a world-space value
+	        	vec4 mvPos = modelViewMatrix * vec4( pos, 1.0 );
+
+	        	// Determine point size.
+	        	float pointSize = getFloatOverLifetime( positionInTime, 3.0, size ) * isAlive;
+
+	        	// Apply perspective
+	        	// TODO: Accept camera here via `scale` uniform
+	        	#ifdef HAS_PERSPECTIVE
+	        		pointSize *= 300.0 / length( mvPos.xyz );
+	        	#endif
+
+
+
+	        	//
+	        	// Appearance
+	        	//
+
+	        	// Determine color and opacity for this particle
+	        	vec3 c = getColorOverLifetime(
+	        		positionInTime,
 	        		3.0,
 	        		unpackColor( color.x ),
 	        		unpackColor( color.y ),
 	        		unpackColor( color.z )
-	        	);
+	        	) * isAlive;
 
-	        	gl_PointSize = getFloatOverLifetime( age, float( MAX_AGE ), 3.0, size );
-	        	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+	        	float o = getFloatOverLifetime( positionInTime, 3.0, opacity ) * isAlive;
+
+	        	// Assign color to vColor varying.
+	        	vColor = vec4( c, o );
+
+	        	// Determine angle
+	        	vAngle = getFloatOverLifetime( positionInTime, 3.0, angle ) * isAlive;
+
+
+
+	        	//
+	        	// Write values
+	        	//
+
+	        	// Set PointSize according to size at current point in time.
+	        	gl_PointSize = pointSize;
+	        	gl_Position = projectionMatrix * mvPos;
 	        }
 		</script>
 
 		<script type="text/x-shader" id="fragmentShader">
-			varying vec3 vColor;
+			varying vec4 vColor;
+			varying float vAngle;
 
 			void main() {
-				gl_FragColor = vec4( vColor, 0.1 );
+				float a = vAngle;
+				gl_FragColor = vec4( vColor );
 			}
 		</script>
 	</head>
@@ -161,25 +262,43 @@
 				clock = new THREE.Clock(),
 
 				group = new SPE.Group({
-					maxAge: 1
+					maxAge: 2,
 				}),
 				emitter = new SPE.Emitter( {
-					particleCount: 2000000,
+					particleCount: 5000,
 					position: {
-						spread: new THREE.Vector3( 5, 5, 5 )
+						spread: new THREE.Vector3( 50, 50, 50 )
+					},
+					velocity: {
+						value: new THREE.Vector3( 5, 10, 0 )
+					},
+					acceleration: {
+						value: new THREE.Vector3( 1, -5, 0 )
+					},
+					drag: {
+						value: 0,
+						spread: 0
 					},
 					size: {
-						spread: [10, 10, 10]
+						spread: [2, 2, 2]
 					},
 					color: {
-						value: [ new THREE.Color( 1, 0, 0 ), new THREE.Color( 0, 1, 0 ), new THREE.Color( 1, 1, 1 ) ]
+						value: [
+							new THREE.Color( 1, 0, 0 ),
+							new THREE.Color( 0, 1, 0 ),
+							new THREE.Color( 1, 0, 0 )
+						],
+						spread: [ new THREE.Vector3( 1, 1, 1 ) ]
+					},
+					opacity: {
+						value: [0, 1, 0]
 					}
 				});
 
 			group.addEmitter( emitter );
 			scene.add( group.mesh );
 
-			camera.position.z = 10;
+			camera.position.z = 100;
 			camera.lookAt( scene.position );
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
@@ -190,9 +309,9 @@
 			function animate() {
 				requestAnimationFrame( animate );
 				stats.update();
-				camera.position.x = Math.cos( Date.now() * 0.0005 ) * 10;
-				camera.position.z = Math.sin( Date.now() * 0.0005 ) * 10;
-				camera.lookAt( scene.position );
+				// camera.position.x = Math.cos( Date.now() * 0.0005 ) * 100;
+				// camera.position.z = Math.sin( Date.now() * 0.0005 ) * 100;
+				// camera.lookAt( scene.position );
 				render();
 			}
 

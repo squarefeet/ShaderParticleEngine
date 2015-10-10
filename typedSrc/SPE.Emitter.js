@@ -10,11 +10,11 @@ SPE.Emitter = function( options ) {
     options.position = utils.ensureTypedArg( options.position, types.OBJECT, {} );
     options.velocity = utils.ensureTypedArg( options.velocity, types.OBJECT, {} );
     options.acceleration = utils.ensureTypedArg( options.acceleration, types.OBJECT, {} );
+    options.drag = utils.ensureTypedArg( options.drag, types.OBJECT, {} );
     options.color = utils.ensureTypedArg( options.color, types.OBJECT, {} );
     options.opacity = utils.ensureTypedArg( options.opacity, types.OBJECT, {} );
     options.size = utils.ensureTypedArg( options.size, types.OBJECT, {} );
     options.angle = utils.ensureTypedArg( options.angle, types.OBJECT, {} );
-
     this.uuid = THREE.Math.generateUUID();
 
     this.type = utils.ensureTypedArg( options.type, types.NUMBER, SPE.emitterTypes.BOX );
@@ -37,6 +37,11 @@ SPE.Emitter = function( options ) {
     this.acceleration = {
         value: utils.ensureInstanceOf( options.acceleration.value, THREE.Vector3, new THREE.Vector3() ),
         spread: utils.ensureInstanceOf( options.acceleration.spread, THREE.Vector3, new THREE.Vector3() )
+    };
+
+    this.drag = {
+        value: utils.ensureTypedArg( options.drag.value, types.NUMBER, 0 ),
+        spread: utils.ensureTypedArg( options.drag.spread, types.NUMBER, 0 )
     };
 
     // The following properties can support either single values, or an array of values that change

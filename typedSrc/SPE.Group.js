@@ -21,7 +21,7 @@ SPE.Group = function( options ) {
 
 
     // Set properties used to define the ShaderMaterial's appearance.
-    this.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.AdditiveBlending );
+    this.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.NormalBlending );
     this.transparent = utils.ensureTypedArg( options.transparent, types.BOOLEAN, true );
     this.alphaTest = utils.ensureTypedArg( options.alphaTest, types.NUMBER, 0.5 );
     this.depthWrite = utils.ensureTypedArg( options.depthWrite, types.BOOLEAN, false );
@@ -55,11 +55,6 @@ SPE.Group = function( options ) {
         fogDensity: {
             type: 'f',
             value: 0.5
-        },
-
-        sizeOverLifetime: {
-            type: 'fv1',
-            value: [ 0, 2, 0 ]
         }
     };
 
@@ -74,7 +69,7 @@ SPE.Group = function( options ) {
     //
     // See SPE.ShaderAttribute for a bit more info on this bit.
     this.attributes = {
-        acceleration: new SPE.ShaderAttribute( 'v3' ),
+        acceleration: new SPE.ShaderAttribute( 'v4' ),
         velocity: new SPE.ShaderAttribute( 'v3' ),
         params: new SPE.ShaderAttribute( 'v3' ), // Holds (alive, age, emitterIndex)
         size: new SPE.ShaderAttribute( 'v3' ),
@@ -145,8 +140,14 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     for ( var i = start; i < totalParticleCount; ++i ) {
         utils.randomVector3( attributes.position, i, emitter.position.value, emitter.position.spread );
         utils.randomVector3( attributes.velocity, i, emitter.velocity.value, emitter.velocity.spread );
-        utils.randomVector3( attributes.acceleration, i, emitter.acceleration.value, emitter.acceleration.spread );
+        // utils.randomVector3( attributes.acceleration, i, emitter.acceleration.value, emitter.acceleration.spread );
 
+        attributes.acceleration.typedArray.setVec4Components( i,
+            utils.randomFloat( emitter.acceleration.value.x, emitter.acceleration.spread.x ),
+            utils.randomFloat( emitter.acceleration.value.y, emitter.acceleration.spread.y ),
+            utils.randomFloat( emitter.acceleration.value.z, emitter.acceleration.spread.z ),
+            1 - utils.clamp( utils.randomFloat( emitter.drag.value, emitter.drag.spread ), 0, 1 )
+        );
 
         attributes.size.typedArray.setVec3Components( i,
             Math.abs( utils.randomFloat( emitter.size.value[ 0 ], emitter.size.spread[ 0 ] ) ),
@@ -161,7 +162,7 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         );
 
         // alive, age, emitterIndex (used for valueOverLifetimes as array start index)
-        attributes.params.typedArray.setVec3Components( i, 0, 0, 0 );
+        attributes.params.typedArray.setVec3Components( i, 1, 0, 0 );
 
         // attributes.color.typedArray.setVec3Components( i,
         //     utils.randomFloat( emitter.color.value[ 0 ], emitter.color.spread[ 0 ] )
@@ -173,7 +174,11 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         // utils.randomColor( attributes.colorMiddle, i, emitter.color.value[ 1 ], emitter.color.spread[ 1 ] );
         // utils.randomColor( attributes.colorEnd, i, emitter.color.value[ 2 ], emitter.color.spread[ 2 ] );
 
-        utils.randomVector3( attributes.opacity, i, new THREE.Vector3( i, i, i ), new THREE.Vector3() );
+        attributes.opacity.typedArray.setVec3Components( i,
+            Math.abs( utils.randomFloat( emitter.opacity.value[ 0 ], emitter.opacity.spread[ 0 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity.value[ 1 ], emitter.opacity.spread[ 1 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity.value[ 2 ], emitter.opacity.spread[ 2 ] ) )
+        );
     }
 
     // Update the geometry and make sure the attributes are referencing
