@@ -62,12 +62,20 @@
 
 
 
-			// From: http://stackoverflow.com/a/12553149
+			// From:
+			// - http://stackoverflow.com/a/12553149
+			// - https://stackoverflow.com/questions/22895237/hexadecimal-to-rgb-values-in-webgl-shader
 			vec3 unpackColor( in float hex ) {
 				vec3 c = vec3( 0.0 );
-			 	c.z = floor( hex / ( 256.0 * 256.0 ) );
-			    c.y = floor( (hex - c.z * 256.0 * 256.0 ) / 256.0 );
-			    c.x = floor( mod( hex, 256.0 ) );
+
+			  	float r = mod( (hex / 256.0 / 256.0), 256.0 );
+			  	float g = mod( (hex / 256.0), 256.0 );
+			  	float b = mod( hex, 256.0 );
+
+			  	c.r = r / 255.0;
+			  	c.g = g / 255.0;
+			  	c.b = b / 255.0;
+
 				return c;
 			}
 
@@ -265,34 +273,33 @@
 					maxAge: 2,
 				}),
 				emitter = new SPE.Emitter( {
-					particleCount: 5000,
+					particleCount: 5,
 					position: {
 						spread: new THREE.Vector3( 50, 50, 50 )
 					},
-					velocity: {
-						value: new THREE.Vector3( 5, 10, 0 )
-					},
-					acceleration: {
-						value: new THREE.Vector3( 1, -5, 0 )
-					},
-					drag: {
-						value: 0,
-						spread: 0
-					},
+					// velocity: {
+					// 	value: new THREE.Vector3( 5, 10, 0 )
+					// },
+					// acceleration: {
+					// 	value: new THREE.Vector3( 1, -5, 0 )
+					// },
+					// drag: {
+					// 	value: 0,
+					// 	spread: 0
+					// },
 					size: {
-						spread: [2, 2, 2]
+						// spread: [2, 2, 2]
+						value: 100
 					},
 					color: {
 						value: [
-							new THREE.Color( 1, 0, 0 ),
-							new THREE.Color( 0, 1, 0 ),
-							new THREE.Color( 1, 0, 0 )
+							new THREE.Color( 0.5, 0.5, 0.5 )
 						],
 						spread: [ new THREE.Vector3( 1, 1, 1 ) ]
 					},
-					opacity: {
-						value: [0, 1, 0]
-					}
+					// opacity: {
+					// 	value: [0, 1, 0]
+					// }
 				});
 
 			group.addEmitter( emitter );

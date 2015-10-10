@@ -188,13 +188,14 @@ SPE.utils = {
     },
 
     randomColor: function( attribute, index, base, spread ) {
-        var r = base.r + ( Math.random() * spread.x - ( spread.x * 0.5 ) ),
-            g = base.g + ( Math.random() * spread.y - ( spread.y * 0.5 ) ),
-            b = base.b + ( Math.random() * spread.z - ( spread.z * 0.5 ) );
+        var r = base.r + ( Math.random() * spread.x ),
+            g = base.g + ( Math.random() * spread.y ),
+            b = base.b + ( Math.random() * spread.z );
 
         r = this.clamp( r, 0, 1 );
         g = this.clamp( g, 0, 1 );
         b = this.clamp( b, 0, 1 );
+
 
         attribute.typedArray.setVec3Components( index, r, g, b );
     },
@@ -211,17 +212,15 @@ SPE.utils = {
 
                 workingColor.copy( base[ i ] );
 
-                workingColor.r += ( Math.random() * spreadVector.x - ( spreadVector.x * 0.5 ) );
-                workingColor.g += ( Math.random() * spreadVector.y - ( spreadVector.y * 0.5 ) );
-                workingColor.b += ( Math.random() * spreadVector.z - ( spreadVector.z * 0.5 ) );
+                workingColor.r += ( Math.random() * spreadVector.x ) - ( spreadVector.x / 2 );
+                workingColor.g += ( Math.random() * spreadVector.y ) - ( spreadVector.y / 2 );
+                workingColor.b += ( Math.random() * spreadVector.z ) - ( spreadVector.z / 2 );
 
                 workingColor.r = this.clamp( workingColor.r, 0, 1 );
                 workingColor.g = this.clamp( workingColor.g, 0, 1 );
                 workingColor.b = this.clamp( workingColor.b, 0, 1 );
 
-                colors.push(
-                    workingColor.r + workingColor.g * 256.0 + workingColor.b * 256.0 * 256.0
-                );
+                colors.push( workingColor.getHex() );
             }
 
             attribute.typedArray.setVec3Components( index, colors[ 0 ], colors[ 1 ], colors[ 2 ] );
