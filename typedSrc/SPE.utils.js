@@ -172,6 +172,25 @@ SPE.utils = {
         return start + ( ( end - start ) * delta );
     },
 
+    // colorsAreEqual: function() {
+    //     var colors = Array.prototype.slice.call( arguments ),
+    //         numColors = colors.length;
+
+    //     for ( var i = 0, color1, color2; i < numColors - 1; ++i ) {
+    //         color1 = colors[ i ];
+    //         color2 = colors[ i + 1 ];
+
+    //         if (
+    //             color1.r !== color2.r ||
+    //             color1.g !== color2.g ||
+    //             color1.b !== color2.b
+    //         ) {
+    //             return false
+    //         }
+    //     }
+
+    //     return true;
+    // },
 
 
     randomFloat: function( base, spread ) {
@@ -223,7 +242,7 @@ SPE.utils = {
                 colors.push( workingColor.getHex() );
             }
 
-            attribute.typedArray.setVec3Components( index, colors[ 0 ], colors[ 1 ], colors[ 2 ] );
+            attribute.typedArray.setVec4Components( index, colors[ 0 ], colors[ 1 ], colors[ 2 ], colors[ 3 ] );
         };
     }() ),
 
@@ -285,5 +304,35 @@ SPE.utils = {
 
         // Set the values in the typed array.
         attribute.typedArray.setVec3Components( index, x, y, z );
-    }
+    },
+
+
+    randomDirectionVector3OnSphere: ( function() {
+        var v = new THREE.Vector3();
+
+        return function( attribute, index, posX, posY, posZ, emitterPosition, speed, speedSpread ) {
+            v.copy( emitterPosition );
+
+            v.x -= posX;
+            v.y -= posY;
+            v.z -= posZ;
+
+            // console.log( v );
+
+            v.normalize().multiplyScalar( -this.randomFloat( speed, speedSpread ) );
+
+            attribute.typedArray.setVec3Components( index, v.x, v.y, v.z );
+        };
+    }() ),
+
+    getPackedRotationAxis: ( function() {
+        var v = new THREE.Vector3(),
+            c = new THREE.Color();
+
+        return function( axis ) {
+            v.copy( axis ).normalize()
+            c.setRGB( v.x, v.y, v.z );
+            return c.getHex();
+        };
+    }() )
 };

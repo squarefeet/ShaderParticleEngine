@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title></title>
-
+		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 		<style type="text/css">
 			body {
 				margin: 0;
@@ -17,16 +17,24 @@
 		</style>
 
 		<script type="text/x-shader" id="vertexShader">
+			#define PI 3.141592653589793
+			#define PI_2 6.283185307179586
+
+			uniform float deltaTime;
+			uniform float runTime;
+
 			attribute vec4 acceleration;
 			attribute vec3 velocity;
-			attribute vec3 params;
-			attribute vec3 size;
-			attribute vec3 angle;
-			attribute vec3 color;
-			attribute vec3 opacity;
+			attribute vec3 rotation;
+			attribute vec4 params;
+			attribute vec4 size;
+			attribute vec4 angle;
+			attribute vec4 color;
+			attribute vec4 opacity;
 
 			varying vec4 vColor;
-			varying float vAngle;
+			// varying float vAngle;
+			// varying float vIsAlive;
 
 			// Branch-avoiding comparison fns
 			// - http://theorangeduck.com/page/avoiding-shader-conditionals
@@ -80,31 +88,14 @@
 			}
 
 
-			vec3 getColorOverLifetime(
-				in float positionInTime,
-				in float valueOverLifetimeLength,
-				in vec3 color1,
-				in vec3 color2,
-				in vec3 color3
-			) {
-				vec3 value = vec3( 0.0 );
-	            float deltaAge = positionInTime * ( valueOverLifetimeLength - 1.0 );
 
-	            value += color1 * when_eq( deltaAge, 0.0 );
-	            value += mix( color1, color2, deltaAge ) * and( when_gt( deltaAge, 0.0 ), when_lt( deltaAge, 1.0 ) );
-	            value += mix( color2, color3, deltaAge - 1.0) * and( when_ge( deltaAge, 1.0 ), when_lt( deltaAge, 2.0 ) );
-	            value += color3 * when_gt( deltaAge, 2.0 );
-
-	            return value;
-	        }
 
 			float getFloatOverLifetime(
-				in float positionInTime,
-				in float valueOverLifetimeLength,
-				in vec3 attr
+				float positionInTime,
+				in vec4 attr
 			) {
 				float value = 0.0;
-	            float deltaAge = positionInTime * ( valueOverLifetimeLength - 1.0 );
+	            float deltaAge = positionInTime * float( VALUE_OVER_LIFETIME_LENGTH );
 
 	            // This might look a little odd, but it's quite elegant. Uses
 	            // basic maths to avoid branching. Nice.
@@ -112,42 +103,61 @@
 	            // Take a look at the branch-avoidance functions defined above,
 	            // and be sure to check out The Orange Duck site where I got this
 	            // from (link above).
-	            value += attr.x * when_eq( deltaAge, 0.0 );
-	            value += mix( attr.x, attr.y, deltaAge ) * and( when_gt( deltaAge, 0.0 ), when_lt( deltaAge, 1.0 ) );
-	            value += mix( attr.y, attr.z, deltaAge - 1.0) * and( when_ge( deltaAge, 1.0 ), when_lt( deltaAge, 2.0 ) );
-	            value += attr.z * when_gt( deltaAge, 2.0 );
+	            // value += attr.x * when_eq( deltaAge, 0.0 );
+	            // value += mix( attr.x, attr.y, deltaAge ) * and( when_ge( deltaAge, 0.0 ), when_lt( deltaAge, 1.0 ) );
+	            // value += mix( attr.y, attr.z, deltaAge - 1.0) * and( when_ge( deltaAge, 1.0 ), when_lt( deltaAge, 2.0 ) );
+	            // value += mix( attr.z, attr.w, deltaAge - 2.0) * and( when_ge( deltaAge, 2.0 ), when_le( deltaAge, 3.0 ) );
+	            // value += attr.z * when_gt( deltaAge, 3.0 );
+
+	            for( int i = 0; i < VALUE_OVER_LIFETIME_LENGTH - 1; ++i ) {
+	            	float fIndex = float( i );
+
+	            	value += mix( attr[ i ], attr[ i + 1 ], deltaAge - fIndex ) * and( when_ge( deltaAge, fIndex ), when_lt( deltaAge, fIndex + 1.0 ) );
+	            }
 
 	            return value;
 	        }
 
+			vec3 getColorOverLifetime(
+				float positionInTime,
+				in vec3 color1,
+				in vec3 color2,
+				in vec3 color3,
+				in vec3 color4
+			) {
+				vec3 value = vec3( 0.0 );
+
+	            value.x = getFloatOverLifetime( positionInTime, vec4( color1.x, color2.x, color3.x, color4.x ) );
+	            value.y = getFloatOverLifetime( positionInTime, vec4( color1.y, color2.y, color3.y, color4.y ) );
+	            value.z = getFloatOverLifetime( positionInTime, vec4( color1.z, color2.z, color3.z, color4.z ) );
+
+	            return value;
+	        }
+
+
 	        float getAlive() {
 	        	return params.x;
+	        }
+
+	        float getDelay() {
+	        	return params.z;
 	        }
 
 	        float getAge() {
 	        	return params.y;
 	        }
 
-	        int getEmitterIndex() {
-	        	return int( params.z );
+
+	        float getMaxAge() {
+	        	return max( getAge(), params.z );
 	        }
 
+	        // float getParticleStartTime() {
+	        // 	return params.w;
+	        // }
 
 
 	        vec4 getPosition( in float age ) {
-	        	// vec3 pos = vec3( position );
-	        	// vec3 accel = vec3( acceleration );
-	        	// vec3 vel = vec3( velocity );
-	        	// float drag = acceleration.w;
-
-	        	// accel *= age;
-	        	// vel *= age;
-
-	        	// vel += accel * age;
-	        	// // vel *= drag * age;
-
-	        	// pos += vel;
-
 	        	return modelViewMatrix * vec4( position, 1.0 );
 	        }
 
@@ -156,20 +166,64 @@
 	        }
 
 	        vec3 getAcceleration( in float age ) {
-	        	return vec3(acceleration) * age;
+	        	return acceleration.xyz * age;
 	        }
 
+	        // Huge thanks to:
+	        // - http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
+	        mat4 getRotationMatrix(vec3 axis, float angle) {
+			    axis = normalize(axis);
+			    float s = sin(angle);
+			    float c = cos(angle);
+			    float oc = 1.0 - c;
+
+			    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+			                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+			                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+			                0.0,                                0.0,                                0.0,                                1.0);
+			}
+
+	        vec3 getOrbitPosition( in vec3 pos, float positionInTime ) {
+	        	vec3 axis = unpackColor( rotation.x );
+	        	float angle = 0.0;
+
+	        	if( rotation.z == 0.0 ) {
+		        	angle = mix( 0.0, rotation.y, 1.0 );
+		        }
+		        else {
+		        	angle = mix( 0.0, rotation.y, positionInTime * rotation.z );
+		        }
+
+	        	mat4 rotationMatrix = getRotationMatrix( axis, angle );
+
+	        	// vec3 growthStart = vec3( -10.0, -10.0, 0.0 ) * (1.0 - positionInTime);
+	        	// vec3 growth = vec3( 10.0, 10.0, 0.0 ) * positionInTime;
+
+	        	// vec3 growth = vec3( 10.0, 10.0, 10.0 ) * positionInTime;
+
+	        	// pos += growthStart;
+	        	// pos += growth;
+
+	        	return vec3( rotationMatrix * vec4( pos, 1.0 ) );
+	        }
 
 	        void main() {
 	        	//
 	        	// Setup...
 	        	//
-	        	float alive = params.x;
+	        	float delay = getDelay();
 	        	float age = getAge();
-	        	int emitterIndex = getEmitterIndex();
-
+	        	float alive = getAlive();
+	        	float maxAge = getMaxAge();
+	        	float positionInTime = age / maxAge;
 	        	float isAlive = when_gt( alive, 0.0 );
-	        	float positionInTime = age / float( MAX_AGE );
+
+
+
+	        	// Save the value is isAlive to a varying for
+	        	// access in the fragment shader
+	        	// vIsAlive = isAlive;
+
 
 
 	        	//
@@ -177,30 +231,75 @@
 	        	//
 
 	        	// Get forces & position
-	        	float drag = mix( 1.0, 0.5 + acceleration.w, positionInTime);
+	        	float drag = mix(1.0, float(acceleration.w), positionInTime);
+	        	// float drag = acceleration.w * positionInTime;
 	        	vec3 vel = getVelocity( age );
 	        	vec3 accel = getAcceleration( age );
-	        	vec3 force = vec3( accel );
+	        	vec3 force = vec3( 0.0 );
 	        	vec3 pos = vec3( position );
+
+	        	// vel *= drag;
+	        	// vel.y *= drag;
+
+	        	// vec3 drag = vel * positionInTime;
+	        	// vel -= drag;
+
+	        	// vel *= acceleration.w * (positionInTime);
+
+	        	// vec3 withVelocity = vec3( force + vel );
+	        	// vec3 withAccel = vec3( withVelocity + accel );
+	        	// vec3 withDrag = vec3( withAccel );
+
+	        	// Rotate the emitter around it's central point
+	        	// pos = getOrbitPosition( pos, positionInTime );
 
 	        	// Integrate forces...
 	        	force += vel;
-	        	force *= drag;
 	        	force += accel * age;
+	        	// force *= (1.0 - drag) * inversePositionInTime;
+	        	// force = getOrbitPosition( force, positionInTime );
 	        	pos += force;
+
+	        	// pos.y = 1. - positionInTime;
+
+	        	// pos.y = drag;
+
+	        	// pos.x = positionInTime;
+	        	// pos.y = 0.0;
+	        	// pos.z = 0.0;
+
+	        	// pos.x += sin( positionInTime * 10.0 );
+	        	// pos.y += sin( positionInTime * 10.0 );
+	        	// pos.z += cos( positionInTime * 10.0 );
+
+
+	        	// Rotate the emitter around it's central point
+	        	pos = getOrbitPosition( pos, positionInTime );
+
+	        	// pos.x = drag;
+	        	// pos.y = drag;
+	        	// pos.z = drag;
 
 	        	// Convert pos to a world-space value
 	        	vec4 mvPos = modelViewMatrix * vec4( pos, 1.0 );
 
 	        	// Determine point size.
-	        	float pointSize = getFloatOverLifetime( positionInTime, 3.0, size ) * isAlive;
+	        	// #ifdef USING_SIZE_OVER_LIFETIME
+        			float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;
+        		// #else
+        			// float pointSize = size.x * isAlive;
+        		// #endif
 
-	        	// Apply perspective
+	        	// Determine perspective
 	        	// TODO: Accept camera here via `scale` uniform
 	        	#ifdef HAS_PERSPECTIVE
-	        		pointSize *= 300.0 / length( mvPos.xyz );
+	        		float perspective = 300.0 / length( mvPos.xyz );
+	        	#else
+	        		float perspective = 1.0;
 	        	#endif
 
+	        	// Apply perpective to pointSize value
+	        	float pointSizePerspective = pointSize * perspective;
 
 
 	        	//
@@ -208,21 +307,29 @@
 	        	//
 
 	        	// Determine color and opacity for this particle
-	        	vec3 c = getColorOverLifetime(
-	        		positionInTime,
-	        		3.0,
-	        		unpackColor( color.x ),
-	        		unpackColor( color.y ),
-	        		unpackColor( color.z )
-	        	) * isAlive;
+	        	// #ifdef USING_COLOR_OVER_LIFETIME
+		        	vec3 c = getColorOverLifetime(
+		        		positionInTime,
+		        		unpackColor( color.x ),
+		        		unpackColor( color.y ),
+		        		unpackColor( color.z ),
+		        		unpackColor( color.w )
+		        	) * isAlive;
+		        // #else
+		        	// vec3 c = unpackColor( color.x ) * isAlive;
+	        	// #endif
 
-	        	float o = getFloatOverLifetime( positionInTime, 3.0, opacity ) * isAlive;
+	        	// #ifdef USING_OPACITY_OVER_LIFETIME
+		        	float o = getFloatOverLifetime( positionInTime, opacity ) * isAlive;
+		        // #else
+		        	// float o = opacity.x * isAlive;
+		        // #endif
 
 	        	// Assign color to vColor varying.
 	        	vColor = vec4( c, o );
 
 	        	// Determine angle
-	        	vAngle = getFloatOverLifetime( positionInTime, 3.0, angle ) * isAlive;
+	        	// vAngle = getFloatOverLifetime( positionInTime, angle ) * isAlive;
 
 
 
@@ -231,17 +338,18 @@
 	        	//
 
 	        	// Set PointSize according to size at current point in time.
-	        	gl_PointSize = pointSize;
+	        	gl_PointSize = pointSizePerspective;
 	        	gl_Position = projectionMatrix * mvPos;
 	        }
 		</script>
 
 		<script type="text/x-shader" id="fragmentShader">
 			varying vec4 vColor;
-			varying float vAngle;
+			// varying float vAngle;
+			// varying float vIsAlive;
 
 			void main() {
-				float a = vAngle;
+				// float a = vAngle;
 				gl_FragColor = vec4( vColor );
 			}
 		</script>
@@ -269,43 +377,76 @@
 				stats = new Stats(),
 				clock = new THREE.Clock(),
 
-				group = new SPE.Group({
-					maxAge: 2,
-				}),
+				group = new SPE.Group(),
+
 				emitter = new SPE.Emitter( {
-					particleCount: 5,
-					position: {
-						spread: new THREE.Vector3( 50, 50, 50 )
+					particleCount: 5000,
+
+					maxAge: {
+						value: 5,
+						spread: 5
 					},
-					// velocity: {
-					// 	value: new THREE.Vector3( 5, 10, 0 )
-					// },
-					// acceleration: {
-					// 	value: new THREE.Vector3( 1, -5, 0 )
-					// },
-					// drag: {
+
+					// delay: {
 					// 	value: 0,
-					// 	spread: 0
+					// 	spread: 0,
+					// 	randomize: false
 					// },
+
+					rotation: {
+						axis: new THREE.Vector3( 0, 1, 0 ),
+						angle: Math.PI * 0.5,
+						angleSpread: 0,
+						speed: 0,
+						speedSpread: 0
+					},
+
+					// radius: {
+					// 	value: 2,
+					// 	spread: 0,
+					// 	scale: new THREE.Vector3( 1, 1, 1 )
+					// },
+
+					position: {
+						value: new THREE.Vector3( 0, 0, 0 ),
+						spread: new THREE.Vector3( 0, 0, 0 ),
+						distribution: SPE.distributions.BOX
+					},
+
+					velocity: {
+						value: new THREE.Vector3( 0, 6, 0 ),
+						spread: new THREE.Vector3( 0, 0, 0 ),
+						distribution: SPE.distributions.BOX
+					},
+
+					acceleration: {
+						value: new THREE.Vector3( 0, 0, 0 ),
+						spread: new THREE.Vector3( 0, 0, 2 ),
+						distribution: SPE.distributions.BOX
+					},
+
+					drag: {
+						value: 1,
+						spread: 0
+					},
+
 					size: {
-						// spread: [2, 2, 2]
-						value: 100
+						value: 1
 					},
+
 					color: {
-						value: [
-							new THREE.Color( 0.5, 0.5, 0.5 )
-						],
-						spread: [ new THREE.Vector3( 1, 1, 1 ) ]
+						value: [ new THREE.Color( 0, 1, 0 ), new THREE.Color( 1, 0, 0 ) ]
 					},
-					// opacity: {
-					// 	value: [0, 1, 0]
-					// }
+
+					opacity: {
+						value: [0, 0.5, 1, 0]
+					}
 				});
 
 			group.addEmitter( emitter );
 			scene.add( group.mesh );
 
-			camera.position.z = 100;
+			camera.position.z = 50;
 			camera.lookAt( scene.position );
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
@@ -315,9 +456,13 @@
 
 			function animate() {
 				requestAnimationFrame( animate );
+
+				// Simulate low frame-rate
+				// setTimeout( animate, 1000 / (Math.random() * 60 | 0) );
+
 				stats.update();
-				// camera.position.x = Math.cos( Date.now() * 0.0005 ) * 100;
-				// camera.position.z = Math.sin( Date.now() * 0.0005 ) * 100;
+				// camera.position.x = Math.cos( Date.now() * 0.001 ) * 100;
+				// camera.position.z = Math.sin( Date.now() * 0.001 ) * 100;
 				// camera.lookAt( scene.position );
 				render();
 			}
@@ -330,6 +475,7 @@
 
 			console.log( group );
 			console.log( emitter );
+
 			animate();
 
 		</script>

@@ -13,7 +13,6 @@ SPE.Group = function( options ) {
     this.fixedTimeStep = utils.ensureTypedArg( options.fixedTimeStep, types.NUMBER, 0.016 );
 
     // Set properties used in the uniforms map.
-    this.maxAge = utils.ensureTypedArg( options.maxAge, types.NUMBER, 3 );
     this.texture = utils.ensureInstanceOf( options.texture, THREE.Texture, null );
     this.hasPerspective = utils.ensureTypedArg( options.hasPerspective, types.BOOLEAN, true );
     this.colorize = utils.ensureTypedArg( options.colorize, types.BOOLEAN, true );
@@ -21,7 +20,7 @@ SPE.Group = function( options ) {
 
 
     // Set properties used to define the ShaderMaterial's appearance.
-    this.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.NormalBlending );
+    this.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.AdditiveBlending );
     this.transparent = utils.ensureTypedArg( options.transparent, types.BOOLEAN, true );
     this.alphaTest = utils.ensureTypedArg( options.alphaTest, types.NUMBER, 0.5 );
     this.depthWrite = utils.ensureTypedArg( options.depthWrite, types.BOOLEAN, false );
@@ -55,6 +54,14 @@ SPE.Group = function( options ) {
         fogDensity: {
             type: 'f',
             value: 0.5
+        },
+        deltaTime: {
+            type: 'f',
+            value: 0
+        },
+        runTime: {
+            type: 'f',
+            value: 0
         }
     };
 
@@ -62,21 +69,29 @@ SPE.Group = function( options ) {
     this.defines = {
         HAS_PERSPECTIVE: this.hasPerspective,
         COLORIZE: this.colorize,
-        MAX_AGE: this.maxAge
+        VALUE_OVER_LIFETIME_LENGTH: SPE.valueOverLifetimeLength,
+
+        // Querying these in the shader slows it down!?
+        // But they're constants?!
+        // USING_SIZE_OVER_LIFETIME: false,
+        // USING_COLOR_OVER_LIFETIME: false,
+        // USING_ANGLE_OVER_LIFETIME: false,
+        // USING_OPACITY_OVER_LIFETIME: false
     };
 
     // Map of all attributes to be applied to the particles.
     //
     // See SPE.ShaderAttribute for a bit more info on this bit.
     this.attributes = {
-        acceleration: new SPE.ShaderAttribute( 'v4' ),
+        position: new SPE.ShaderAttribute( 'v3' ),
+        acceleration: new SPE.ShaderAttribute( 'v4' ), // w component is drag
         velocity: new SPE.ShaderAttribute( 'v3' ),
-        params: new SPE.ShaderAttribute( 'v3' ), // Holds (alive, age, emitterIndex)
-        size: new SPE.ShaderAttribute( 'v3' ),
+        rotation: new SPE.ShaderAttribute( 'v4' ),
+        params: new SPE.ShaderAttribute( 'v4' ), // Holds (alive, age, delay, particleIndex)
+        size: new SPE.ShaderAttribute( 'v4' ),
         angle: new SPE.ShaderAttribute( 'v4' ),
-        color: new SPE.ShaderAttribute( 'v3' ),
-        opacity: new SPE.ShaderAttribute( 'v3' ),
-        position: new SPE.ShaderAttribute( 'v3' )
+        color: new SPE.ShaderAttribute( 'v4' ),
+        opacity: new SPE.ShaderAttribute( 'v4' )
     };
 
     // Create the ShaderMaterial instance that'll help render the
@@ -119,11 +134,29 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     }
 
 
+    console.time( 'SPE.Group.prototype.addEmitter' );
+
 
     var attributes = this.attributes,
         start = attributes.position.getLength() / 3,
         totalParticleCount = start + emitter.particleCount,
         utils = SPE.utils;
+
+    // Set the `particlesPerSecond` value (PPS) on the emitter.
+    // It's used to determine how many particles to release
+    // on a per-frame basis.
+    emitter._calculatePPSValue( emitter.maxAge.value + emitter.maxAge.spread );
+
+    // Store the offset value in the TypedArray attributes for this emitter.
+    emitter.attributeOffset = start;
+    emitter.activationIndex = start;
+
+    // Store reference to the attributes on the emitter for
+    // easier access during the emitter's tick function.
+    emitter.attributes = this.attributes;
+    // emitter.maxAge = this.maxAge;
+
+
 
     // Ensure the attributes and their BufferAttributes exist, and their
     // TypedArrays are of the correct size.
@@ -131,38 +164,56 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         attributes[ attr ]._createBufferAttribute( totalParticleCount );
     }
 
+
     // Loop through each particle this emitter wants to have, and create the attributes values,
     // storing them in the TypedArrays that each attribute holds.
     //
-    // TODO: Apply actual values from emitter, not just test data!
     // TODO: Think about attribute packing...esp. with age and alive.
     // TODO: Think about values over lifetimes...
-    for ( var i = start; i < totalParticleCount; ++i ) {
-        utils.randomVector3( attributes.position, i, emitter.position.value, emitter.position.spread );
-        utils.randomVector3( attributes.velocity, i, emitter.velocity.value, emitter.velocity.spread );
-        // utils.randomVector3( attributes.acceleration, i, emitter.acceleration.value, emitter.acceleration.spread );
+    // TODO: Optimise this!
+    for ( var i = start, relativeIndex, particleStartTime; i < totalParticleCount; ++i ) {
+        relativeIndex = i - start;
+        particleStartTime = relativeIndex / emitter.particlesPerSecond;
 
-        attributes.acceleration.typedArray.setVec4Components( i,
-            utils.randomFloat( emitter.acceleration.value.x, emitter.acceleration.spread.x ),
-            utils.randomFloat( emitter.acceleration.value.y, emitter.acceleration.spread.y ),
-            utils.randomFloat( emitter.acceleration.value.z, emitter.acceleration.spread.z ),
-            1 - utils.clamp( utils.randomFloat( emitter.drag.value, emitter.drag.spread ), 0, 1 )
-        );
+        emitter._assignPositionValue( i );
+        emitter._assignVelocityValue( i );
+        emitter._assignAccelerationValue( i );
 
-        attributes.size.typedArray.setVec3Components( i,
+        // this._assignPositionValue( attributes.position, i, emitter.position );
+        // utils.randomVector3( attributes.velocity, i, emitter.velocity.value, emitter.velocity.spread );
+
+        // var delay = Math.abs( utils.randomFloat( emitter.delay.value, emitter.delay.spread ) );
+
+        // attributes.acceleration.typedArray.setVec4Components( i,
+        //     utils.randomFloat( emitter.acceleration.value.x, emitter.acceleration.spread.x ),
+        //     utils.randomFloat( emitter.acceleration.value.y, emitter.acceleration.spread.y ),
+        //     utils.randomFloat( emitter.acceleration.value.z, emitter.acceleration.spread.z ),
+
+        //     // Whack in some drag action to the `w` component of acceleration.
+        //     utils.clamp( utils.randomFloat( emitter.drag.value, emitter.drag.spread ), 0, 1 )
+        // );
+
+        attributes.size.typedArray.setVec4Components( i,
             Math.abs( utils.randomFloat( emitter.size.value[ 0 ], emitter.size.spread[ 0 ] ) ),
             Math.abs( utils.randomFloat( emitter.size.value[ 1 ], emitter.size.spread[ 1 ] ) ),
-            Math.abs( utils.randomFloat( emitter.size.value[ 2 ], emitter.size.spread[ 2 ] ) )
+            Math.abs( utils.randomFloat( emitter.size.value[ 2 ], emitter.size.spread[ 2 ] ) ),
+            Math.abs( utils.randomFloat( emitter.size.value[ 3 ], emitter.size.spread[ 3 ] ) )
         );
 
-        attributes.angle.typedArray.setVec3Components( i,
+        attributes.angle.typedArray.setVec4Components( i,
             utils.randomFloat( emitter.angle.value[ 0 ], emitter.angle.spread[ 0 ] ),
             utils.randomFloat( emitter.angle.value[ 1 ], emitter.angle.spread[ 1 ] ),
-            utils.randomFloat( emitter.angle.value[ 2 ], emitter.angle.spread[ 2 ] )
+            utils.randomFloat( emitter.angle.value[ 2 ], emitter.angle.spread[ 2 ] ),
+            utils.randomFloat( emitter.angle.value[ 3 ], emitter.angle.spread[ 3 ] )
         );
 
-        // alive, age, emitterIndex (used for valueOverLifetimes as array start index)
-        attributes.params.typedArray.setVec3Components( i, 1, 0, 0 );
+        // alive, age, maxAge, particleIndex
+        attributes.params.typedArray.setVec4Components( i,
+            0,
+            0,
+            Math.abs( utils.randomFloat( emitter.maxAge.value, emitter.maxAge.spread ) ),
+            particleStartTime
+        );
 
         // attributes.color.typedArray.setVec3Components( i,
         //     utils.randomFloat( emitter.color.value[ 0 ], emitter.color.spread[ 0 ] )
@@ -174,10 +225,17 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         // utils.randomColor( attributes.colorMiddle, i, emitter.color.value[ 1 ], emitter.color.spread[ 1 ] );
         // utils.randomColor( attributes.colorEnd, i, emitter.color.value[ 2 ], emitter.color.spread[ 2 ] );
 
-        attributes.opacity.typedArray.setVec3Components( i,
+        attributes.opacity.typedArray.setVec4Components( i,
             Math.abs( utils.randomFloat( emitter.opacity.value[ 0 ], emitter.opacity.spread[ 0 ] ) ),
             Math.abs( utils.randomFloat( emitter.opacity.value[ 1 ], emitter.opacity.spread[ 1 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 2 ], emitter.opacity.spread[ 2 ] ) )
+            Math.abs( utils.randomFloat( emitter.opacity.value[ 2 ], emitter.opacity.spread[ 2 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity.value[ 3 ], emitter.opacity.spread[ 3 ] ) )
+        );
+
+        attributes.rotation.typedArray.setVec3Components( i,
+            utils.getPackedRotationAxis( emitter.rotation.axis ),
+            utils.randomFloat( emitter.rotation.angle, emitter.rotation.angleSpread ),
+            utils.randomFloat( emitter.rotation.speed, emitter.rotation.speedSpread )
         );
     }
 
@@ -185,22 +243,20 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // the typed arrays properly.
     this._applyAttributesToGeometry();
 
-    // Set the `particlesPerSecond` value (PPS) on the emitter.
-    // It's used to determine how many particles to release
-    // on a per-frame basis.
-    emitter._calculatePPSValue( this.maxAge );
-
-    // Store the offset value in the TypedArray attributes for this emitter.
-    emitter.attributeOffset = start;
-
-    // Store reference to the attributes on the emitter for
-    // easier access during the emitter's tick function.
-    emitter.attributes = this.attributes;
-    emitter.maxAge = this.maxAge;
-
     // Store this emitter in this group's emitter's store.
     this.emitters.push( emitter );
     this.emitterIDs.push( emitter.uuid );
+
+    // Update lifetime flags for the shader #ifdef statements
+    // this.defines.USING_COLOR_OVER_LIFETIME = usingColorOverLifetime;
+
+    // Update the material since defines might have changed
+    //
+    // TODO:
+    //  - Only update material if defines have actually changed.
+    // this.material.needsUpdate = true;
+
+    console.timeEnd( 'SPE.Group.prototype.addEmitter' );
 
     return this;
 };
@@ -243,6 +299,9 @@ SPE.Group.prototype.tick = function( dt ) {
     if ( numEmitters === 0 ) {
         return;
     }
+
+    this.uniforms.runTime.value += dt;
+    this.uniforms.deltaTime.value = dt;
 
     for ( var i = 0; i < numEmitters; ++i ) {
         emitters[ i ].tick( dt );
