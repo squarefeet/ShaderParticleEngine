@@ -137,6 +137,21 @@ SPE.Emitter = function( options ) {
         delay: utils.ensureTypedArg( options.delay.randomize, types.BOOLEAN, !!options.delay.spread )
     };
 
+    this.bufferUpdateRanges = {
+        position: {
+            min: 0,
+            max: 0
+        },
+        velocity: {
+            min: 0,
+            max: 0
+        },
+        acceleration: {
+            min: 0,
+            max: 0
+        }
+    };
+
 
     // Ensure that the value-over-lifetime property objects above
     // have value and spread properties that are of the same length.
@@ -263,23 +278,72 @@ SPE.Emitter.prototype._assignAccelerationValue = function( index ) {
     this.attributes.acceleration.typedArray.array[ index * 4 + 3 ] = drag;
 };
 
+SPE.Emitter.prototype._updateBuffers = function() {
+    if ( this.resetFlags.position === true ) {
+        var range = this.bufferUpdateRanges.position.max - this.bufferUpdateRanges.position.min;
+
+        if ( range !== 0 ) {
+            this.attributes.position.bufferAttribute.offset = this.bufferUpdateRanges.position.min;
+            this.attributes.position.bufferAttribute.count = range;
+            this.attributes.position.bufferAttribute.dynamic = true;
+            this.attributes.position.bufferAttribute.needsUpdate = true;
+
+            this.bufferUpdateRanges.position.min = 0;
+            this.bufferUpdateRanges.position.max = 0;
+        }
+    }
+
+    if ( this.resetFlags.velocity === true ) {
+        var range = this.bufferUpdateRanges.velocity.max - this.bufferUpdateRanges.velocity.min;
+
+        if ( range !== 0 ) {
+            this.attributes.velocity.bufferAttribute.offset = this.bufferUpdateRanges.velocity.min;
+            this.attributes.velocity.bufferAttribute.count = range;
+            this.attributes.velocity.bufferAttribute.dynamic = true;
+            this.attributes.velocity.bufferAttribute.needsUpdate = true;
+
+            this.bufferUpdateRanges.velocity.min = 0;
+            this.bufferUpdateRanges.velocity.max = 0;
+        }
+    }
+
+    if ( this.resetFlags.acceleration === true ) {
+        var range = this.bufferUpdateRanges.acceleration.max - this.bufferUpdateRanges.acceleration.min;
+
+        if ( range !== 0 ) {
+            this.attributes.acceleration.bufferAttribute.offset = this.bufferUpdateRanges.acceleration.min;
+            this.attributes.acceleration.bufferAttribute.count = range;
+            this.attributes.acceleration.bufferAttribute.dynamic = true;
+            this.attributes.acceleration.bufferAttribute.needsUpdate = true;
+
+            this.bufferUpdateRanges.acceleration.min = 0;
+            this.bufferUpdateRanges.acceleration.max = 0;
+        }
+    }
+};
 
 SPE.Emitter.prototype.resetParticle = function( index ) {
     var resetFlags = this.resetFlags;
 
     if ( resetFlags.position === true ) {
         this._assignPositionValue( index );
+        this.bufferUpdateRanges.position.min = Math.min( this.bufferUpdateRanges.position.min, index * 3 );
+        this.bufferUpdateRanges.position.max = Math.max( this.bufferUpdateRanges.position.max, index * 3 );
         this.attributes.position.bufferAttribute.needsUpdate = true;
     }
 
     if ( resetFlags.velocity === true ) {
         this._assignVelocityValue( index );
-        this.attribuets.position.bufferAttribute.needsUpdate = true;
+        this.bufferUpdateRanges.velocity.min = Math.min( this.bufferUpdateRanges.velocity.min, index );
+        this.bufferUpdateRanges.velocity.max = Math.max( this.bufferUpdateRanges.velocity.max, index );
+        this.attributes.velocity.bufferAttribute.needsUpdate = true;
     }
 
     if ( resetFlags.acceleration === true ) {
         this._assignAccelerationValue( index );
-        this.attribuets.position.bufferAttribute.needsUpdate = true;
+        this.bufferUpdateRanges.velocity.min = Math.min( this.bufferUpdateRanges.velocity.min, index );
+        this.bufferUpdateRanges.velocity.max = Math.max( this.bufferUpdateRanges.velocity.max, index );
+        this.attributes.acceleration.bufferAttribute.needsUpdate = true;
     }
 
     // Re-randomize delay attribute if required
@@ -296,11 +360,12 @@ SPE.Emitter.prototype.tick = function( dt ) {
         params = attributes.params.typedArray.array, // vec3( alive, age, maxAge, particleStartTime )
         ppsDt = this.particlesPerSecond * dt,
         activationIndex = this.activationIndex,
-        updatedParamIndices = [];
+        updatedParamsMin = Number.POSITIVE_INFINITY,
+        updatedParamsMax = Number.NEGATIVE_INFINITY;
 
     // Increment age for those particles that are alive,
     // and kill off any particles whose age is over the limit.
-    for ( var i = start, index, maxAge, age, alive; i < end; ++i ) {
+    for ( var i = end - 1, index, maxAge, age, alive; i >= start; --i ) {
         index = i * 4;
 
         alive = params[ index ];
@@ -315,11 +380,11 @@ SPE.Emitter.prototype.tick = function( dt ) {
             if ( age > maxAge ) {
                 age = 0.0;
                 alive = 0.0;
-                // this.resetParticle( i );
+                this.resetParticle( i );
             }
-            updatedParamIndices.push( i );
 
-
+            updatedParamsMin = Math.min( updatedParamsMin, index );
+            updatedParamsMax = Math.max( updatedParamsMax, index );
 
             params[ index ] = alive;
             params[ index + 1 ] = age;
@@ -334,7 +399,8 @@ SPE.Emitter.prototype.tick = function( dt ) {
         dtPerParticle = activationCount > 0 ? dt / activationCount : 0;
 
     for ( var i = activationStart, index; i < activationEnd; ++i ) {
-        index = i * 4
+        index = i * 4;
+
         if ( params[ index ] === 0.0 ) {
             // Mark the particle as alive.
             params[ index ] = 1.0;
@@ -346,19 +412,11 @@ SPE.Emitter.prototype.tick = function( dt ) {
             // when frame rates are on the lower side of 60fps
             // or not constant (a very real possibility!)
             params[ index + 1 ] = dtPerParticle * ( i - activationStart );
-            updatedParamIndices.push( i );
+            updatedParamsMin = Math.min( updatedParamsMin, index );
+            updatedParamsMax = Math.max( updatedParamsMax, index );
         }
     }
 
-    // console.log( updatedParamIndices );
-
-    var min = Number.POSITIVE_INFINITY,
-        max = Number.NEGATIVE_INFINITY;
-
-    for ( var i = 0; i < updatedParamIndices.length; ++i ) {
-        min = Math.min( min, updatedParamIndices[ i ] * 4 );
-        max = Math.max( max, updatedParamIndices[ i ] * 4 );
-    }
 
     this.activationIndex += ppsDt;
 
@@ -366,8 +424,10 @@ SPE.Emitter.prototype.tick = function( dt ) {
         this.activationIndex = start;
     }
 
-    attributes.params.bufferAttribute.updateRange.offset = min;
-    attributes.params.bufferAttribute.updateRange.count = max - min;
+    attributes.params.bufferAttribute.updateRange.offset = updatedParamsMin;
+    attributes.params.bufferAttribute.updateRange.count = updatedParamsMax - updatedParamsMin;
     attributes.params.bufferAttribute.dynamic = true;
     attributes.params.bufferAttribute.needsUpdate = true;
+
+    this._updateBuffers();
 };

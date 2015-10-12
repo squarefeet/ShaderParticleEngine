@@ -382,7 +382,7 @@
 				group = new SPE.Group(),
 
 				emitter = new SPE.Emitter( {
-					particleCount: 10000,
+					particleCount: 50000,
 
 					maxAge: {
 						value: 3,
@@ -397,9 +397,9 @@
 
 					rotation: {
 						axis: new THREE.Vector3( 0, 1, 0 ),
-						angle: Math.PI * 8,
+						angle: 0,
 						angleSpread: 0,
-						speed: 1,
+						speed: 0,
 						speedSpread: 0
 					},
 
@@ -411,19 +411,19 @@
 
 					position: {
 						value: new THREE.Vector3( 0, 0, 0 ),
-						spread: new THREE.Vector3( 0, 0, 0 ),
+						spread: new THREE.Vector3( 10, 0, 0 ),
 						distribution: SPE.distributions.BOX
 					},
 
 					velocity: {
-						value: new THREE.Vector3( 0, 6, 0 ),
+						value: new THREE.Vector3( 0, 0, 0 ),
 						spread: new THREE.Vector3( 0, 0, 0 ),
 						distribution: SPE.distributions.BOX
 					},
 
 					acceleration: {
 						value: new THREE.Vector3( 0, 0, 0 ),
-						spread: new THREE.Vector3( 0, 0, 2 ),
+						spread: new THREE.Vector3( 0, 4, 0 ),
 						distribution: SPE.distributions.BOX
 					},
 
