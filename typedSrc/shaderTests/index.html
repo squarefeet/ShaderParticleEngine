@@ -274,7 +274,9 @@
 
 
 	        	// Rotate the emitter around it's central point
-	        	pos = getOrbitPosition( pos, positionInTime );
+	        	// if( rotation.y != 0.0 ) {
+		        	pos = getOrbitPosition( pos, positionInTime );
+		        // }
 
 	        	// pos.x = drag;
 	        	// pos.y = drag;
@@ -380,11 +382,11 @@
 				group = new SPE.Group(),
 
 				emitter = new SPE.Emitter( {
-					particleCount: 5000,
+					particleCount: 10000,
 
 					maxAge: {
-						value: 5,
-						spread: 5
+						value: 3,
+						spread: 0
 					},
 
 					// delay: {
@@ -395,9 +397,9 @@
 
 					rotation: {
 						axis: new THREE.Vector3( 0, 1, 0 ),
-						angle: Math.PI * 0.5,
+						angle: Math.PI * 8,
 						angleSpread: 0,
-						speed: 0,
+						speed: 1,
 						speedSpread: 0
 					},
 
@@ -439,7 +441,7 @@
 					},
 
 					opacity: {
-						value: [0, 0.5, 1, 0]
+						value: [1, 1, 1, 1]
 					}
 				});
 

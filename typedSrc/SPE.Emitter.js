@@ -295,7 +295,8 @@ SPE.Emitter.prototype.tick = function( dt ) {
         attributes = this.attributes,
         params = attributes.params.typedArray.array, // vec3( alive, age, maxAge, particleStartTime )
         ppsDt = this.particlesPerSecond * dt,
-        activationIndex = this.activationIndex;
+        activationIndex = this.activationIndex,
+        updatedParamIndices = [];
 
     // Increment age for those particles that are alive,
     // and kill off any particles whose age is over the limit.
@@ -316,13 +317,13 @@ SPE.Emitter.prototype.tick = function( dt ) {
                 alive = 0.0;
                 // this.resetParticle( i );
             }
-            // else {
-            // age += dt;
-            // }
-        }
+            updatedParamIndices.push( i );
 
-        params[ index ] = alive;
-        params[ index + 1 ] = age;
+
+
+            params[ index ] = alive;
+            params[ index + 1 ] = age;
+        }
     }
 
 
@@ -332,10 +333,11 @@ SPE.Emitter.prototype.tick = function( dt ) {
         activationCount = activationEnd - this.activationIndex + 1 | 0,
         dtPerParticle = activationCount > 0 ? dt / activationCount : 0;
 
-    for ( var i = activationStart; i < activationEnd; ++i ) {
-        if ( params[ i * 4 ] === 0.0 ) {
+    for ( var i = activationStart, index; i < activationEnd; ++i ) {
+        index = i * 4
+        if ( params[ index ] === 0.0 ) {
             // Mark the particle as alive.
-            params[ i * 4 ] = 1.0;
+            params[ index ] = 1.0;
 
             // Move each particle being activated to
             // it's actual position in time.
@@ -343,8 +345,19 @@ SPE.Emitter.prototype.tick = function( dt ) {
             // This stops particles being 'clumped' together
             // when frame rates are on the lower side of 60fps
             // or not constant (a very real possibility!)
-            params[ i * 4 + 1 ] = dtPerParticle * ( i - activationStart );
+            params[ index + 1 ] = dtPerParticle * ( i - activationStart );
+            updatedParamIndices.push( i );
         }
+    }
+
+    // console.log( updatedParamIndices );
+
+    var min = Number.POSITIVE_INFINITY,
+        max = Number.NEGATIVE_INFINITY;
+
+    for ( var i = 0; i < updatedParamIndices.length; ++i ) {
+        min = Math.min( min, updatedParamIndices[ i ] * 4 );
+        max = Math.max( max, updatedParamIndices[ i ] * 4 );
     }
 
     this.activationIndex += ppsDt;
@@ -353,5 +366,8 @@ SPE.Emitter.prototype.tick = function( dt ) {
         this.activationIndex = start;
     }
 
+    attributes.params.bufferAttribute.updateRange.offset = min;
+    attributes.params.bufferAttribute.updateRange.count = max - min;
+    attributes.params.bufferAttribute.dynamic = true;
     attributes.params.bufferAttribute.needsUpdate = true;
 };
