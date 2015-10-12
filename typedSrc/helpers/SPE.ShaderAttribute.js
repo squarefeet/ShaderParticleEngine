@@ -1,4 +1,4 @@
-SPE.ShaderAttribute = function( type, arrayType ) {
+SPE.ShaderAttribute = function( type, dynamicBuffer, arrayType ) {
     var typeMap = SPE.ShaderAttribute.typeSizeMap;
 
     this.type = typeof type === 'string' && typeMap.hasOwnProperty( type ) ? type : 'f';
@@ -6,6 +6,7 @@ SPE.ShaderAttribute = function( type, arrayType ) {
     this.arrayType = arrayType || Float32Array;
     this.typedArray = null;
     this.bufferAttribute = null;
+    this.dynamicBuffer = !!dynamicBuffer;
 }
 
 SPE.ShaderAttribute.constructor = SPE.ShaderAttribute;
@@ -58,6 +59,7 @@ SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
     }
 
     this.bufferAttribute = new THREE.BufferAttribute( this.typedArray.array, this.componentSize );
+    this.bufferAttribute.dynamic = this.dynamicBuffer;
 };
 
 SPE.ShaderAttribute.prototype.getLength = function() {

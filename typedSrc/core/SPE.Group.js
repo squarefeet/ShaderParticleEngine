@@ -26,7 +26,7 @@ SPE.Group = function( options ) {
     this.depthWrite = utils.ensureTypedArg( options.depthWrite, types.BOOLEAN, false );
     this.depthTest = utils.ensureTypedArg( options.depthTest, types.BOOLEAN, true );
     this.fog = utils.ensureTypedArg( options.fog, types.BOOLEAN, true );
-    this.fogColor = utils.ensureInstanceOf( options.fogColor, THREE.Color, new THREE.Color() );
+    // this.fogColor = utils.ensureInstanceOf( options.fogColor, THREE.Color, new THREE.Color() );
 
     // Where emitter's go to curl up in a warm blanket and live
     // out their days.
@@ -39,10 +39,10 @@ SPE.Group = function( options ) {
             type: 't',
             value: this.texture
         },
-        fogColor: {
-            type: 'c',
-            value: this.fogColor
-        },
+        // fogColor: {
+        //     type: 'c',
+        //     value: this.fogColor
+        // },
         fogNear: {
             type: 'f',
             value: 10
@@ -83,11 +83,12 @@ SPE.Group = function( options ) {
     //
     // See SPE.ShaderAttribute for a bit more info on this bit.
     this.attributes = {
-        position: new SPE.ShaderAttribute( 'v3' ),
-        acceleration: new SPE.ShaderAttribute( 'v4' ), // w component is drag
-        velocity: new SPE.ShaderAttribute( 'v3' ),
+        position: new SPE.ShaderAttribute( 'v3', true ),
+        acceleration: new SPE.ShaderAttribute( 'v4', true ), // w component is drag
+        velocity: new SPE.ShaderAttribute( 'v3', true ),
         rotation: new SPE.ShaderAttribute( 'v4' ),
-        params: new SPE.ShaderAttribute( 'v4' ), // Holds (alive, age, delay, particleIndex)
+        rotationCenter: new SPE.ShaderAttribute( 'v3' ),
+        params: new SPE.ShaderAttribute( 'v4', true ), // Holds (alive, age, delay, wiggle)
         size: new SPE.ShaderAttribute( 'v4' ),
         angle: new SPE.ShaderAttribute( 'v4' ),
         color: new SPE.ShaderAttribute( 'v4' ),
@@ -168,8 +169,6 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // Loop through each particle this emitter wants to have, and create the attributes values,
     // storing them in the TypedArrays that each attribute holds.
     //
-    // TODO: Think about attribute packing...esp. with age and alive.
-    // TODO: Think about values over lifetimes...
     // TODO: Optimise this!
     for ( var i = start, relativeIndex, particleStartTime; i < totalParticleCount; ++i ) {
         relativeIndex = i - start;
@@ -178,20 +177,6 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         emitter._assignPositionValue( i );
         emitter._assignVelocityValue( i );
         emitter._assignAccelerationValue( i );
-
-        // this._assignPositionValue( attributes.position, i, emitter.position );
-        // utils.randomVector3( attributes.velocity, i, emitter.velocity.value, emitter.velocity.spread );
-
-        // var delay = Math.abs( utils.randomFloat( emitter.delay.value, emitter.delay.spread ) );
-
-        // attributes.acceleration.typedArray.setVec4Components( i,
-        //     utils.randomFloat( emitter.acceleration.value.x, emitter.acceleration.spread.x ),
-        //     utils.randomFloat( emitter.acceleration.value.y, emitter.acceleration.spread.y ),
-        //     utils.randomFloat( emitter.acceleration.value.z, emitter.acceleration.spread.z ),
-
-        //     // Whack in some drag action to the `w` component of acceleration.
-        //     utils.clamp( utils.randomFloat( emitter.drag.value, emitter.drag.spread ), 0, 1 )
-        // );
 
         attributes.size.typedArray.setVec4Components( i,
             Math.abs( utils.randomFloat( emitter.size.value[ 0 ], emitter.size.spread[ 0 ] ) ),
@@ -207,17 +192,14 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
             utils.randomFloat( emitter.angle.value[ 3 ], emitter.angle.spread[ 3 ] )
         );
 
-        // alive, age, maxAge, particleIndex
+        // alive, age, maxAge, wiggle
         attributes.params.typedArray.setVec4Components( i,
             0,
             0,
             Math.abs( utils.randomFloat( emitter.maxAge.value, emitter.maxAge.spread ) ),
-            particleStartTime
+            utils.randomFloat( emitter.wiggle.value, emitter.wiggle.spread )
         );
 
-        // attributes.color.typedArray.setVec3Components( i,
-        //     utils.randomFloat( emitter.color.value[ 0 ], emitter.color.spread[ 0 ] )
-        // );
 
         utils.randomColorAsHex( attributes.color, i, emitter.color.value, emitter.color.spread );
 
@@ -233,10 +215,12 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         );
 
         attributes.rotation.typedArray.setVec3Components( i,
-            utils.getPackedRotationAxis( emitter.rotation.axis ),
+            utils.getPackedRotationAxis( emitter.rotation.axis, emitter.rotation.axisSpread ),
             utils.randomFloat( emitter.rotation.angle, emitter.rotation.angleSpread ),
-            utils.randomFloat( emitter.rotation.speed, emitter.rotation.speedSpread )
+            emitter.rotation.static ? 0 : 1
         );
+
+        attributes.rotationCenter.typedArray.setVec3( i, emitter.rotation.center );
     }
 
     // Update the geometry and make sure the attributes are referencing

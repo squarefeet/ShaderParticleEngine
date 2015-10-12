@@ -172,6 +172,24 @@ SPE.utils = {
         return start + ( ( end - start ) * delta );
     },
 
+    roundToNearestMultiple: function( n, multiple ) {
+        if ( multiple === 0 ) {
+            return n;
+        }
+
+        var remainder = Math.abs( n ) % multiple;
+
+        if ( remainder === 0 ) {
+            return n;
+        }
+
+        if ( n < 0 ) {
+            return -( Math.abs( n ) - remainder );
+        }
+
+        return n + multiple - remainder;
+    },
+
     // colorsAreEqual: function() {
     //     var colors = Array.prototype.slice.call( arguments ),
     //         numColors = colors.length;
@@ -198,10 +216,19 @@ SPE.utils = {
     },
 
     // TODO: Use this.randomFloat to add spread values in random* functions?
-    randomVector3: function( attribute, index, base, spread ) {
+    randomVector3: function( attribute, index, base, spread, spreadClamp ) {
         var x = base.x + ( Math.random() * spread.x - ( spread.x * 0.5 ) ),
             y = base.y + ( Math.random() * spread.y - ( spread.y * 0.5 ) ),
             z = base.z + ( Math.random() * spread.z - ( spread.z * 0.5 ) );
+
+        // console.log( x, y, z );
+        if ( spreadClamp ) {
+            x = -spreadClamp.x * 0.5 + this.roundToNearestMultiple( x, spreadClamp.x );
+            y = -spreadClamp.y * 0.5 + this.roundToNearestMultiple( y, spreadClamp.y );
+            z = -spreadClamp.z * 0.5 + this.roundToNearestMultiple( z, spreadClamp.z );
+        }
+        // console.log( x, y, z );
+        // console.log( '\n\n' );
 
         attribute.typedArray.setVec3Components( index, x, y, z );
     },
@@ -317,8 +344,6 @@ SPE.utils = {
             v.y -= posY;
             v.z -= posZ;
 
-            // console.log( v );
-
             v.normalize().multiplyScalar( -this.randomFloat( speed, speedSpread ) );
 
             attribute.typedArray.setVec3Components( index, v.x, v.y, v.z );
@@ -327,10 +352,23 @@ SPE.utils = {
 
     getPackedRotationAxis: ( function() {
         var v = new THREE.Vector3(),
+            vSpread = new THREE.Vector3(),
             c = new THREE.Color();
 
-        return function( axis ) {
-            v.copy( axis ).normalize()
+        return function( axis, axisSpread ) {
+            v.copy( axis ).normalize();
+            vSpread.copy( axisSpread ).normalize();
+
+            v.x += ( -axisSpread.x * 0.5 ) + ( Math.random() * axisSpread.x );
+            v.y += ( -axisSpread.y * 0.5 ) + ( Math.random() * axisSpread.y );
+            v.z += ( -axisSpread.z * 0.5 ) + ( Math.random() * axisSpread.z );
+
+            v.x = Math.abs( v.x );
+            v.y = Math.abs( v.y );
+            v.z = Math.abs( v.z );
+
+            v.normalize();
+
             c.setRGB( v.x, v.y, v.z );
             return c.getHex();
         };

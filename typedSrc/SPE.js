@@ -23,6 +23,6 @@ var SPE = {
     // 	  value-over-lifetime properties for ALL
     // 	  emitters and ALL groups.
     //
-    // 	- Only values <= 4 are allowed.
+    // 	- Only values >= 1 && <= 4 are allowed.
     valueOverLifetimeLength: 4
 };
