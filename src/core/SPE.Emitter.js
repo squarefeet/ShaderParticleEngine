@@ -108,6 +108,7 @@ SPE.Emitter = function( options ) {
     this.particleCount = utils.ensureTypedArg( options.particleCount, types.NUMBER, 100 );
     this.duration = utils.ensureTypedArg( options.duration, types.NUMBER, null );
     this.isStatic = utils.ensureTypedArg( options.isStatic, types.BOOLEAN, false );
+    this.activeMultiplier = utils.ensureTypedArg( options.activeMultiplier, types.NUMBER, 1 );
 
     // The following properties are set internally and are not
     // user-controllable.
@@ -152,6 +153,11 @@ SPE.Emitter = function( options ) {
             max: 0
         },
         acceleration: {
+            min: 0,
+            max: 0
+        },
+
+        params: {
             min: 0,
             max: 0
         }
@@ -339,7 +345,7 @@ SPE.Emitter.prototype._updateBuffers = function() {
     }
 };
 
-SPE.Emitter.prototype.resetParticle = function( index ) {
+SPE.Emitter.prototype._resetParticle = function( index ) {
     var resetFlags = this.resetFlags,
         ranges = this.bufferUpdateRanges,
         range;
@@ -383,10 +389,11 @@ SPE.Emitter.prototype.tick = function( dt ) {
     var start = this.attributeOffset,
         end = start + this.particleCount,
         params = this.attributes.params.typedArray.array, // vec3( alive, age, maxAge, wiggle )
-        ppsDt = this.particlesPerSecond * dt,
+        ppsDt = this.particlesPerSecond * this.activeMultiplier * dt,
         activationIndex = this.activationIndex,
-        updatedParamsMin = Number.POSITIVE_INFINITY,
-        updatedParamsMax = Number.NEGATIVE_INFINITY;
+        updatedParamsMin = 0,
+        updatedParamsMax = 0,
+        paramsUpdateRange = this.bufferUpdateRanges.params;
 
     // Increment age for those particles that are alive,
     // and kill off any particles whose age is over the limit.
@@ -405,7 +412,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
             if ( age > maxAge ) {
                 age = 0.0;
                 alive = 0.0;
-                this.resetParticle( i );
+                this._resetParticle( i );
             }
 
             updatedParamsMin = Math.min( updatedParamsMin, index );
@@ -419,7 +426,9 @@ SPE.Emitter.prototype.tick = function( dt ) {
     // If the emitter is dead, reset the age of the emitter to zero,
     // ready to go again if required
     if ( this.alive === false ) {
-        this._updatePostTick( updatedParamsMin, updatedParamsMax );
+        // this._updatePostTick( updatedParamsMin, updatedParamsMax );
+        paramsUpdateRange.min = updatedParamsMin;
+        paramsUpdateRange.max = updatedParamsMax;
         this.age = 0.0;
         return;
     }
@@ -468,31 +477,28 @@ SPE.Emitter.prototype.tick = function( dt ) {
     this.age += dt;
 
 
-    this._updatePostTick( updatedParamsMin, updatedParamsMax );
+    // this._updatePostTick( updatedParamsMin, updatedParamsMax );
 
     // Finally, update the buffers.
     this._updateBuffers();
+
+    paramsUpdateRange.min = updatedParamsMin;
+    paramsUpdateRange.max = updatedParamsMax;
 };
 
-SPE.Emitter.prototype._updatePostTick = function( min, max ) {
-    if ( isFinite( min ) === false || isFinite( max ) === false ) {
-        return;
-    }
+// SPE.Emitter.prototype._updatePostTick = function( min, max ) {
+//     if ( isFinite( min ) === false || isFinite( max ) === false ) {
+//         return;
+//     }
 
-    var attr = this.attributes.params.bufferAttribute,
-        updateRange = max - min,
-        count = this.particleCount;
+//     var attr = this.attributes.params.bufferAttribute,
+//         updateRange = max - min,
+//         count = this.particleCount;
 
-    // Don't update buffer unless necessary...
-    if ( count !== 1 ) {
-        attr.updateRange.offset = min;
-        attr.updateRange.count = updateRange + 4;
-        attr.needsUpdate = true;
-    }
-    else if ( count === 1 ) {
-        attr.needsUpdate = true;
-    }
-};
+//     attr.updateRange.offset = min;
+//     attr.updateRange.count = updateRange + 4;
+//     attr.needsUpdate = true;
+// };
 
 SPE.Emitter.prototype.reset = function( force ) {
     this.age = 0.0;

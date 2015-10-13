@@ -17,16 +17,9 @@
 		</style>
 	</head>
 	<body>
-		<script type="text/javascript" src="../../examples/js/THREE-r72.js"></script>
-		<script type="text/javascript" src="../../examples/js/Stats.min.js"></script>
-		<script type="text/javascript" src="../SPE.js"></script>
-		<script type="text/javascript" src="../helpers/SPE.TypedArrayHelper.js"></script>
-		<script type="text/javascript" src="../helpers/SPE.ShaderAttribute.js"></script>
-		<script type="text/javascript" src="../shaders/SPE.shaderChunks.js"></script>
-		<script type="text/javascript" src="../shaders/SPE.shaders.js"></script>
-		<script type="text/javascript" src="../core/SPE.utils.js"></script>
-		<script type="text/javascript" src="../core/SPE.Group.js"></script>
-		<script type="text/javascript" src="../core/SPE.Emitter.js"></script>
+		<script type="text/javascript" src="../examples/js/THREE-r72.js"></script>
+		<script type="text/javascript" src="../examples/js/Stats.min.js"></script>
+		<script type="text/javascript" src="../build/SPE.min.js"></script>
 
 		<script type="text/javascript">
 			var scene = new THREE.Scene(),
@@ -70,7 +63,7 @@
 						spread: new THREE.Vector3( 20, 0, 20 ),
 						spreadClamp: new THREE.Vector3( 5, 5, 5 ),
 						distribution: SPE.distributions.SPHERE,
-						randomise: true
+						randomise: false
 					},
 
 					velocity: {
@@ -109,7 +102,8 @@
 						value: [ 0, 1, 1, 1 ]
 					},
 
-					// duration: 5
+					// duration: 5,
+					activeMultiplier: 1
 				});
 
 			group.addEmitter( emitter );

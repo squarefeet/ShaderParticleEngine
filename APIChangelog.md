@@ -36,3 +36,9 @@ var emitter = new SPE.Emitter( {
 	}
 } );
 ```
+
+
+#### `SPE.Emitter.alive` is no longer a numeric value ####
+The `alive` property of an `SPE.Emitter` instance is now a Boolean. The previous functionality of using the `alive` property as a value to determine what percentage of an emitter's particles were alive has been moved to the `activeMultiplier` property.
+
+The benefit here is that you get a more fine-grained control over the number of particles emitter per-second for an emitter. Values greater than `1` will emulate a burst of particles, causing the emitter to run out of particles before it's next activation cycle, and values less than `1` and greater than `0` will emitter fewer particles per second than the emitter's default.

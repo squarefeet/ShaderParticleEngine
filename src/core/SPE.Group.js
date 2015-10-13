@@ -33,6 +33,31 @@ SPE.Group = function( options ) {
     this.emitters = [];
     this.emitterIDs = [];
 
+    // Create properties for use by the emitter pooling functions.
+    this._pool = [];
+    this._poolCreationSettings = null;
+    this._createNewWhenPoolEmpty = 0;
+
+    this.bufferUpdateRanges = {
+        position: {
+            min: 0,
+            max: 0
+        },
+        velocity: {
+            min: 0,
+            max: 0
+        },
+        acceleration: {
+            min: 0,
+            max: 0
+        },
+        params: {
+            min: 0,
+            max: 0
+        }
+    };
+
+
     // Map of uniforms to be applied to the ShaderMaterial instance.
     this.uniforms = {
         texture: {
@@ -73,14 +98,7 @@ SPE.Group = function( options ) {
 
         SHOULD_ROTATE_TEXTURE: false,
         SHOULD_ROTATE_PARTICLES: false,
-        SHOULD_WIGGLE_PARTICLES: false,
-
-        // Querying these in the shader slows it down!?
-        // But they're constants?!
-        // USING_SIZE_OVER_LIFETIME: false,
-        // USING_COLOR_OVER_LIFETIME: false,
-        // USING_ANGLE_OVER_LIFETIME: false,
-        // USING_OPACITY_OVER_LIFETIME: false
+        SHOULD_WIGGLE_PARTICLES: false
     };
 
     // Map of all attributes to be applied to the particles.
@@ -319,11 +337,11 @@ SPE.Group.prototype.removeEmitter = function( emitter ) {
         params.array[ i * 4 + 1 ] = 0.0;
     }
 
-    this.attributes.params.bufferAttribute.updateRange.count = -1;
-    this.attributes.params.bufferAttribute.needsUpdate = true;
-
     this.emitters.splice( emitterIndex, 1 );
     this.emitterIDs.splice( emitterIndex, 1 );
+
+    this.attributes.params.bufferAttribute.updateRange.count = -1;
+    this.attributes.params.bufferAttribute.needsUpdate = true;
 };
 
 SPE.Group.prototype._updateUniforms = function( dt ) {
@@ -334,7 +352,8 @@ SPE.Group.prototype._updateUniforms = function( dt ) {
 SPE.Group.prototype.tick = function( dt ) {
     var emitters = this.emitters,
         numEmitters = emitters.length,
-        deltaTime = dt || this.fixedTimeStep;
+        deltaTime = dt || this.fixedTimeStep,
+        bufferUpdateRanges = this.bufferUpdateRanges;
 
     if ( numEmitters === 0 ) {
         return;
@@ -342,9 +361,152 @@ SPE.Group.prototype.tick = function( dt ) {
 
     this._updateUniforms( deltaTime );
 
+    // TODO:
+    //  - Optimise this...
     for ( var i = 0; i < numEmitters; ++i ) {
         emitters[ i ].tick( deltaTime );
+        bufferUpdateRanges.params.min = Math.min( bufferUpdateRanges.params.min, emitters[ i ].bufferUpdateRanges.params.min );
+        bufferUpdateRanges.params.max = Math.max( bufferUpdateRanges.params.max, emitters[ i ].bufferUpdateRanges.params.max );
     }
 
+    this.attributes.params.bufferAttribute.updateRange.offset = bufferUpdateRanges.params.min;
+    this.attributes.params.bufferAttribute.updateRange.count = ( bufferUpdateRanges.params.max - bufferUpdateRanges.params.min ) + 4;
+    this.attributes.params.bufferAttribute.needsUpdate = true;
+};
+
+
+/**
+ * Fetch a single emitter instance from the pool.
+ * If there are no objects in the pool, a new emitter will be
+ * created if specified.
+ *
+ * @return {ShaderParticleEmitter | null}
+ */
+SPE.Group.prototype.getFromPool = function() {
+    var that = this,
+        pool = that._pool,
+        createNew = that._createNewWhenPoolEmpty;
+
+    if ( pool.length ) {
+        return pool.pop();
+    }
+    else if ( createNew ) {
+        return new SPE.Emitter( that._poolCreationSettings );
+    }
+
+    return null;
+},
+
+
+/**
+ * Release an emitter into the pool.
+ *
+ * @param  {ShaderParticleEmitter} emitter
+ * @return {this}
+ */
+SPE.Group.prototype.releaseIntoPool = function( emitter ) {
+    if ( !( emitter instanceof SPE.Emitter ) ) {
+        console.error( 'Will not add non-emitter to particle group pool:', emitter );
+        return;
+    }
+
+    emitter.reset();
+    this._pool.unshift( emitter );
+
     return this;
+};
+
+
+/**
+ * Get the pool array
+ *
+ * @return {Array}
+ */
+SPE.Group.prototype.getPool = function() {
+    return this._pool;
+};
+
+
+/**
+ * Add a pool of emitters to this particle group
+ *
+ * @param {Number} numEmitters      The number of emitters to add to the pool.
+ * @param {Object} emitterSettings  An object describing the settings to pass to each emitter.
+ * @param {Boolean} createNew       Should a new emitter be created if the pool runs out?
+ * @return {this}
+ */
+SPE.Group.prototype.addPool = function( numEmitters, emitterSettings, createNew ) {
+    var that = this,
+        emitter;
+
+    // Save relevant settings and flags.
+    that._poolCreationSettings = emitterSettings;
+    that._createNewWhenPoolEmpty = !!createNew;
+
+    // Create the emitters, add them to this group and the pool.
+    for ( var i = 0; i < numEmitters; ++i ) {
+        emitter = new SPE.Emitter( emitterSettings );
+        that.addEmitter( emitter );
+        that.releaseIntoPool( emitter );
+    }
+
+    return that;
+};
+
+
+/**
+ * Internal method. Sets a single emitter to be alive
+ *
+ * @private
+ *
+ * @param  {THREE.Vector3} pos
+ * @return {this}
+ */
+SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
+    var that = this,
+        emitter = that.getFromPool();
+
+    if ( emitter === null ) {
+        console.log( 'SPE.Group pool ran out.' );
+        return;
+    }
+
+    // TODO:
+    // - Make sure buffers are update with thus new position.
+    if ( pos instanceof THREE.Vector3 ) {
+        emitter.position.value.copy( pos );
+    }
+
+    emitter.enable();
+
+    setTimeout( function() {
+        emitter.disable();
+        that.releaseIntoPool( emitter );
+    }, emitter.maxAge.value + emitter.maxAge.spread );
+
+    return that;
+};
+
+
+/**
+ * Set a given number of emitters as alive, with an optional position
+ * vector3 to move them to.
+ *
+ * @param  {Number} numEmitters
+ * @param  {THREE.Vector3} position
+ * @return {this}
+ */
+SPE.Group.prototype.triggerPoolEmitter = function( numEmitters, position ) {
+    var that = this;
+
+    if ( typeof numEmitters === 'number' && numEmitters > 1 ) {
+        for ( var i = 0; i < numEmitters; ++i ) {
+            that._triggerSingleEmitter( position );
+        }
+    }
+    else {
+        that._triggerSingleEmitter( position );
+    }
+
+    return that;
 };

@@ -1,21 +1,27 @@
 module.exports = function( grunt ) {
-    var packageJSON = grunt.file.readJSON('package.json');
+    var packageJSON = grunt.file.readJSON( 'package.json' );
 
-    var licenseBanner =     '/* ' + packageJSON.name + ' ' + packageJSON.version + '\n' +
-                            ' * ' + '\n' +
-                            ' * (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)' + '\n' +
-                            ' *     Based on Lee Stemkoski\'s original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).' + '\n' +
-                            ' *' + '\n' +
-                            ' * ' + packageJSON.name + ' may be freely distributed under the MIT license (See LICENSE.txt at root of this repository.)' + '\n */\n';
+    var licenseBanner =
+        '/* ' + packageJSON.name + ' ' + packageJSON.version + '\n' +
+        ' * ' + '\n' +
+        ' * (c) 2013 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)' + '\n' +
+        ' *     Originally based on Lee Stemkoski\'s original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).' + '\n' +
+        ' *' + '\n' +
+        ' * ' + packageJSON.name + ' may be freely distributed under the MIT license (See LICENSE.txt at root of this repository.)' + '\n */\n';
 
 
     // Specify input files and output paths
     var files = [
-            'src/ShaderParticleUtils.js',
-            'src/ShaderParticleGroup.js',
-            'src/ShaderParticleEmitter.js'
+            "src/SPE.js",
+            "src/helpers/SPE.TypedArrayHelper.js",
+            "src/helpers/SPE.ShaderAttribute.js",
+            "src/shaders/SPE.shaderChunks.js",
+            "src/shaders/SPE.shaders.js",
+            "src/core/SPE.utils.js",
+            "src/core/SPE.Group.js",
+            "src/core/SPE.Emitter.js",
         ],
-        outputPath = 'build/ShaderParticles.js',
+        outputPath = 'build/SPE.js',
         outputPathMin = outputPath.replace( '.js', '.min.js' );
 
 
@@ -36,7 +42,7 @@ module.exports = function( grunt ) {
     uglifySettings.min.files[ outputPathMin ] = [ outputPath ];
 
 
-    grunt.initConfig({
+    grunt.initConfig( {
         uglify: uglifySettings,
 
         concat: {
@@ -48,10 +54,10 @@ module.exports = function( grunt ) {
                 dest: outputPath,
             },
         }
-    });
+    } );
 
     grunt.loadNpmTasks( 'grunt-contrib-concat' );
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 
-    grunt.registerTask( 'default', ['concat', 'uglify'] );
+    grunt.registerTask( 'default', [ 'concat', 'uglify' ] );
 };

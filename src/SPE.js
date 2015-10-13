@@ -1,5 +1,4 @@
 var SPE = {
-    // TODO: Rename to distributions
     distributions: {
         SPHERE: 1,
         DISC: 2,
