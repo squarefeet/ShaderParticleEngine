@@ -326,27 +326,25 @@ SPE.Group.prototype.removeEmitter = function( emitter ) {
     this.emitterIDs.splice( emitterIndex, 1 );
 };
 
+SPE.Group.prototype._updateUniforms = function( dt ) {
+    this.uniforms.runTime.value += dt;
+    this.uniforms.deltaTime.value = dt;
+};
 
 SPE.Group.prototype.tick = function( dt ) {
-    var that = this,
-        emitters = that.emitters,
-        numEmitters = emitters.length;
-
-    dt = dt || that.fixedTimeStep;
+    var emitters = this.emitters,
+        numEmitters = emitters.length,
+        deltaTime = dt || this.fixedTimeStep;
 
     if ( numEmitters === 0 ) {
         return;
     }
 
-    this.uniforms.runTime.value += dt;
-    this.uniforms.deltaTime.value = dt;
+    this._updateUniforms( deltaTime );
 
     for ( var i = 0; i < numEmitters; ++i ) {
-        emitters[ i ].tick( dt );
+        emitters[ i ].tick( deltaTime );
     }
 
-    // this.geometry.needsUpdate = true;
-
-    // that._flagUpdate();
-    return that;
+    return this;
 };

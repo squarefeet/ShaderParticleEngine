@@ -43,7 +43,7 @@
 				} ),
 
 				emitter = new SPE.Emitter( {
-					particleCount: 200000,
+					particleCount: 500,
 
 					maxAge: {
 						value: 3,
@@ -70,7 +70,7 @@
 						spread: new THREE.Vector3( 20, 0, 20 ),
 						spreadClamp: new THREE.Vector3( 5, 5, 5 ),
 						distribution: SPE.distributions.SPHERE,
-						randomise: false
+						randomise: true
 					},
 
 					velocity: {
@@ -107,7 +107,9 @@
 
 					opacity: {
 						value: [ 0, 1, 1, 1 ]
-					}
+					},
+
+					// duration: 5
 				});
 
 			group.addEmitter( emitter );
@@ -121,9 +123,9 @@
 			document.body.appendChild( stats.domElement );
 
 
-			setTimeout( function() {
-				group.removeEmitter( emitter );
-			}, 5000 );
+			// setTimeout( function() {
+			// 	group.removeEmitter( emitter );
+			// }, 5000 );
 
 			function animate() {
 				requestAnimationFrame( animate );

@@ -107,7 +107,7 @@ SPE.Emitter = function( options ) {
     // Assign renaining option values.
     this.particleCount = utils.ensureTypedArg( options.particleCount, types.NUMBER, 100 );
     this.duration = utils.ensureTypedArg( options.duration, types.NUMBER, null );
-
+    this.isStatic = utils.ensureTypedArg( options.isStatic, types.BOOLEAN, false );
 
     // The following properties are set internally and are not
     // user-controllable.
@@ -117,6 +117,12 @@ SPE.Emitter = function( options ) {
     // be marked as active on the next update cycle.
     this.activationIndex = 0;
 
+
+    // Whether this emitter is alive or not.
+    this.alive = true;
+
+    // Holds the time the emitter has been alive for.
+    this.age = 0.0;
 
     // A set of flags to determine whether particular properties
     // should be re-randomised when a particle is reset.
@@ -280,45 +286,55 @@ SPE.Emitter.prototype._assignAccelerationValue = function( index ) {
 };
 
 SPE.Emitter.prototype._updateBuffers = function() {
-    if ( this.resetFlags.position === true ) {
-        var range = this.bufferUpdateRanges.position.max - this.bufferUpdateRanges.position.min;
+    var flags = this.resetFlags,
+        ranges = this.bufferUpdateRanges,
+        attributes = this.attributes,
+        attr,
+        range = 0;
+
+    if ( flags.position === true ) {
+        range = ranges.position.max - ranges.position.min;
+        attr = attributes.position.bufferAttribute;
 
         if ( range !== 0 ) {
-            this.attributes.position.bufferAttribute.offset = this.bufferUpdateRanges.position.min;
-            this.attributes.position.bufferAttribute.count = range + 3;
-            this.attributes.position.bufferAttribute.dynamic = true;
-            this.attributes.position.bufferAttribute.needsUpdate = true;
+            attr.offset = ranges.position.min;
+            attr.count = range + 3;
+            attr.dynamic = true;
+            attr.needsUpdate = true;
 
-            this.bufferUpdateRanges.position.min = 0;
-            this.bufferUpdateRanges.position.max = 0;
+            ranges.position.min = 0;
+            ranges.position.max = 0;
         }
     }
 
-    if ( this.resetFlags.velocity === true ) {
-        var range = this.bufferUpdateRanges.velocity.max - this.bufferUpdateRanges.velocity.min;
+    if ( flags.velocity === true ) {
+        range = ranges.velocity.max - ranges.velocity.min;
+        attr = attributes.velocity.bufferAttribute;
 
         if ( range !== 0 ) {
-            this.attributes.velocity.bufferAttribute.offset = this.bufferUpdateRanges.velocity.min;
-            this.attributes.velocity.bufferAttribute.count = range + 3;
-            this.attributes.velocity.bufferAttribute.dynamic = true;
-            this.attributes.velocity.bufferAttribute.needsUpdate = true;
+            attr.offset = ranges.velocity.min;
+            attr.count = range + 3;
+            attr.dynamic = true;
+            attr.needsUpdate = true;
 
-            this.bufferUpdateRanges.velocity.min = 0;
-            this.bufferUpdateRanges.velocity.max = 0;
+            ranges.velocity.min = 0;
+            ranges.velocity.max = 0;
         }
     }
 
-    if ( this.resetFlags.acceleration === true ) {
-        var range = this.bufferUpdateRanges.acceleration.max - this.bufferUpdateRanges.acceleration.min;
+    if ( flags.acceleration === true ) {
+        range = ranges.acceleration.max - ranges.acceleration.min;
+
+        attr = attributes.acceleration.bufferAttribute;
 
         if ( range !== 0 ) {
-            this.attributes.acceleration.bufferAttribute.offset = this.bufferUpdateRanges.acceleration.min;
-            this.attributes.acceleration.bufferAttribute.count = range + 4;
-            this.attributes.acceleration.bufferAttribute.dynamic = true;
-            this.attributes.acceleration.bufferAttribute.needsUpdate = true;
+            attr.offset = ranges.acceleration.min;
+            attr.count = range + 4;
+            attr.dynamic = true;
+            attr.needsUpdate = true;
 
-            this.bufferUpdateRanges.acceleration.min = 0;
-            this.bufferUpdateRanges.acceleration.max = 0;
+            ranges.acceleration.min = 0;
+            ranges.acceleration.max = 0;
         }
     }
 };
@@ -360,10 +376,13 @@ SPE.Emitter.prototype.resetParticle = function( index ) {
 
 
 SPE.Emitter.prototype.tick = function( dt ) {
+    if ( this.isStatic ) {
+        return;
+    }
+
     var start = this.attributeOffset,
         end = start + this.particleCount,
-        attributes = this.attributes,
-        params = attributes.params.typedArray.array, // vec3( alive, age, maxAge, particleStartTime )
+        params = this.attributes.params.typedArray.array, // vec3( alive, age, maxAge, wiggle )
         ppsDt = this.particlesPerSecond * dt,
         activationIndex = this.activationIndex,
         updatedParamsMin = Number.POSITIVE_INFINITY,
@@ -397,6 +416,20 @@ SPE.Emitter.prototype.tick = function( dt ) {
         }
     }
 
+    // If the emitter is dead, reset the age of the emitter to zero,
+    // ready to go again if required
+    if ( this.alive === false ) {
+        this._updatePostTick( updatedParamsMin, updatedParamsMax );
+        this.age = 0.0;
+        return;
+    }
+
+    // If the emitter has a specified lifetime and we've exceeded it,
+    // mark the emitter as dead.
+    if ( this.duration !== null && this.age > this.duration ) {
+        this.alive = false;
+        this.age = 0.0;
+    }
 
 
     var activationStart = activationIndex | 0,
@@ -423,24 +456,70 @@ SPE.Emitter.prototype.tick = function( dt ) {
         }
     }
 
-
+    // Move the activation window forward, soldier.
     this.activationIndex += ppsDt;
 
     if ( this.activationIndex > end ) {
         this.activationIndex = start;
     }
 
-    var updateRange = updatedParamsMax - updatedParamsMin;
+
+    // Increment the age of the emitter.
+    this.age += dt;
+
+
+    this._updatePostTick( updatedParamsMin, updatedParamsMax );
+
+    // Finally, update the buffers.
+    this._updateBuffers();
+};
+
+SPE.Emitter.prototype._updatePostTick = function( min, max ) {
+    if ( isFinite( min ) === false || isFinite( max ) === false ) {
+        return;
+    }
+
+    var attr = this.attributes.params.bufferAttribute,
+        updateRange = max - min,
+        count = this.particleCount;
 
     // Don't update buffer unless necessary...
-    if ( this.particleCount !== 1 ) {
-        attributes.params.bufferAttribute.updateRange.offset = updatedParamsMin;
-        attributes.params.bufferAttribute.updateRange.count = updateRange + 4;
-        attributes.params.bufferAttribute.needsUpdate = true;
+    if ( count !== 1 ) {
+        attr.updateRange.offset = min;
+        attr.updateRange.count = updateRange + 4;
+        attr.needsUpdate = true;
     }
-    else if ( this.particleCount === 1 ) {
-        attributes.params.bufferAttribute.needsUpdate = true;
+    else if ( count === 1 ) {
+        attr.needsUpdate = true;
     }
+};
 
-    this._updateBuffers();
+SPE.Emitter.prototype.reset = function( force ) {
+    this.age = 0.0;
+    this.alive = false;
+
+    if ( force === true ) {
+        var start = this.attributeOffset,
+            end = start + this.particleCount,
+            array = this.attributes.params.typedArray.array,
+            attr = this.attributes.params.bufferAttribute;
+
+        for ( var i = end - 1, index; i >= start; --i ) {
+            index = i * 4;
+
+            array[ index ] = 0.0;
+            array[ index + 1 ] = 0.0;
+        }
+
+        attr.updateRange.offset = 0;
+        attr.updateRange.count = -1;
+        attr.needsUpdate = true;
+    }
+};
+
+SPE.Emitter.prototype.enable = function() {
+    this.alive = true;
+};
+SPE.Emitter.prototype.disable = function() {
+    this.alive = false;
 };
