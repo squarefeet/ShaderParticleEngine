@@ -5,6 +5,9 @@ SPE.shaders = {
         SPE.shaderChunks.attributes,
         SPE.shaderChunks.varyings,
 
+        THREE.ShaderChunk[ "common" ],
+        THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
+
         SPE.shaderChunks.branchAvoidanceFunctions,
         SPE.shaderChunks.unpackColor,
         SPE.shaderChunks.floatOverLifetime,
@@ -129,11 +132,19 @@ SPE.shaders = {
         // Set PointSize according to size at current point in time.
         '	 gl_PointSize = pointSizePerspective;',
         '	 gl_Position = projectionMatrix * mvPos;',
+
+        THREE.ShaderChunk[ "logdepthbuf_vertex" ],
+
         '}'
     ].join( '\n' ),
 
     fragment: [
         SPE.shaderChunks.uniforms,
+
+        THREE.ShaderChunk[ "common" ],
+        THREE.ShaderChunk[ "fog_pars_fragment" ],
+        THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
+
         SPE.shaderChunks.varyings,
 
         'void main() {',
@@ -141,7 +152,12 @@ SPE.shaders = {
 
         SPE.shaderChunks.rotateTexture,
 
+        THREE.ShaderChunk[ "logdepthbuf_fragment" ],
+
         '    outgoingLight = vColor.xyz * rotatedTexture.xyz;',
+
+        THREE.ShaderChunk[ "fog_fragment" ],
+
         '    gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
         '}'
     ].join( '\n' )

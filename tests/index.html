@@ -127,6 +127,9 @@
 			camera.position.y = 20;
 			camera.lookAt( scene.position );
 
+
+			scene.fog = new THREE.Fog( 0x000000, 1, 50 );
+
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 			document.body.appendChild( stats.domElement );

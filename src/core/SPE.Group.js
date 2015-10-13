@@ -65,10 +65,10 @@ SPE.Group = function( options ) {
             type: 't',
             value: this.texture
         },
-        // fogColor: {
-        //     type: 'c',
-        //     value: this.fogColor
-        // },
+        fogColor: {
+            type: 'c',
+            value: this.fogColor
+        },
         fogNear: {
             type: 'f',
             value: 10
