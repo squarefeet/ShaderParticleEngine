@@ -119,8 +119,6 @@ SPE.shaders = {
         //
         '    #ifdef SHOULD_ROTATE_TEXTURE',
         '	     vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
-        '    #else',
-        '        vAngle = 0.0;',
         '    #endif',
 
 

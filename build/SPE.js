@@ -392,7 +392,9 @@ SPE.shaderChunks = {
 
     varyings: [
         'varying vec4 vColor;',
-        'varying float vAngle;',
+        '#ifdef SHOULD_ROTATE_TEXTURE',
+        '    varying float vAngle;',
+        '#endif',
         // 'varying float vIsAlive;',
     ].join( '\n' ),
 
@@ -688,8 +690,6 @@ SPE.shaders = {
         //
         '    #ifdef SHOULD_ROTATE_TEXTURE',
         '	     vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
-        '    #else',
-        '        vAngle = 0.0;',
         '    #endif',
 
 

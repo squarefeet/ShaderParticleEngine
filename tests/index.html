@@ -29,41 +29,38 @@
 				clock = new THREE.Clock(),
 
 				group = new SPE.Group( {
-					blending: THREE.NormalBlending,
-					colorize: true,
-					transparent: true,
-					texture: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' )
+					texture: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' ),
+					// fixedTimeStep: 0.016,
+					// blending: THREE.NormalBlending,
+					// colorize: true,
+					// hasPerspective: true,
+					// transparent: true,
+					// alphaTest: 0.5,
+					// depthWrite: false,
+					// depthTest: true,
+					// fog: true
 				} ),
 
 				emitter = new SPE.Emitter( {
-					particleCount: 500,
+					particleCount: 5000,
 
 					maxAge: {
 						value: 3,
 						spread: 0
 					},
 
-					// rotation: {
-					// 	axis: new THREE.Vector3( 0, 0, 0 ),
-					// 	axisSpread: new THREE.Vector3( 0, 0, 0 ),
-					// 	angle:  Math.PI * 10, // radians
-					// 	angleSpread: 0,
-					// 	static: false,
-					// 	center: new THREE.Vector3( 0, 0, 0 )
-					// },
+					position: {
+						value: new THREE.Vector3( 0, 0, 0 ),
+						spread: new THREE.Vector3( 20, 0, 20 ),
+						spreadClamp: new THREE.Vector3( 5, 5, 5 ),
+						distribution: SPE.distributions.BOX,
+						randomise: false
+					},
 
 					radius: {
 						value: 5,
 						spread: 0,
 						scale: new THREE.Vector3( 1, 1, 1 )
-					},
-
-					position: {
-						value: new THREE.Vector3( 0, 0, 0 ),
-						spread: new THREE.Vector3( 20, 0, 20 ),
-						spreadClamp: new THREE.Vector3( 5, 5, 5 ),
-						distribution: SPE.distributions.SPHERE,
-						randomise: false
 					},
 
 					velocity: {
@@ -81,35 +78,52 @@
 					},
 
 					drag: {
-						value: 1,
+						value: 0.9,
 						spread: 0
 					},
 
 					wiggle: {
-						value: 0,
-						spread: 20
+						value: 10,
+						spread: 0
 					},
 
+					rotation: {
+						axis: new THREE.Vector3( 0, 1, 0 ),
+						axisSpread: new THREE.Vector3( 0, 0, 0 ),
+						angle:  Math.PI * 0.5, // radians
+						angleSpread: 0, // radians
+						static: false,
+						center: new THREE.Vector3( 0, 0, 0 )
+					},
+
+
 					size: {
-						value: 2
+						value: [0, 2, 2, 0]
 					},
 
 					color: {
-						value: [ new THREE.Color( 1, 1, 0 ), new THREE.Color( 1, 0, 0 ), new THREE.Color( 0, 1, 0 ) ]
+						value: [ new THREE.Color( 1, 1, 0 ), new THREE.Color( 1, 0, 0 ), new THREE.Color( 0, 1, 0 ), new THREE.Color( 0, 1, 1 ) ]
 					},
 
 					opacity: {
-						value: [ 0, 1, 1, 1 ]
+						value: [ 0, 1, 1, 0 ]
+					},
+
+					angle: {
+						value: 0,
+						spread: 0
 					},
 
 					// duration: 5,
-					activeMultiplier: 1
+					// activeMultiplier: 1,
+					// isStatic: true
 				});
 
 			group.addEmitter( emitter );
 			scene.add( group.mesh );
 
 			camera.position.z = 50;
+			camera.position.y = 20;
 			camera.lookAt( scene.position );
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
@@ -117,20 +131,9 @@
 			document.body.appendChild( stats.domElement );
 
 
-			// setTimeout( function() {
-			// 	group.removeEmitter( emitter );
-			// }, 5000 );
-
 			function animate() {
 				requestAnimationFrame( animate );
-
-				// Simulate low frame-rate
-				// setTimeout( animate, 1000 / (Math.random() * 60 | 0) );
-
 				stats.update();
-				// camera.position.x = Math.cos( Date.now() * 0.001 ) * 100;
-				// camera.position.z = Math.sin( Date.now() * 0.001 ) * 100;
-				// camera.lookAt( scene.position );
 				render();
 			}
 
@@ -144,7 +147,6 @@
 			console.log( emitter );
 
 			animate();
-
 		</script>
 	</body>
 </html>
