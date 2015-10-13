@@ -36,28 +36,28 @@
 				clock = new THREE.Clock(),
 
 				group = new SPE.Group( {
-					// blending: THREE.NormalBlending
+					blending: THREE.NormalBlending,
 					colorize: true,
 					transparent: true,
 					texture: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' )
 				} ),
 
 				emitter = new SPE.Emitter( {
-					particleCount: 500,
+					particleCount: 200000,
 
 					maxAge: {
-						value: 2,
-						spread: 1
+						value: 3,
+						spread: 0
 					},
 
-					rotation: {
-						axis: new THREE.Vector3( 0, 1, 0 ),
-						axisSpread: new THREE.Vector3( 0.2, 0, 0.2 ),
-						angle: 0, // radians
-						angleSpread: Math.PI * 2,
-						static: false,
-						center: new THREE.Vector3( 0, 0, 0 )
-					},
+					// rotation: {
+					// 	axis: new THREE.Vector3( 0, 0, 0 ),
+					// 	axisSpread: new THREE.Vector3( 0, 0, 0 ),
+					// 	angle:  Math.PI * 10, // radians
+					// 	angleSpread: 0,
+					// 	static: false,
+					// 	center: new THREE.Vector3( 0, 0, 0 )
+					// },
 
 					radius: {
 						value: 5,
@@ -74,14 +74,14 @@
 					},
 
 					velocity: {
-						value: new THREE.Vector3( 0, -5, 0 ),
+						value: new THREE.Vector3( 0, 10, 0 ),
 						spread: new THREE.Vector3( 0, 0, 0 ),
 						distribution: SPE.distributions.BOX,
 						randomise: false
 					},
 
 					acceleration: {
-						value: new THREE.Vector3( 0, -5, 0 ),
+						value: new THREE.Vector3( 0, 2, 0 ),
 						spread: new THREE.Vector3( 0, 0, 0 ),
 						distribution: SPE.distributions.BOX,
 						randomise: false
@@ -94,15 +94,15 @@
 
 					wiggle: {
 						value: 0,
-						spread: 10
+						spread: 20
 					},
 
 					size: {
-						value: [1, 1, 1, 0]
+						value: 2
 					},
 
 					color: {
-						value: [ new THREE.Color( 1, 1, 0 ), new THREE.Color( 1, 0, 0 ) ]
+						value: [ new THREE.Color( 1, 1, 0 ), new THREE.Color( 1, 0, 0 ), new THREE.Color( 0, 1, 0 ) ]
 					},
 
 					opacity: {
@@ -119,6 +119,11 @@
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 			document.body.appendChild( stats.domElement );
+
+
+			setTimeout( function() {
+				group.removeEmitter( emitter );
+			}, 5000 );
 
 			function animate() {
 				requestAnimationFrame( animate );

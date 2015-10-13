@@ -127,6 +127,7 @@ SPE.shaderChunks = {
 
         'float getMaxAge() {',
         '   return max( getAge(), params.z );',
+        // '   return params.z;',
         '}',
 
         'float getWiggle() {',
@@ -152,42 +153,50 @@ SPE.shaderChunks = {
     rotationFunctions: [
         // Huge thanks to:
         // - http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
-        'mat4 getRotationMatrix( in vec3 axis, in float angle) {',
-        '    axis = normalize(axis);',
-        '    float s = sin(angle);',
-        '    float c = cos(angle);',
-        '    float oc = 1.0 - c;',
+        '#ifdef SHOULD_ROTATE_PARTICLES',
+        '   mat4 getRotationMatrix( in vec3 axis, in float angle) {',
+        '       axis = normalize(axis);',
+        '       float s = sin(angle);',
+        '       float c = cos(angle);',
+        '       float oc = 1.0 - c;',
 
-        '    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,',
-        '                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,',
-        '                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,',
-        '                0.0,                                0.0,                                0.0,                                1.0);',
-        '}',
+        '       return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,',
+        '                   oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,',
+        '                   oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,',
+        '                   0.0,                                0.0,                                0.0,                                1.0);',
+        '   }',
 
-        'vec3 getRotation( in vec3 pos, in float positionInTime ) {',
-        '   vec3 axis = unpackColor( rotation.x );',
-        '   vec3 center = rotationCenter;',
-        '   vec3 translated;',
-        '   mat4 rotationMatrix;',
+        '   vec3 getRotation( in vec3 pos, in float positionInTime ) {',
+        '      vec3 axis = unpackColor( rotation.x );',
+        '      vec3 center = rotationCenter;',
+        '      vec3 translated;',
+        '      mat4 rotationMatrix;',
 
-        '   float angle = 0.0;',
-        '   angle += when_eq( rotation.z, 0.0 ) * rotation.y;',
-        '   angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime * 1.35 );',
-        '   translated = rotationCenter - pos;',
-        '   rotationMatrix = getRotationMatrix( axis, angle );',
-        '   return center + vec3( rotationMatrix * vec4( translated, 1.0 ) );',
-        '}',
+        '      pos *= -1.0;',
+
+        '      float angle = 0.0;',
+        '      angle += when_eq( rotation.z, 0.0 ) * rotation.y;',
+        '      angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime * 1.35 );',
+        '      translated = rotationCenter - pos;',
+        '      rotationMatrix = getRotationMatrix( axis, angle );',
+        '      return center + vec3( rotationMatrix * vec4( translated, 1.0 ) );',
+        '   }',
+        '#endif'
     ].join( '\n' ),
 
 
     // Fragment chunks
     rotateTexture: [
-        '    float c = cos( vAngle );',
-        '    float s = sin( vAngle );',
-        '    float x = gl_PointCoord.x - 0.5;',
-        '    float y = gl_PointCoord.y - 0.5;',
+        '    #ifdef SHOULD_ROTATE_TEXTURE',
+        '       float x = gl_PointCoord.x - 0.5;',
+        '       float y = gl_PointCoord.y - 0.5;',
+        '       float c = cos( vAngle );',
+        '       float s = sin( vAngle );',
 
-        '    vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
-        '    vec4 rotatedTexture = texture2D( texture, rotatedUV );'
+        '       vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
+        '       vec4 rotatedTexture = texture2D( texture, rotatedUV );',
+        '    #else',
+        '       vec4 rotatedTexture = texture2D( texture, gl_PointCoord.xy );',
+        '    #endif'
     ].join( '\n' )
 };

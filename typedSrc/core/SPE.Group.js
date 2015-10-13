@@ -71,6 +71,10 @@ SPE.Group = function( options ) {
         COLORIZE: this.colorize,
         VALUE_OVER_LIFETIME_LENGTH: SPE.valueOverLifetimeLength,
 
+        SHOULD_ROTATE_TEXTURE: false,
+        SHOULD_ROTATE_PARTICLES: false,
+        SHOULD_WIGGLE_PARTICLES: false,
+
         // Querying these in the shader slows it down!?
         // But they're constants?!
         // USING_SIZE_OVER_LIFETIME: false,
@@ -119,6 +123,51 @@ SPE.Group = function( options ) {
 SPE.Group.constructor = SPE.Group;
 
 
+SPE.Group.prototype._updateDefines = function( emitter ) {
+    this.defines.SHOULD_ROTATE_TEXTURE = this.defines.SHOULD_ROTATE_TEXTURE || !!Math.max(
+        Math.max.apply( null, emitter.angle.value ),
+        Math.max.apply( null, emitter.angle.spread )
+    );
+
+    this.defines.SHOULD_ROTATE_PARTICLES = this.defines.SHOULD_ROTATE_PARTICLES || !!Math.max(
+        emitter.rotation.angle,
+        emitter.rotation.angleSpread
+    );
+
+    this.defines.SHOULD_WIGGLE_PARTICLES = this.defines.SHOULD_WIGGLE_PARTICLES || !!Math.max(
+        emitter.wiggle.value,
+        emitter.wiggle.spread
+    );
+};
+
+SPE.Group.prototype._applyAttributesToGeometry = function() {
+    var attributes = this.attributes,
+        geometry = this.geometry,
+        geometryAttributes = geometry.attributes,
+        attribute,
+        geometryAttribute;
+
+    for ( var attr in attributes ) {
+        attribute = attributes[ attr ];
+
+        // Update the array if this attribute exists on the geometry.
+        //
+        // This needs to be done because the attribute's typed array might have
+        // been resized and reinstantiated, and might now be looking at a
+        // different ArrayBuffer, so reference needs updating.
+        if ( geometryAttribute = geometryAttributes[ attr ] ) {
+            geometryAttribute.array = attribute.typedArray.array;
+        }
+
+        // Add the attribute to the geometry if it doesn't already exist.
+        else {
+            geometry.addAttribute( attr, attribute.bufferAttribute );
+        }
+    }
+};
+
+
+
 SPE.Group.prototype.addEmitter = function( emitter ) {
     // Ensure an actual emitter instance is passed here.
     //
@@ -129,7 +178,7 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         console.error( '`emitter` argument must be instance of SPE.Emitter. Was provided with:', emitter );
         return;
     }
-    else if ( this.emitterIDs.indexOf( emitter.UUID ) > -1 ) {
+    else if ( this.emitterIDs.indexOf( emitter.uuid ) > -1 ) {
         console.warn( 'Emitter already exists in this group. Will not add again.' );
         return;
     }
@@ -164,6 +213,7 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     for ( var attr in attributes ) {
         attributes[ attr ]._createBufferAttribute( totalParticleCount );
     }
+
 
 
     // Loop through each particle this emitter wants to have, and create the attributes values,
@@ -231,46 +281,50 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     this.emitters.push( emitter );
     this.emitterIDs.push( emitter.uuid );
 
-    // Update lifetime flags for the shader #ifdef statements
-    // this.defines.USING_COLOR_OVER_LIFETIME = usingColorOverLifetime;
+    // Update certain flags to enable shader calculations only if they're necessary.
+    this._updateDefines( emitter );
 
     // Update the material since defines might have changed
-    //
-    // TODO:
-    //  - Only update material if defines have actually changed.
-    // this.material.needsUpdate = true;
+    this.material.needsUpdate = true;
 
     console.timeEnd( 'SPE.Group.prototype.addEmitter' );
 
     return this;
 };
 
-SPE.Group.prototype._applyAttributesToGeometry = function() {
-    var attributes = this.attributes,
-        geometry = this.geometry,
-        geometryAttributes = geometry.attributes,
-        attribute,
-        geometryAttribute;
+SPE.Group.prototype.removeEmitter = function( emitter ) {
+    var emitterIndex = this.emitterIDs.indexOf( emitter.uuid );
 
-    for ( var attr in attributes ) {
-        attribute = attributes[ attr ];
-
-        // Update the array if this attribute exists on the geometry.
-        //
-        // This needs to be done because the attribute's typed array might have
-        // been resized and reinstantiated, and might now be looking at a
-        // different ArrayBuffer, so reference needs updating.
-        if ( geometryAttribute = geometryAttributes[ attr ] ) {
-            geometryAttribute.array = attribute.typedArray.array;
-        }
-
-        // Add the attribute to the geometry if it doesn't already exist.
-        else {
-            geometry.addAttribute( attr, attribute.bufferAttribute );
-        }
+    // Ensure an actual emitter instance is passed here.
+    //
+    // Decided not to throw here, just in case a scene's
+    // rendering would be paused. Logging an error instead
+    // of stopping execution if exceptions aren't caught.
+    if ( emitter instanceof SPE.Emitter === false ) {
+        console.error( '`emitter` argument must be instance of SPE.Emitter. Was provided with:', emitter );
+        return;
     }
-};
+    else if ( emitterIndex === -1 ) {
+        console.warn( 'Emitter does not exist in this group. Will not remove.' );
+        return;
+    }
 
+    // Kill all particles
+    var start = emitter.attributeOffset,
+        end = start + emitter.particleCount,
+        params = this.attributes.params.typedArray;
+
+    for ( var i = start; i < end; ++i ) {
+        params.array[ i * 4 ] = 0.0;
+        params.array[ i * 4 + 1 ] = 0.0;
+    }
+
+    this.attributes.params.bufferAttribute.updateRange.count = -1;
+    this.attributes.params.bufferAttribute.needsUpdate = true;
+
+    this.emitters.splice( emitterIndex, 1 );
+    this.emitterIDs.splice( emitterIndex, 1 );
+};
 
 
 SPE.Group.prototype.tick = function( dt ) {

@@ -20,14 +20,17 @@ SPE.shaders = {
         //
         // Setup...
         //
-        '	float age = getAge();',
-        '	float alive = getAlive();',
-        '	float maxAge = getMaxAge();',
-        '	float positionInTime = (age / maxAge);',
-        '	float wiggleAmount = positionInTime * getWiggle();',
-        '	float wiggleSin = sin( wiggleAmount );',
-        '	float wiggleCos = cos( wiggleAmount );',
-        '	float isAlive = when_gt( alive, 0.0 );',
+        '    float age = getAge();',
+        '    float alive = getAlive();',
+        '    float maxAge = getMaxAge();',
+        '    float positionInTime = (age / maxAge);',
+        '    float isAlive = when_gt( alive, 0.0 );',
+
+        '    #ifdef SHOULD_WIGGLE_PARTICLES',
+        '        float wiggleAmount = positionInTime * getWiggle();',
+        '        float wiggleSin = isAlive * sin( wiggleAmount );',
+        '        float wiggleCos = isAlive * cos( wiggleAmount );',
+        '    #endif',
 
 
 
@@ -42,48 +45,52 @@ SPE.shaders = {
         //
 
         // Get forces & position
-        '	vec3 vel = getVelocity( age );',
-        '	vec3 accel = getAcceleration( age );',
-        '	vec3 force = vec3( 0.0 );',
-        '	vec3 pos = vec3( position );',
+        '    vec3 vel = getVelocity( age );',
+        '    vec3 accel = getAcceleration( age );',
+        '    vec3 force = vec3( 0.0 );',
+        '    vec3 pos = vec3( position );',
 
         // Can't figure out why positionInTime needs to be multiplied
         // by 0.6 to give the desired result...Should be value between
         // 0.0 and 1.0!?
-        '	float drag = (1.0 - (positionInTime * 0.6) * acceleration.w);',
+        '    float drag = (1.0 - (positionInTime * 0.6) * acceleration.w);',
 
         // Integrate forces...
-        '	force += vel;',
-        '	force *= drag;',
-        '	force += accel * age;',
-        '	pos += force;',
+        '    force += vel;',
+        '    force *= drag;',
+        '    force += accel * age;',
+        '    pos += force;',
 
 
         // Wiggly wiggly wiggle!
-        '	pos.x += wiggleSin;',
-        '	pos.y += wiggleCos;',
-        '	pos.z += wiggleSin;',
+        '    #ifdef SHOULD_WIGGLE_PARTICLES',
+        '        pos.x += wiggleSin;',
+        '        pos.y += wiggleCos;',
+        '        pos.z += wiggleSin;',
+        '    #endif',
 
 
         // Rotate the emitter around it's central point
-        '	pos = getRotation( pos, positionInTime );',
+        '    #ifdef SHOULD_ROTATE_PARTICLES',
+        '        pos = getRotation( pos, positionInTime );',
+        '    #endif',
 
         // Convert pos to a world-space value
-        '	vec4 mvPos = modelViewMatrix * vec4( pos, 1.0 );',
+        '    vec4 mvPos = modelViewMatrix * vec4( pos, 1.0 );',
 
         // Determine point size.
-        '	float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;',
+        '    float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;',
 
         // Determine perspective
         // TODO: Accept camera here via `scale` uniform
-        '	#ifdef HAS_PERSPECTIVE',
-        '		float perspective = 300.0 / length( mvPos.xyz );',
-        '	#else',
-        '		float perspective = 1.0;',
-        '	#endif',
+        '    #ifdef HAS_PERSPECTIVE',
+        '        float perspective = 300.0 / length( mvPos.xyz );',
+        '    #else',
+        '        float perspective = 1.0;',
+        '    #endif',
 
         // Apply perpective to pointSize value
-        '	float pointSizePerspective = pointSize * perspective;',
+        '    float pointSizePerspective = pointSize * perspective;',
 
 
         //
@@ -91,7 +98,7 @@ SPE.shaders = {
         //
 
         // Determine color and opacity for this particle
-        '	 #ifdef COLORIZE',
+        '    #ifdef COLORIZE',
         '    	vec3 c = isAlive * getColorOverLifetime(',
         '    		positionInTime,',
         '    		unpackColor( color.x ),',
@@ -106,10 +113,15 @@ SPE.shaders = {
         '    float o = isAlive * getFloatOverLifetime( positionInTime, opacity );',
 
         // Assign color to vColor varying.
-        '	vColor = vec4( c, o );',
+        '	 vColor = vec4( c, o );',
 
         // Determine angle
-        '	vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
+        //
+        '    #ifdef SHOULD_ROTATE_TEXTURE',
+        '	     vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
+        '    #else',
+        '        vAngle = 0.0;',
+        '    #endif',
 
 
 
@@ -118,10 +130,9 @@ SPE.shaders = {
         //
 
         // Set PointSize according to size at current point in time.
-        '	gl_PointSize = pointSizePerspective;',
-        '	gl_Position = projectionMatrix * mvPos;',
-        '}',
-
+        '	 gl_PointSize = pointSizePerspective;',
+        '	 gl_Position = projectionMatrix * mvPos;',
+        '}'
     ].join( '\n' ),
 
     fragment: [

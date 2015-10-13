@@ -85,23 +85,23 @@ SPE.Emitter = function( options ) {
     // The following properties can support either single values, or an array of values that change
     // the property over a particle's lifetime (value over lifetime).
     this.color = {
-        value: utils.ensureArrayInstanceOf( options.color.value, THREE.Color, [ new THREE.Color() ] ),
-        spread: utils.ensureArrayInstanceOf( options.color.spread, THREE.Vector3, [ new THREE.Vector3() ] )
+        value: utils.ensureArrayInstanceOf( options.color.value, THREE.Color, new THREE.Color() ),
+        spread: utils.ensureArrayInstanceOf( options.color.spread, THREE.Vector3, new THREE.Vector3() )
     };
 
     this.opacity = {
-        value: utils.ensureArrayTypedArg( options.opacity.value, types.NUMBER, [ 1 ] ),
-        spread: utils.ensureArrayTypedArg( options.opacity.spread, types.NUMBER, [ 0 ] )
+        value: utils.ensureArrayTypedArg( options.opacity.value, types.NUMBER, 1 ),
+        spread: utils.ensureArrayTypedArg( options.opacity.spread, types.NUMBER, 0 )
     };
 
     this.size = {
-        value: utils.ensureArrayTypedArg( options.size.value, types.NUMBER, [ 1 ] ),
-        spread: utils.ensureArrayTypedArg( options.size.spread, types.NUMBER, [ 0 ] )
+        value: utils.ensureArrayTypedArg( options.size.value, types.NUMBER, 1 ),
+        spread: utils.ensureArrayTypedArg( options.size.spread, types.NUMBER, 0 )
     };
 
     this.angle = {
-        value: utils.ensureArrayTypedArg( options.angle.value, types.NUMBER, [ 1 ] ),
-        spread: utils.ensureArrayTypedArg( options.angle.spread, types.NUMBER, [ 0 ] )
+        value: utils.ensureArrayTypedArg( options.angle.value, types.NUMBER, 0 ),
+        spread: utils.ensureArrayTypedArg( options.angle.spread, types.NUMBER, 0 )
     };
 
     // Assign renaining option values.
@@ -285,7 +285,7 @@ SPE.Emitter.prototype._updateBuffers = function() {
 
         if ( range !== 0 ) {
             this.attributes.position.bufferAttribute.offset = this.bufferUpdateRanges.position.min;
-            this.attributes.position.bufferAttribute.count = range;
+            this.attributes.position.bufferAttribute.count = range + 3;
             this.attributes.position.bufferAttribute.dynamic = true;
             this.attributes.position.bufferAttribute.needsUpdate = true;
 
@@ -299,7 +299,7 @@ SPE.Emitter.prototype._updateBuffers = function() {
 
         if ( range !== 0 ) {
             this.attributes.velocity.bufferAttribute.offset = this.bufferUpdateRanges.velocity.min;
-            this.attributes.velocity.bufferAttribute.count = range;
+            this.attributes.velocity.bufferAttribute.count = range + 3;
             this.attributes.velocity.bufferAttribute.dynamic = true;
             this.attributes.velocity.bufferAttribute.needsUpdate = true;
 
@@ -313,7 +313,7 @@ SPE.Emitter.prototype._updateBuffers = function() {
 
         if ( range !== 0 ) {
             this.attributes.acceleration.bufferAttribute.offset = this.bufferUpdateRanges.acceleration.min;
-            this.attributes.acceleration.bufferAttribute.count = range;
+            this.attributes.acceleration.bufferAttribute.count = range + 4;
             this.attributes.acceleration.bufferAttribute.dynamic = true;
             this.attributes.acceleration.bufferAttribute.needsUpdate = true;
 
