@@ -15,39 +15,6 @@
 				z-index: 2;
 			}
 		</style>
-
-		<script type="text/x-shader" id="fragmentShader">
-			uniform sampler2D texture;
-
-			varying vec4 vColor;
-			varying float vAngle;
-			// varying float vIsAlive;
-
-			void main() {
-				// float a = vAngle;
-				// gl_FragColor = vec4( vColor );
-
-				vec3 outgoingLight = vColor.xyz;
-
-		        // float c = cos( vAngle );
-		        // float s = sin( vAngle );
-		        // float x = gl_PointCoord.x - 0.5;
-		        // float y = gl_PointCoord.y - 0.5;
-
-		        // vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );
-		        // vec4 rotatedTexture = texture2D( texture, rotatedUV );
-
-		        // #ifdef COLORIZE
-		        //    outgoingLight = vColor.xyz * rotatedTexture.xyz;
-		        // #else
-		        //    outgoingLight = vec3( rotatedTexture.xyz );
-		        // #endif
-
-
-		        // gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );
-		        gl_FragColor = vec4( outgoingLight.xyz, vColor.w );
-			}
-		</script>
 	</head>
 	<body>
 		<script type="text/javascript" src="../../examples/js/THREE-r72.js"></script>
@@ -62,11 +29,6 @@
 		<script type="text/javascript" src="../core/SPE.Emitter.js"></script>
 
 		<script type="text/javascript">
-			// Override shaders with ones above.
-			// SPE.shaders.vertex = document.getElementById( 'vertexShader' ).textContent;
-			SPE.shaders.fragment = document.getElementById( 'fragmentShader' ).textContent;
-
-
 			var scene = new THREE.Scene(),
 				camera = new THREE.PerspectiveCamera( 64, window.innerWidth / window.innerHeight, 0.1, 10000 ),
 				renderer = new THREE.WebGLRenderer( { antialias: true } ),
@@ -76,7 +38,8 @@
 				group = new SPE.Group( {
 					// blending: THREE.NormalBlending
 					colorize: true,
-					transparent: true
+					transparent: true,
+					texture: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' )
 				} ),
 
 				emitter = new SPE.Emitter( {

@@ -124,5 +124,17 @@ SPE.shaders = {
 
     ].join( '\n' ),
 
-    fragment: [].join( '\n' )
+    fragment: [
+        SPE.shaderChunks.uniforms,
+        SPE.shaderChunks.varyings,
+
+        'void main() {',
+        '    vec3 outgoingLight = vColor.xyz;',
+
+        SPE.shaderChunks.rotateTexture,
+
+        '    outgoingLight = vColor.xyz * rotatedTexture.xyz;',
+        '    gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
+        '}'
+    ].join( '\n' )
 };

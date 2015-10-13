@@ -8,7 +8,8 @@ SPE.shaderChunks = {
 
     uniforms: [
         'uniform float deltaTime;',
-        'uniform float runTime;'
+        'uniform float runTime;',
+        'uniform sampler2D texture;',
     ].join( '\n' ),
 
     attributes: [
@@ -176,5 +177,17 @@ SPE.shaderChunks = {
         '   rotationMatrix = getRotationMatrix( axis, angle );',
         '   return center + vec3( rotationMatrix * vec4( translated, 1.0 ) );',
         '}',
+    ].join( '\n' ),
+
+
+    // Fragment chunks
+    rotateTexture: [
+        '    float c = cos( vAngle );',
+        '    float s = sin( vAngle );',
+        '    float x = gl_PointCoord.x - 0.5;',
+        '    float y = gl_PointCoord.y - 0.5;',
+
+        '    vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
+        '    vec4 rotatedTexture = texture2D( texture, rotatedUV );'
     ].join( '\n' )
 };
