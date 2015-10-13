@@ -82,9 +82,8 @@ SPE.shaders = {
         '    float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;',
 
         // Determine perspective
-        // TODO: Accept camera here via `scale` uniform
         '    #ifdef HAS_PERSPECTIVE',
-        '        float perspective = 300.0 / length( mvPos.xyz );',
+        '        float perspective = scale / length( mvPos.xyz );',
         '    #else',
         '        float perspective = 1.0;',
         '    #endif',

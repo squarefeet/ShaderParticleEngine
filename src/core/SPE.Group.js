@@ -27,6 +27,7 @@ SPE.Group = function( options ) {
     this.depthTest = utils.ensureTypedArg( options.depthTest, types.BOOLEAN, true );
     this.fog = utils.ensureTypedArg( options.fog, types.BOOLEAN, true );
     // this.fogColor = utils.ensureInstanceOf( options.fogColor, THREE.Color, new THREE.Color() );
+    this.scale = utils.ensureTypedArg( options.scale, types.NUMBER, 300 );
 
     // Where emitter's go to curl up in a warm blanket and live
     // out their days.
@@ -87,6 +88,11 @@ SPE.Group = function( options ) {
         runTime: {
             type: 'f',
             value: 0
+        },
+
+        scale: {
+            type: 'f',
+            value: this.scale
         }
     };
 

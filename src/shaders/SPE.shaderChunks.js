@@ -10,6 +10,7 @@ SPE.shaderChunks = {
         'uniform float deltaTime;',
         'uniform float runTime;',
         'uniform sampler2D texture;',
+        'uniform float scale;',
     ].join( '\n' ),
 
     attributes: [
