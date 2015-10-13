@@ -433,9 +433,9 @@ SPE.Emitter.prototype.tick = function( dt ) {
     var updateRange = updatedParamsMax - updatedParamsMin;
 
     // Don't update buffer unless necessary...
-    if ( this.particleCount !== 1 && updateRange !== 0 ) {
+    if ( this.particleCount !== 1 ) {
         attributes.params.bufferAttribute.updateRange.offset = updatedParamsMin;
-        attributes.params.bufferAttribute.updateRange.count = updateRange;
+        attributes.params.bufferAttribute.updateRange.count = updateRange + 4;
         attributes.params.bufferAttribute.needsUpdate = true;
     }
     else if ( this.particleCount === 1 ) {
