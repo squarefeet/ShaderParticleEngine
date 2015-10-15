@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+		<style type="text/css">
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+
+			#stats {
+				position: absolute;
+				top: 0;
+				z-index: 2;
+			}
+		</style>
+	</head>
+	<body>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.js"></script>
+		<script type="text/javascript" src="../examples/js/THREE-r72.js"></script>
+		<script type="text/javascript" src="../examples/js/Stats.min.js"></script>
+		<script type="text/javascript" src="../src/SPE.js"></script>
+		<script type="text/javascript" src="../src/helpers/SPE.TypedArrayHelper.js"></script>
+        <script type="text/javascript" src="../src/helpers/SPE.ShaderAttribute.js"></script>
+        <script type="text/javascript" src="../src/shaders/SPE.shaderChunks.js"></script>
+        <script type="text/javascript" src="../src/shaders/SPE.shaders.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.utils.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.Group.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.Emitter.js"></script>
+
+		<script type="text/javascript">
+			var scene = new THREE.Scene(),
+				camera = new THREE.PerspectiveCamera( 64, window.innerWidth / window.innerHeight, 0.1, 10000 ),
+				renderer = new THREE.WebGLRenderer( { antialias: true } ),
+				stats = new Stats(),
+				clock = new THREE.Clock(),
+
+				group = new SPE.Group( {
+					texture: THREE.ImageUtils.loadTexture( '../../examples/img/flames.jpg' ),
+
+					// Possible API for animated textures...
+					tex: {
+						value: THREE.ImageUtils.loadTexture( '../../examples/img/test-sprite.jpg' ),
+						frames: {
+							x: 2,
+							y: 2
+						}
+					},
+
+					// fixedTimeStep: 0.016,
+					// blending: THREE.NormalBlending,
+					// colorize: true,
+					// hasPerspective: true,
+					// transparent: true,
+					// alphaTest: 0.5,
+					// depthWrite: false,
+					depthTest: true,
+					// fog: true
+					scale: window.innerHeight / 2.0
+				} ),
+
+				emitter = new SPE.Emitter( {
+					particleCount: 100,
+					maxAge: {
+						value: 4,
+						spread: 0
+					},
+					position: {
+						value: new THREE.Vector3( 0, 0, 0 ),
+						spread: new THREE.Vector3( 5, 0, 5 ),
+						// spreadClamp: new THREE.Vector3( 5, 5, 5 ),
+						// distribution: SPE.distributions.BOX,
+						randomise: true
+					},
+					radius: {
+						value: 5,
+						spread: 0,
+						scale: new THREE.Vector3( 1, 1, 1 )
+					},
+					velocity: {
+						value: new THREE.Vector3( 0, 2, 0 ),
+						spread: new THREE.Vector3( 0, 1, 0 ),
+						// distribution: SPE.distributions.BOX,
+						randomise: false
+					},
+					acceleration: {
+						value: new THREE.Vector3( 0, 0, 0 ),
+						spread: new THREE.Vector3( 0.1, 0, 0.1 ),
+						// distribution: SPE.distributions.BOX,
+						randomise: false
+					},
+					drag: {
+						value: 0,
+						spread: 0
+					},
+					wiggle: {
+						value: 0,
+						spread: 0
+					},
+					// rotation: {
+					// 	axis: new THREE.Vector3( 0, 1, 0 ),
+					// 	axisSpread: new THREE.Vector3( 0, 0, 0 ),
+					// 	angle:  Math.PI * 0.5, // radians
+					// 	angleSpread: 0, // radians
+					// 	static: false,
+					// 	center: new THREE.Vector3( 0, 0, 0 )
+					// },
+					size: {
+						value: 20,
+						spread: 0
+					},
+					color: {
+						// value: new THREE.Color( 1, 1, 1 )
+					},
+					opacity: {
+						value: [0, 1, 1, 0]
+					},
+					angle: {
+						value: 0,
+						spread: 0
+					},
+					// duration: 5,
+					// activeMultiplier: 1,
+					// isStatic: true
+				});
+
+			group.addEmitter( emitter );
+			scene.add( group.mesh );
+
+			camera.position.z = 50;
+			camera.position.y = 0;
+			camera.lookAt( scene.position );
+
+
+			// scene.fog = new THREE.Fog( 0x000000, 30, 50 );
+			renderer.setClearColor( 0x222222, 0.1 );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			document.body.appendChild( stats.domElement );
+
+			window.addEventListener( 'resize', function() {
+				var w = window.innerWidth,
+					h = window.innerHeight;
+
+				renderer.setSize( w, h );
+				camera.aspect = w / h;
+				camera.updateProjectionMatrix();
+				group.scale = group.uniforms.scale.value = h / 2.0;
+			}, false );
+
+			function initDAT() {
+	            var gui = new dat.GUI(),
+	                keys = Object.keys( emitter ),
+	                vec3Components = ['x', 'y', 'z'],
+	                i;
+
+
+	            gui.remember( emitter );
+
+	            var positionFolder = gui.addFolder( 'Position' );
+	            var positionValue = positionFolder.addFolder( 'Value' );
+	            var positionSpread = positionFolder.addFolder( 'Spread' );
+	            var positionSpreadClamp = positionFolder.addFolder( 'Spread Clamp');
+
+	            for( i = 0; i < vec3Components.length; ++i ) {
+		            positionValue.add( emitter.position.value, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
+		            	emitter.position.value = emitter.position.value;
+		            } );
+		            positionSpread.add( emitter.position.spread, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
+		            	emitter.position.spread = emitter.position.spread;
+		            } );
+		            positionSpreadClamp.add( emitter.position.spreadClamp, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
+		            	emitter.position.spreadClamp = emitter.position.spreadClamp;
+		            } );
+		        }
+
+		        var velocityFolder = gui.addFolder( 'Velocity' );
+	            var velocityValue = velocityFolder.addFolder( 'Value' );
+	            var velocitySpread = velocityFolder.addFolder( 'Spread' );
+
+	            for( i = 0; i < vec3Components.length; ++i ) {
+		            velocityValue.add( emitter.velocity.value, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
+		            	emitter.velocity.value = emitter.velocity.value;
+		            } );
+		            velocitySpread.add( emitter.velocity.spread, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
+		            	emitter.velocity.spread = emitter.velocity.spread;
+		            } );
+		        }
+
+
+		        var accelerationFolder = gui.addFolder( 'acceleration' );
+	            var accelerationValue = accelerationFolder.addFolder( 'Value' );
+	            var accelerationSpread = accelerationFolder.addFolder( 'Spread' );
+
+	            for( i = 0; i < vec3Components.length; ++i ) {
+		            accelerationValue.add( emitter.acceleration.value, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
+		            	emitter.acceleration.value = emitter.acceleration.value;
+		            } );
+		            accelerationSpread.add( emitter.acceleration.spread, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
+		            	emitter.acceleration.spread = emitter.acceleration.spread;
+		            } );
+		        }
+	        }
+
+			function animate() {
+				requestAnimationFrame( animate );
+				// setTimeout( animate, 1000 / 5 );
+				stats.update();
+				// emitter.position.value = emitter.position.value.set( Math.sin( Date.now() * 0.005 ) * 10, 0, Math.cos( Date.now() * 0.005 ) * 10);
+				render();
+			}
+
+			function render() {
+				var dt = clock.getDelta();
+				group.tick( dt );
+				renderer.render( scene, camera );
+			}
+
+			console.log( group );
+			console.log( emitter );
+
+			initDAT();
+			animate();
+		</script>
+	</body>
+</html>

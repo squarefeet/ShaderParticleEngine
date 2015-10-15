@@ -7,6 +7,9 @@ SPE.ShaderAttribute = function( type, dynamicBuffer, arrayType ) {
     this.typedArray = null;
     this.bufferAttribute = null;
     this.dynamicBuffer = !!dynamicBuffer;
+
+    this.updateMin = 0;
+    this.updateMax = 0;
 }
 
 SPE.ShaderAttribute.constructor = SPE.ShaderAttribute;
@@ -19,6 +22,25 @@ SPE.ShaderAttribute.typeSizeMap = {
     c: 3,
     m3: 9,
     m4: 16
+};
+
+SPE.ShaderAttribute.prototype.setUpdateRange = function( min, max ) {
+    this.updateMin = Math.min( min * this.componentSize, this.updateMin * this.componentSize );
+    this.updateMax = Math.max( max * this.componentSize, this.updateMax * this.componentSize );
+};
+
+SPE.ShaderAttribute.prototype.flagUpdate = function() {
+    var attr = this.bufferAttribute,
+        range = attr.updateRange;
+
+    range.offset = this.updateMin;
+    range.count = ( this.updateMax - this.updateMin ) + this.componentSize;
+    attr.needsUpdate = true;
+};
+
+SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
+    this.updateMin = 0;
+    this.updateMax = 0;
 };
 
 SPE.ShaderAttribute.prototype._ensureTypedArray = function( size ) {

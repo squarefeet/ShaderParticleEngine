@@ -1469,32 +1469,6 @@ SPE.Group.prototype._updateUniforms = function( dt ) {
     this.uniforms.deltaTime.value = dt;
 };
 
-SPE.Group.prototype.tick = function( dt ) {
-    var emitters = this.emitters,
-        numEmitters = emitters.length,
-        deltaTime = dt || this.fixedTimeStep,
-        bufferUpdateRanges = this.bufferUpdateRanges;
-
-    if ( numEmitters === 0 ) {
-        return;
-    }
-
-    this._updateUniforms( deltaTime );
-
-    // TODO:
-    //  - Optimise this...
-    for ( var i = 0; i < numEmitters; ++i ) {
-        emitters[ i ].tick( deltaTime );
-        bufferUpdateRanges.params.min = Math.min( bufferUpdateRanges.params.min, emitters[ i ].bufferUpdateRanges.params.min );
-        bufferUpdateRanges.params.max = Math.max( bufferUpdateRanges.params.max, emitters[ i ].bufferUpdateRanges.params.max );
-    }
-
-    this.attributes.params.bufferAttribute.updateRange.offset = bufferUpdateRanges.params.min;
-    this.attributes.params.bufferAttribute.updateRange.count = ( bufferUpdateRanges.params.max - bufferUpdateRanges.params.min ) + 4;
-    this.attributes.params.bufferAttribute.needsUpdate = true;
-};
-
-
 /**
  * Fetch a single emitter instance from the pool.
  * If there are no objects in the pool, a new emitter will be
@@ -1629,6 +1603,44 @@ SPE.Group.prototype.triggerPoolEmitter = function( numEmitters, position ) {
     }
 
     return that;
+};
+
+
+SPE.Group.prototype.tick = function( dt ) {
+    var emitters = this.emitters,
+        numEmitters = emitters.length,
+        deltaTime = dt || this.fixedTimeStep,
+        bufferUpdateRanges = this.bufferUpdateRanges;
+
+    if ( numEmitters === 0 ) {
+        return;
+    }
+
+    this._updateUniforms( deltaTime );
+
+    // TODO:
+    //  - Optimise this...
+    //  - Include other attributes.
+    for ( var i = 0; i < numEmitters; ++i ) {
+        emitters[ i ].tick( deltaTime );
+        bufferUpdateRanges.params.min = Math.min( bufferUpdateRanges.params.min, emitters[ i ].bufferUpdateRanges.params.min );
+        bufferUpdateRanges.params.max = Math.max( bufferUpdateRanges.params.max, emitters[ i ].bufferUpdateRanges.params.max );
+        bufferUpdateRanges.position.min = Math.min( bufferUpdateRanges.position.min, emitters[ i ].bufferUpdateRanges.position.min );
+        bufferUpdateRanges.position.max = Math.max( bufferUpdateRanges.position.max, emitters[ i ].bufferUpdateRanges.position.max );
+    }
+
+    this.attributes.params.bufferAttribute.updateRange.offset = bufferUpdateRanges.params.min;
+    this.attributes.params.bufferAttribute.updateRange.count = ( bufferUpdateRanges.params.max - bufferUpdateRanges.params.min ) + 4;
+    this.attributes.params.bufferAttribute.needsUpdate = true;
+
+    this.attributes.position.bufferAttribute.updateRange.offset = bufferUpdateRanges.position.min;
+    this.attributes.position.bufferAttribute.updateRange.count = ( bufferUpdateRanges.position.max - bufferUpdateRanges.position.min ) + 3;
+    this.attributes.position.bufferAttribute.needsUpdate = true;
+
+    bufferUpdateRanges.params.min = 0;
+    bufferUpdateRanges.position.max = 0;
+    bufferUpdateRanges.position.min = 0;
+    bufferUpdateRanges.position.max = 0;
 };;
 
 SPE.Emitter = function( options ) {
@@ -1737,11 +1749,14 @@ SPE.Emitter = function( options ) {
         spread: utils.ensureArrayTypedArg( options.angle.spread, types.NUMBER, 0 )
     };
 
+
     // Assign renaining option values.
     this.particleCount = utils.ensureTypedArg( options.particleCount, types.NUMBER, 100 );
     this.duration = utils.ensureTypedArg( options.duration, types.NUMBER, null );
     this.isStatic = utils.ensureTypedArg( options.isStatic, types.BOOLEAN, false );
     this.activeMultiplier = utils.ensureTypedArg( options.activeMultiplier, types.NUMBER, 1 );
+
+
 
     // The following properties are set internally and are not
     // user-controllable.
@@ -1750,7 +1765,6 @@ SPE.Emitter = function( options ) {
     // The current particle index for which particles should
     // be marked as active on the next update cycle.
     this.activationIndex = 0;
-
 
     // Whether this emitter is alive or not.
     this.alive = true;
@@ -1767,13 +1781,22 @@ SPE.Emitter = function( options ) {
     //
     // It allows randomization to be turned off as desired. If
     // all randomization is turned off, then I'd expect a performance
-    // boost no attribute buffers (excluding the `params`)
+    // boost as no attribute buffers (excluding the `params`)
     // would have to be re-passed to the GPU each frame (since nothing
     // except the `params` attribute would have changed).
     this.resetFlags = {
+        maxAge: utils.ensureTypedArg( options.maxAge.randomise, types.BOOLEAN, !!options.maxAge.spread ),
         position: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, !!options.position.spread && !!options.position.spread.lengthSq() ),
         velocity: utils.ensureTypedArg( options.velocity.randomise, types.BOOLEAN, !!options.velocity.spread && !!options.velocity.spread.lengthSq() ),
-        acceleration: utils.ensureTypedArg( options.acceleration.randomise, types.BOOLEAN, !!options.acceleration.spread && !!options.acceleration.spread.lengthSq() )
+        acceleration: utils.ensureTypedArg( options.acceleration.randomise, types.BOOLEAN, !!options.acceleration.spread && !!options.acceleration.spread.lengthSq() ),
+        radius: utils.ensureTypedArg( options.radius.randomise, types.BOOLEAN, !!options.radius.spread ),
+        drag: utils.ensureTypedArg( options.drag.randomise, types.BOOLEAN, !!options.drag.spread ),
+        wiggle: utils.ensureTypedArg( options.wiggle.randomise, types.BOOLEAN, !!options.wiggle.spread ),
+        rotation: utils.ensureTypedArg( options.rotation.randomise, types.BOOLEAN, !!options.rotation.spread ),
+        size: utils.ensureTypedArg( options.size.randomise, types.BOOLEAN, !!options.size.spread && ( !!options.size.spread.length || options.size.spread ) ),
+        color: utils.ensureTypedArg( options.color.randomise, types.BOOLEAN, !!options.color.spread && ( !!options.color.spread.length || options.color.spread ) ),
+        opacity: utils.ensureTypedArg( options.opacity.randomise, types.BOOLEAN, !!options.opacity.spread && ( !!options.opacity.spread.length || options.opacity.spread ) ),
+        angle: utils.ensureTypedArg( options.angle.randomise, types.BOOLEAN, !!options.angle.spread && ( !!options.angle.spread.length || options.angle.spread ) ),
     };
 
     this.bufferUpdateRanges = {
@@ -1789,7 +1812,6 @@ SPE.Emitter = function( options ) {
             min: 0,
             max: 0
         },
-
         params: {
             min: 0,
             max: 0
@@ -2007,10 +2029,6 @@ SPE.Emitter.prototype._resetParticle = function( index ) {
         this.attributes.acceleration.bufferAttribute.needsUpdate = true;
     }
 
-    // Re-randomise delay attribute if required
-    // if ( resetFlags.delay === true ) {
-    //     this.attributes.params.typedArray.array[ index + 2 ] = Math.abs( SPE.utils.randomFloat( this.delay.value, this.delay.spread ) )
-    // }
 };
 
 
@@ -2045,7 +2063,6 @@ SPE.Emitter.prototype.tick = function( dt ) {
             if ( age > maxAge ) {
                 age = 0.0;
                 alive = 0.0;
-                this._resetParticle( i );
             }
 
             updatedParamsMin = Math.min( updatedParamsMin, index );
@@ -2085,6 +2102,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
         if ( params[ index ] === 0.0 ) {
             // Mark the particle as alive.
             params[ index ] = 1.0;
+            this._resetParticle( i );
 
             // Move each particle being activated to
             // it's actual position in time.
@@ -2113,25 +2131,11 @@ SPE.Emitter.prototype.tick = function( dt ) {
     // this._updatePostTick( updatedParamsMin, updatedParamsMax );
 
     // Finally, update the buffers.
-    this._updateBuffers();
+    // this._updateBuffers();
 
     paramsUpdateRange.min = updatedParamsMin;
     paramsUpdateRange.max = updatedParamsMax;
 };
-
-// SPE.Emitter.prototype._updatePostTick = function( min, max ) {
-//     if ( isFinite( min ) === false || isFinite( max ) === false ) {
-//         return;
-//     }
-
-//     var attr = this.attributes.params.bufferAttribute,
-//         updateRange = max - min,
-//         count = this.particleCount;
-
-//     attr.updateRange.offset = min;
-//     attr.updateRange.count = updateRange + 4;
-//     attr.needsUpdate = true;
-// };
 
 SPE.Emitter.prototype.reset = function( force ) {
     this.age = 0.0;

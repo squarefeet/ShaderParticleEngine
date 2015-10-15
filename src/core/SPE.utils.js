@@ -72,20 +72,20 @@ SPE.utils = {
         maxLength = maxLength || 3;
 
         // First, ensure both properties are arrays.
-        if ( Array.isArray( property.value ) === false ) {
-            property.value = [ property.value ];
+        if ( Array.isArray( property._value ) === false ) {
+            property._value = [ property._value ];
         }
 
-        if ( Array.isArray( property.spread ) === false ) {
-            property.spread = [ property.spread ];
+        if ( Array.isArray( property._spread ) === false ) {
+            property._spread = [ property._spread ];
         }
 
-        var valueLength = this.clamp( property.value.length, minLength, maxLength ),
-            spreadLength = this.clamp( property.spread.length, minLength, maxLength ),
+        var valueLength = this.clamp( property._value.length, minLength, maxLength ),
+            spreadLength = this.clamp( property._spread.length, minLength, maxLength ),
             desiredLength = Math.max( valueLength, spreadLength );
 
-        property.value = this.interpolateArray( property.value, desiredLength );
-        property.spread = this.interpolateArray( property.spread, desiredLength );
+        property._value = this.interpolateArray( property._value, desiredLength );
+        property._spread = this.interpolateArray( property._spread, desiredLength );
     },
 
 
@@ -188,6 +188,16 @@ SPE.utils = {
         }
 
         return n + multiple - remainder;
+    },
+
+    arrayValuesAreEqual: function( array ) {
+        for ( var i = 0; i < array.length - 1; ++i ) {
+            if ( array[ i ] !== array[ i + 1 ] ) {
+                return false;
+            }
+        }
+
+        return true;
     },
 
     // colorsAreEqual: function() {

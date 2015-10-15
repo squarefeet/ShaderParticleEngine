@@ -39,31 +39,16 @@ SPE.Group = function( options ) {
     this._poolCreationSettings = null;
     this._createNewWhenPoolEmpty = 0;
 
-    this.bufferUpdateRanges = {
-        position: {
-            min: 0,
-            max: 0
-        },
-        velocity: {
-            min: 0,
-            max: 0
-        },
-        acceleration: {
-            min: 0,
-            max: 0
-        },
-        params: {
-            min: 0,
-            max: 0
-        }
-    };
-
 
     // Map of uniforms to be applied to the ShaderMaterial instance.
     this.uniforms = {
         texture: {
             type: 't',
             value: this.texture
+        },
+        textureAnimation: {
+            type: 'v4',
+            value: new THREE.Vector4( 2, 2, 128, 128 )
         },
         fogColor: {
             type: 'c',
@@ -89,7 +74,6 @@ SPE.Group = function( options ) {
             type: 'f',
             value: 0
         },
-
         scale: {
             type: 'f',
             value: this.scale
@@ -122,6 +106,9 @@ SPE.Group = function( options ) {
         color: new SPE.ShaderAttribute( 'v4' ),
         opacity: new SPE.ShaderAttribute( 'v4' )
     };
+
+    this.attributeKeys = Object.keys( this.attributes );
+    this.attributeCount = this.attributeKeys.length;
 
     // Create the ShaderMaterial instance that'll help render the
     // particles.
@@ -187,10 +174,10 @@ SPE.Group.prototype._applyAttributesToGeometry = function() {
         else {
             geometry.addAttribute( attr, attribute.bufferAttribute );
         }
+
+        attribute.bufferAttribute.needsUpdate = true;
     }
 };
-
-
 
 SPE.Group.prototype.addEmitter = function( emitter ) {
     // Ensure an actual emitter instance is passed here.
@@ -219,7 +206,8 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // Set the `particlesPerSecond` value (PPS) on the emitter.
     // It's used to determine how many particles to release
     // on a per-frame basis.
-    emitter._calculatePPSValue( emitter.maxAge.value + emitter.maxAge.spread );
+    emitter._calculatePPSValue( emitter.maxAge._value + emitter.maxAge._spread );
+    emitter._setBufferUpdateRanges( this.attributeKeys );
 
     // Store the offset value in the TypedArray attributes for this emitter.
     emitter.attributeOffset = start;
@@ -228,7 +216,6 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // Store reference to the attributes on the emitter for
     // easier access during the emitter's tick function.
     emitter.attributes = this.attributes;
-    // emitter.maxAge = this.maxAge;
 
 
 
@@ -252,49 +239,54 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         emitter._assignVelocityValue( i );
         emitter._assignAccelerationValue( i );
 
-        attributes.size.typedArray.setVec4Components( i,
-            Math.abs( utils.randomFloat( emitter.size.value[ 0 ], emitter.size.spread[ 0 ] ) ),
-            Math.abs( utils.randomFloat( emitter.size.value[ 1 ], emitter.size.spread[ 1 ] ) ),
-            Math.abs( utils.randomFloat( emitter.size.value[ 2 ], emitter.size.spread[ 2 ] ) ),
-            Math.abs( utils.randomFloat( emitter.size.value[ 3 ], emitter.size.spread[ 3 ] ) )
-        );
+        // TODO:
+        //  - Apply same logic to color, angle, opacity
+        if ( utils.arrayValuesAreEqual( emitter.size._value ) && utils.arrayValuesAreEqual( emitter.size._spread ) ) {
+            var size = Math.abs( utils.randomFloat( emitter.size._value[ 0 ], emitter.size._spread[ 0 ] ) );
+            attributes.size.typedArray.setVec4Components( i, size, size, size, size );
+        }
+        else {
+            attributes.size.typedArray.setVec4Components( i,
+                Math.abs( utils.randomFloat( emitter.size._value[ 0 ], emitter.size._spread[ 0 ] ) ),
+                Math.abs( utils.randomFloat( emitter.size._value[ 1 ], emitter.size._spread[ 1 ] ) ),
+                Math.abs( utils.randomFloat( emitter.size._value[ 2 ], emitter.size._spread[ 2 ] ) ),
+                Math.abs( utils.randomFloat( emitter.size._value[ 3 ], emitter.size._spread[ 3 ] ) )
+            );
+        }
 
         attributes.angle.typedArray.setVec4Components( i,
-            utils.randomFloat( emitter.angle.value[ 0 ], emitter.angle.spread[ 0 ] ),
-            utils.randomFloat( emitter.angle.value[ 1 ], emitter.angle.spread[ 1 ] ),
-            utils.randomFloat( emitter.angle.value[ 2 ], emitter.angle.spread[ 2 ] ),
-            utils.randomFloat( emitter.angle.value[ 3 ], emitter.angle.spread[ 3 ] )
+            utils.randomFloat( emitter.angle._value[ 0 ], emitter.angle._spread[ 0 ] ),
+            utils.randomFloat( emitter.angle._value[ 1 ], emitter.angle._spread[ 1 ] ),
+            utils.randomFloat( emitter.angle._value[ 2 ], emitter.angle._spread[ 2 ] ),
+            utils.randomFloat( emitter.angle._value[ 3 ], emitter.angle._spread[ 3 ] )
         );
 
         // alive, age, maxAge, wiggle
         attributes.params.typedArray.setVec4Components( i,
+            emitter.isStatic ? 1 : 0,
             0,
-            0,
-            Math.abs( utils.randomFloat( emitter.maxAge.value, emitter.maxAge.spread ) ),
-            utils.randomFloat( emitter.wiggle.value, emitter.wiggle.spread )
+            Math.abs( utils.randomFloat( emitter.maxAge._value, emitter.maxAge._spread ) ),
+            utils.randomFloat( emitter.wiggle._value, emitter.wiggle._spread )
         );
 
 
-        utils.randomColorAsHex( attributes.color, i, emitter.color.value, emitter.color.spread );
+        utils.randomColorAsHex( attributes.color, i, emitter.color._value, emitter.color._spread );
 
-        // utils.randomColor( attributes.colorStart, i, emitter.color.value[ 0 ], emitter.color.spread[ 0 ] );
-        // utils.randomColor( attributes.colorMiddle, i, emitter.color.value[ 1 ], emitter.color.spread[ 1 ] );
-        // utils.randomColor( attributes.colorEnd, i, emitter.color.value[ 2 ], emitter.color.spread[ 2 ] );
 
         attributes.opacity.typedArray.setVec4Components( i,
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 0 ], emitter.opacity.spread[ 0 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 1 ], emitter.opacity.spread[ 1 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 2 ], emitter.opacity.spread[ 2 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 3 ], emitter.opacity.spread[ 3 ] ) )
+            Math.abs( utils.randomFloat( emitter.opacity._value[ 0 ], emitter.opacity._spread[ 0 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity._value[ 1 ], emitter.opacity._spread[ 1 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity._value[ 2 ], emitter.opacity._spread[ 2 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity._value[ 3 ], emitter.opacity._spread[ 3 ] ) )
         );
 
         attributes.rotation.typedArray.setVec3Components( i,
-            utils.getPackedRotationAxis( emitter.rotation.axis, emitter.rotation.axisSpread ),
-            utils.randomFloat( emitter.rotation.angle, emitter.rotation.angleSpread ),
-            emitter.rotation.static ? 0 : 1
+            utils.getPackedRotationAxis( emitter.rotation._axis, emitter.rotation._axisSpread ),
+            utils.randomFloat( emitter.rotation._angle, emitter.rotation._angleSpread ),
+            emitter.rotation._static ? 0 : 1
         );
 
-        attributes.rotationCenter.typedArray.setVec3( i, emitter.rotation.center );
+        attributes.rotationCenter.typedArray.setVec3( i, emitter.rotation._center );
     }
 
     // Update the geometry and make sure the attributes are referencing
@@ -354,32 +346,6 @@ SPE.Group.prototype._updateUniforms = function( dt ) {
     this.uniforms.runTime.value += dt;
     this.uniforms.deltaTime.value = dt;
 };
-
-SPE.Group.prototype.tick = function( dt ) {
-    var emitters = this.emitters,
-        numEmitters = emitters.length,
-        deltaTime = dt || this.fixedTimeStep,
-        bufferUpdateRanges = this.bufferUpdateRanges;
-
-    if ( numEmitters === 0 ) {
-        return;
-    }
-
-    this._updateUniforms( deltaTime );
-
-    // TODO:
-    //  - Optimise this...
-    for ( var i = 0; i < numEmitters; ++i ) {
-        emitters[ i ].tick( deltaTime );
-        bufferUpdateRanges.params.min = Math.min( bufferUpdateRanges.params.min, emitters[ i ].bufferUpdateRanges.params.min );
-        bufferUpdateRanges.params.max = Math.max( bufferUpdateRanges.params.max, emitters[ i ].bufferUpdateRanges.params.max );
-    }
-
-    this.attributes.params.bufferAttribute.updateRange.offset = bufferUpdateRanges.params.min;
-    this.attributes.params.bufferAttribute.updateRange.count = ( bufferUpdateRanges.params.max - bufferUpdateRanges.params.min ) + 4;
-    this.attributes.params.bufferAttribute.needsUpdate = true;
-};
-
 
 /**
  * Fetch a single emitter instance from the pool.
@@ -515,4 +481,56 @@ SPE.Group.prototype.triggerPoolEmitter = function( numEmitters, position ) {
     }
 
     return that;
+};
+
+
+SPE.Group.prototype._resetBufferRanges = function() {
+    var keys = this.attributeKeys,
+        i = this.attributeCount - 1,
+        attrs = this.attributes;
+
+    for ( i; i >= 0; --i ) {
+        attrs[ keys[ i ] ].resetUpdateRange();
+    }
+};
+
+
+SPE.Group.prototype._updateBuffers = function( emitter ) {
+    var keys = this.attributeKeys,
+        i = this.attributeCount - 1,
+        attrs = this.attributes,
+        emitterRanges = emitter.bufferUpdateRanges,
+        key,
+        emitterAttr,
+        attr;
+
+    for ( i; i >= 0; --i ) {
+        key = keys[ i ];
+        emitterAttr = emitterRanges[ key ];
+        attr = attrs[ key ];
+        attr.setUpdateRange( emitterAttr.min, emitterAttr.max );
+        // attr.setUpdateRange( 0, 1000000 );
+        attr.flagUpdate();
+    }
+};
+
+
+SPE.Group.prototype.tick = function( dt ) {
+    var emitters = this.emitters,
+        numEmitters = emitters.length,
+        deltaTime = dt || this.fixedTimeStep,
+        bufferUpdateRanges = this.bufferUpdateRanges;
+
+    if ( numEmitters === 0 ) {
+        return;
+    }
+
+    this._updateUniforms( deltaTime );
+    this._resetBufferRanges();
+
+    for ( var i = 0, emitter; i < numEmitters; ++i ) {
+        emitter = emitters[ i ];
+        emitter.tick( deltaTime );
+        this._updateBuffers( emitter );
+    }
 };

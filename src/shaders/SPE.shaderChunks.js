@@ -10,6 +10,7 @@ SPE.shaderChunks = {
         'uniform float deltaTime;',
         'uniform float runTime;',
         'uniform sampler2D texture;',
+        'uniform vec4 textureAnimation;',
         'uniform float scale;',
     ].join( '\n' ),
 
@@ -31,6 +32,7 @@ SPE.shaderChunks = {
         '    varying float vAngle;',
         '#endif',
         // 'varying float vIsAlive;',
+        'varying vec3 vLifetime;'
     ].join( '\n' ),
 
     branchAvoidanceFunctions: [
@@ -192,14 +194,27 @@ SPE.shaderChunks = {
     rotateTexture: [
         '    #ifdef SHOULD_ROTATE_TEXTURE',
         '       float x = gl_PointCoord.x - 0.5;',
-        '       float y = gl_PointCoord.y - 0.5;',
-        '       float c = cos( vAngle );',
-        '       float s = sin( vAngle );',
+        '       float y = (1.0 - gl_PointCoord.y) - 0.5;',
+        '       float c = cos( -vAngle );',
+        '       float s = sin( -vAngle );',
 
         '       vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
-        '       vec4 rotatedTexture = texture2D( texture, rotatedUV );',
         '    #else',
-        '       vec4 rotatedTexture = texture2D( texture, gl_PointCoord.xy );',
-        '    #endif'
+        '       vec2 rotatedUV = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y );',
+        '    #endif',
+        '',
+
+        // '    float age = vLifetime.x;',
+        // '    float maxAge = vLifetime.y;',
+        // '    float positionInTime = vLifetime.z;',
+        // '    float totalFrames = textureAnimation.x + textureAnimation.y;',
+        // '    float frameTime = maxAge / totalFrames;',
+        // '    float frameNumber = floor(positionInTime * totalFrames);',
+
+        // // '    float frame = mod( frameNumber'
+
+        // '    rotatedUV.x += mod( frameNumber, totalFrames );',
+
+        '    vec4 rotatedTexture = texture2D( texture, rotatedUV );',
     ].join( '\n' )
 };

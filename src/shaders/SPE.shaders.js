@@ -35,7 +35,10 @@ SPE.shaders = {
         '        float wiggleCos = isAlive * cos( wiggleAmount );',
         '    #endif',
 
-
+        // Save the positionInTime value to a varying so
+        // it can be accessed in the fragment shader to
+        // animate textures.
+        // '    vLifetime = vec3( age, maxAge, positionInTime );',
 
         // Save the value is isAlive to a varying for
         // access in the fragment shader

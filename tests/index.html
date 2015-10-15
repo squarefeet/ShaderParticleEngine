@@ -37,7 +37,7 @@
 					// transparent: true,
 					// alphaTest: 0.5,
 					// depthWrite: false,
-					// depthTest: true,
+					depthTest: true,
 					// fog: true
 					scale: 600
 				} ),
@@ -55,7 +55,7 @@
 						spread: new THREE.Vector3( 20, 0, 20 ),
 						spreadClamp: new THREE.Vector3( 5, 5, 5 ),
 						distribution: SPE.distributions.BOX,
-						randomise: false
+						randomise: true
 					},
 
 					radius: {
@@ -128,7 +128,7 @@
 			camera.lookAt( scene.position );
 
 
-			scene.fog = new THREE.Fog( 0x000000, 1, 50 );
+			scene.fog = new THREE.Fog( 0x000000, 30, 50 );
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );

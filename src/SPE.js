@@ -1,8 +1,8 @@
 var SPE = {
     distributions: {
-        SPHERE: 1,
-        DISC: 2,
-        BOX: 3
+        BOX: 1,
+        SPHERE: 2,
+        DISC: 3,
     },
 
     // Set this value to however many 'steps' you
@@ -22,6 +22,6 @@ var SPE = {
     // 	  value-over-lifetime properties for ALL
     // 	  emitters and ALL groups.
     //
-    // 	- Only values >= 1 && <= 4 are allowed.
-    valueOverLifetimeLength: 4
+    // 	- Only values >= 3 && <= 4 are allowed.
+    valueOverLifetimeLength: 3
 };
