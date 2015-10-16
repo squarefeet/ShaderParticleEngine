@@ -23,7 +23,7 @@ var SPE = {
     // 	  emitters and ALL groups.
     //
     // 	- Only values >= 3 && <= 4 are allowed.
-    valueOverLifetimeLength: 3
+    valueOverLifetimeLength: 4
 };;
 
 /**
@@ -420,7 +420,10 @@ SPE.shaderChunks = {
         '    varying float vAngle;',
         '#endif',
         // 'varying float vIsAlive;',
-        // 'varying vec3 vLifetime;'
+
+        '#ifdef SHOULD_CALCULATE_SPRITE',
+        '    varying vec3 vLifetime;',
+        '#endif'
     ].join( '\n' ),
 
     branchAvoidanceFunctions: [
@@ -479,7 +482,7 @@ SPE.shaderChunks = {
     floatOverLifetime: [
         'float getFloatOverLifetime( in float positionInTime, in vec4 attr ) {',
         '    float value = 0.0;',
-        '    float deltaAge = positionInTime * float( VALUE_OVER_LIFETIME_LENGTH );',
+        '    float deltaAge = positionInTime * float( VALUE_OVER_LIFETIME_LENGTH - 1 );',
         '    float fIndex = 0.0;',
         '    float shouldApplyValue = 0.0;',
 
@@ -519,8 +522,8 @@ SPE.shaderChunks = {
         '}',
 
         'float getMaxAge() {',
-        '   return max( getAge(), params.z );',
-        // '   return params.z;',
+        // '   return max( getAge(), params.z );',
+        '   return params.z;',
         '}',
 
         'float getWiggle() {',
@@ -569,7 +572,7 @@ SPE.shaderChunks = {
 
         '      float angle = 0.0;',
         '      angle += when_eq( rotation.z, 0.0 ) * rotation.y;',
-        '      angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime * 1.35 );',
+        '      angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime );',
         '      translated = rotationCenter - pos;',
         '      rotationMatrix = getRotationMatrix( axis, angle );',
         '      return center + vec3( rotationMatrix * vec4( translated, 1.0 ) );',
@@ -580,30 +583,42 @@ SPE.shaderChunks = {
 
     // Fragment chunks
     rotateTexture: [
+        '    vec2 vUv = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y );',
+        '',
         '    #ifdef SHOULD_ROTATE_TEXTURE',
         '       float x = gl_PointCoord.x - 0.5;',
-        '       float y = (1.0 - gl_PointCoord.y) - 0.5;',
+        '       float y = 1.0 - gl_PointCoord.y - 0.5;',
         '       float c = cos( -vAngle );',
         '       float s = sin( -vAngle );',
 
-        '       vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
-        '    #else',
-        '       vec2 rotatedUV = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y );',
+        '       vUv = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
         '    #endif',
         '',
 
-        // '    float age = vLifetime.x;',
-        // '    float maxAge = vLifetime.y;',
-        // '    float positionInTime = vLifetime.z;',
-        // '    float totalFrames = textureAnimation.x + textureAnimation.y;',
-        // '    float frameTime = maxAge / totalFrames;',
-        // '    float frameNumber = floor(positionInTime * totalFrames);',
+        // Spritesheets overwrite angle calculations.
+        '    #ifdef SHOULD_CALCULATE_SPRITE',
+        '        float age = vLifetime.x;',
+        '        float maxAge = vLifetime.y;',
+        '        float positionInTime = vLifetime.z;',
 
-        // // '    float frame = mod( frameNumber'
+        '        float framesX = textureAnimation.x;',
+        '        float framesY = textureAnimation.y;',
+        '        float loopCount = textureAnimation.w;',
+        '        float totalFrames = textureAnimation.z;',
+        '        float frameNumber = mod( (positionInTime * loopCount) * totalFrames, totalFrames );',
 
-        // '    rotatedUV.x += mod( frameNumber, totalFrames );',
+        '        float column = floor(mod( frameNumber, framesX ));',
+        '        float row = floor( (frameNumber - column) / framesX );',
 
-        '    vec4 rotatedTexture = texture2D( texture, rotatedUV );',
+        '        float columnNorm = column / framesX;',
+        '        float rowNorm = row / framesY;',
+
+        '        vUv.x = gl_PointCoord.x * (1.0/framesX) + columnNorm;',
+        '        vUv.y = 1.0 - (gl_PointCoord.y * (1.0/framesY) + rowNorm);',
+        '    #endif',
+
+        '',
+        '    vec4 rotatedTexture = texture2D( texture, vUv );',
     ].join( '\n' )
 };;
 
@@ -632,11 +647,11 @@ SPE.shaders = {
         //
         // Setup...
         //
-        '    float age = getAge();',
-        '    float alive = getAlive();',
-        '    float maxAge = getMaxAge();',
-        '    float positionInTime = (age / maxAge);',
-        '    float isAlive = when_gt( alive, 0.0 );',
+        '    highp float age = getAge();',
+        '    highp float alive = getAlive();',
+        '    highp float maxAge = getMaxAge();',
+        '    highp float positionInTime = (age / maxAge);',
+        '    highp float isAlive = when_eq( alive, 1.0 );',
 
         '    #ifdef SHOULD_WIGGLE_PARTICLES',
         '        float wiggleAmount = positionInTime * getWiggle();',
@@ -647,7 +662,9 @@ SPE.shaders = {
         // Save the positionInTime value to a varying so
         // it can be accessed in the fragment shader to
         // animate textures.
-        // '    vLifetime = vec3( age, maxAge, positionInTime );',
+        '#ifdef SHOULD_CALCULATE_SPRITE',
+        '    vLifetime = vec3( age, maxAge, positionInTime );',
+        '#endif',
 
         // Save the value is isAlive to a varying for
         // access in the fragment shader
@@ -668,7 +685,8 @@ SPE.shaders = {
         // Can't figure out why positionInTime needs to be multiplied
         // by 0.6 to give the desired result...Should be value between
         // 0.0 and 1.0!?
-        '    float drag = (1.0 - (positionInTime * 0.6) * acceleration.w);',
+        '    float drag = 1.0 - (positionInTime * 0.5) * acceleration.w;',
+        // 'float drag = 1.0;',
 
         // Integrate forces...
         '    force += vel;',
@@ -758,6 +776,8 @@ SPE.shaders = {
         THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
 
         SPE.shaderChunks.varyings,
+
+        SPE.shaderChunks.branchAvoidanceFunctions,
 
         'void main() {',
         '    vec3 outgoingLight = vColor.xyz;',
@@ -1186,6 +1206,7 @@ SPE.Group = function( options ) {
 
     // Ensure we have a map of options to play with
     options = utils.ensureTypedArg( options, types.OBJECT, {} );
+    options.texture = utils.ensureTypedArg( options.texture, types.OBJECT, {} );
 
     // Assign a UUID to this instance
     this.uuid = THREE.Math.generateUUID();
@@ -1194,11 +1215,16 @@ SPE.Group = function( options ) {
     // the value of this property will be used to advance the simulation.
     this.fixedTimeStep = utils.ensureTypedArg( options.fixedTimeStep, types.NUMBER, 0.016 );
 
-    // Set properties used in the uniforms map.
-    this.texture = utils.ensureInstanceOf( options.texture, THREE.Texture, null );
+    // Set properties used in the uniforms map, starting with the
+    // texture stuff.
+    this.texture = utils.ensureInstanceOf( options.texture.value, THREE.Texture, null );
+    this.textureFrames = utils.ensureInstanceOf( options.texture.frames, THREE.Vector2, new THREE.Vector2( 1, 1 ) );
+    this.textureFrameCount = utils.ensureTypedArg( options.texture.frameCount, types.NUMBER, this.textureFrames.x * this.textureFrames.y );
+    this.textureLoop = utils.ensureTypedArg( options.texture.loop, types.NUMBER, 1 );
+    this.textureFrames.max( new THREE.Vector2( 1, 1 ) );
+
     this.hasPerspective = utils.ensureTypedArg( options.hasPerspective, types.BOOLEAN, true );
     this.colorize = utils.ensureTypedArg( options.colorize, types.BOOLEAN, true );
-
 
 
     // Set properties used to define the ShaderMaterial's appearance.
@@ -1230,7 +1256,12 @@ SPE.Group = function( options ) {
         },
         textureAnimation: {
             type: 'v4',
-            value: new THREE.Vector4( 2, 2, 128, 128 )
+            value: new THREE.Vector4(
+                this.textureFrames.x,
+                this.textureFrames.y,
+                this.textureFrameCount,
+                Math.max( Math.abs( this.textureLoop ), 1.0 )
+            )
         },
         fogColor: {
             type: 'c',
@@ -1270,7 +1301,9 @@ SPE.Group = function( options ) {
 
         SHOULD_ROTATE_TEXTURE: false,
         SHOULD_ROTATE_PARTICLES: false,
-        SHOULD_WIGGLE_PARTICLES: false
+        SHOULD_WIGGLE_PARTICLES: false,
+
+        SHOULD_CALCULATE_SPRITE: this.textureFrames.x > 1 || this.textureFrames.y > 1
     };
 
     // Map of all attributes to be applied to the particles.
@@ -1280,13 +1313,13 @@ SPE.Group = function( options ) {
         position: new SPE.ShaderAttribute( 'v3', true ),
         acceleration: new SPE.ShaderAttribute( 'v4', true ), // w component is drag
         velocity: new SPE.ShaderAttribute( 'v3', true ),
-        rotation: new SPE.ShaderAttribute( 'v4' ),
-        rotationCenter: new SPE.ShaderAttribute( 'v3' ),
+        rotation: new SPE.ShaderAttribute( 'v4', true ),
+        rotationCenter: new SPE.ShaderAttribute( 'v3', true ),
         params: new SPE.ShaderAttribute( 'v4', true ), // Holds (alive, age, delay, wiggle)
-        size: new SPE.ShaderAttribute( 'v4' ),
-        angle: new SPE.ShaderAttribute( 'v4' ),
+        size: new SPE.ShaderAttribute( 'v4', true ),
+        angle: new SPE.ShaderAttribute( 'v4', true ),
         color: new SPE.ShaderAttribute( 'v4' ),
-        opacity: new SPE.ShaderAttribute( 'v4' )
+        opacity: new SPE.ShaderAttribute( 'v4', true )
     };
 
     this.attributeKeys = Object.keys( this.attributes );
@@ -1317,10 +1350,15 @@ SPE.Group.constructor = SPE.Group;
 
 
 SPE.Group.prototype._updateDefines = function( emitter ) {
-    this.defines.SHOULD_ROTATE_TEXTURE = this.defines.SHOULD_ROTATE_TEXTURE || !!Math.max(
-        Math.max.apply( null, emitter.angle.value ),
-        Math.max.apply( null, emitter.angle.spread )
-    );
+    // Only do angle calculation if there's no spritesheet defined.
+    //
+    // Saves calculations being done and then overwritten in the shaders.
+    if ( !this.defines.SHOULD_CALCULATE_SPRITE ) {
+        this.defines.SHOULD_ROTATE_TEXTURE = this.defines.SHOULD_ROTATE_TEXTURE || !!Math.max(
+            Math.max.apply( null, emitter.angle.value ),
+            Math.max.apply( null, emitter.angle.spread )
+        );
+    }
 
     this.defines.SHOULD_ROTATE_PARTICLES = this.defines.SHOULD_ROTATE_PARTICLES || !!Math.max(
         emitter.rotation.angle,
@@ -1418,57 +1456,23 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         particleStartTime = relativeIndex / emitter.particlesPerSecond;
 
         emitter._assignPositionValue( i );
-        emitter._assignVelocityValue( i );
-        emitter._assignAccelerationValue( i );
-
-        // TODO:
-        //  - Apply same logic to color, angle, opacity
-        if ( utils.arrayValuesAreEqual( emitter.size._value ) && utils.arrayValuesAreEqual( emitter.size._spread ) ) {
-            var size = Math.abs( utils.randomFloat( emitter.size._value[ 0 ], emitter.size._spread[ 0 ] ) );
-            attributes.size.typedArray.setVec4Components( i, size, size, size, size );
-        }
-        else {
-            attributes.size.typedArray.setVec4Components( i,
-                Math.abs( utils.randomFloat( emitter.size._value[ 0 ], emitter.size._spread[ 0 ] ) ),
-                Math.abs( utils.randomFloat( emitter.size._value[ 1 ], emitter.size._spread[ 1 ] ) ),
-                Math.abs( utils.randomFloat( emitter.size._value[ 2 ], emitter.size._spread[ 2 ] ) ),
-                Math.abs( utils.randomFloat( emitter.size._value[ 3 ], emitter.size._spread[ 3 ] ) )
-            );
-        }
-
-        attributes.angle.typedArray.setVec4Components( i,
-            utils.randomFloat( emitter.angle._value[ 0 ], emitter.angle._spread[ 0 ] ),
-            utils.randomFloat( emitter.angle._value[ 1 ], emitter.angle._spread[ 1 ] ),
-            utils.randomFloat( emitter.angle._value[ 2 ], emitter.angle._spread[ 2 ] ),
-            utils.randomFloat( emitter.angle._value[ 3 ], emitter.angle._spread[ 3 ] )
-        );
+        emitter._assignForceValue( i, 'velocity' );
+        emitter._assignForceValue( i, 'acceleration' );
+        emitter._assignLifetimeValue( i, 'opacity' );
+        emitter._assignLifetimeValue( i, 'size' );
+        emitter._assignAngleValue( i );
+        emitter._assignRotationValue( i );
+        emitter._assignParamsValue( i );
+        emitter._assignColorValue( i );
 
         // alive, age, maxAge, wiggle
-        attributes.params.typedArray.setVec4Components( i,
-            emitter.isStatic ? 1 : 0,
-            0,
-            Math.abs( utils.randomFloat( emitter.maxAge._value, emitter.maxAge._spread ) ),
-            utils.randomFloat( emitter.wiggle._value, emitter.wiggle._spread )
-        );
+        // attributes.params.typedArray.setVec4Components( i,
+        //     emitter.isStatic ? 1 : 0,
+        //     0,
+        //     Math.abs( utils.randomFloat( emitter.maxAge._value, emitter.maxAge._spread ) ),
+        //     utils.randomFloat( emitter.wiggle._value, emitter.wiggle._spread )
+        // );
 
-
-        utils.randomColorAsHex( attributes.color, i, emitter.color._value, emitter.color._spread );
-
-
-        attributes.opacity.typedArray.setVec4Components( i,
-            Math.abs( utils.randomFloat( emitter.opacity._value[ 0 ], emitter.opacity._spread[ 0 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity._value[ 1 ], emitter.opacity._spread[ 1 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity._value[ 2 ], emitter.opacity._spread[ 2 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity._value[ 3 ], emitter.opacity._spread[ 3 ] ) )
-        );
-
-        attributes.rotation.typedArray.setVec3Components( i,
-            utils.getPackedRotationAxis( emitter.rotation._axis, emitter.rotation._axisSpread ),
-            utils.randomFloat( emitter.rotation._angle, emitter.rotation._angleSpread ),
-            emitter.rotation._static ? 0 : 1
-        );
-
-        attributes.rotationCenter.typedArray.setVec3( i, emitter.rotation._center );
     }
 
     // Update the geometry and make sure the attributes are referencing
@@ -1750,32 +1754,37 @@ SPE.Emitter = function( options ) {
         _value: utils.ensureInstanceOf( options.position.value, THREE.Vector3, new THREE.Vector3() ),
         _spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() ),
         _spreadClamp: utils.ensureInstanceOf( options.position.spreadClamp, THREE.Vector3, new THREE.Vector3() ),
-        _distribution: utils.ensureTypedArg( options.position.distribution, types.NUMBER, this.type )
+        _distribution: utils.ensureTypedArg( options.position.distribution, types.NUMBER, this.type ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
     // TODO: Use this as the old `speed` property.
     this.velocity = {
         _value: utils.ensureInstanceOf( options.velocity.value, THREE.Vector3, new THREE.Vector3() ),
         _spread: utils.ensureInstanceOf( options.velocity.spread, THREE.Vector3, new THREE.Vector3() ),
-        _distribution: utils.ensureTypedArg( options.velocity.distribution, types.NUMBER, this.type )
+        _distribution: utils.ensureTypedArg( options.velocity.distribution, types.NUMBER, this.type ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
     this.acceleration = {
         _value: utils.ensureInstanceOf( options.acceleration.value, THREE.Vector3, new THREE.Vector3() ),
         _spread: utils.ensureInstanceOf( options.acceleration.spread, THREE.Vector3, new THREE.Vector3() ),
-        _distribution: utils.ensureTypedArg( options.acceleration.distribution, types.NUMBER, this.type )
+        _distribution: utils.ensureTypedArg( options.acceleration.distribution, types.NUMBER, this.type ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
     this.radius = {
         _value: utils.ensureTypedArg( options.radius.value, types.NUMBER, 10 ),
         _spread: utils.ensureTypedArg( options.radius.spread, types.NUMBER, 0 ),
         _spreadClamp: utils.ensureTypedArg( options.radius.spreadClamp, types.NUMBER, 0 ),
-        _scale: utils.ensureInstanceOf( options.radius.scale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) )
+        _scale: utils.ensureInstanceOf( options.radius.scale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
     this.drag = {
         _value: utils.ensureTypedArg( options.drag.value, types.NUMBER, 0 ),
-        _spread: utils.ensureTypedArg( options.drag.spread, types.NUMBER, 0 )
+        _spread: utils.ensureTypedArg( options.drag.spread, types.NUMBER, 0 ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
     this.wiggle = {
@@ -1791,6 +1800,7 @@ SPE.Emitter = function( options ) {
         _angleSpread: utils.ensureTypedArg( options.rotation.angleSpread, types.NUMBER, 0 ),
         _static: utils.ensureTypedArg( options.rotation.static, types.BOOLEAN, false ),
         _center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, this.position._value ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
 
@@ -1805,22 +1815,26 @@ SPE.Emitter = function( options ) {
     // the property over a particle's lifetime (value over lifetime).
     this.color = {
         _value: utils.ensureArrayInstanceOf( options.color.value, THREE.Color, new THREE.Color() ),
-        _spread: utils.ensureArrayInstanceOf( options.color.spread, THREE.Vector3, new THREE.Vector3() )
+        _spread: utils.ensureArrayInstanceOf( options.color.spread, THREE.Vector3, new THREE.Vector3() ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
     this.opacity = {
         _value: utils.ensureArrayTypedArg( options.opacity.value, types.NUMBER, 1 ),
-        _spread: utils.ensureArrayTypedArg( options.opacity.spread, types.NUMBER, 0 )
+        _spread: utils.ensureArrayTypedArg( options.opacity.spread, types.NUMBER, 0 ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
     this.size = {
         _value: utils.ensureArrayTypedArg( options.size.value, types.NUMBER, 1 ),
-        _spread: utils.ensureArrayTypedArg( options.size.spread, types.NUMBER, 0 )
+        _spread: utils.ensureArrayTypedArg( options.size.spread, types.NUMBER, 0 ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
     this.angle = {
         _value: utils.ensureArrayTypedArg( options.angle.value, types.NUMBER, 0 ),
-        _spread: utils.ensureArrayTypedArg( options.angle.spread, types.NUMBER, 0 )
+        _spread: utils.ensureArrayTypedArg( options.angle.spread, types.NUMBER, 0 ),
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
 
@@ -1859,18 +1873,19 @@ SPE.Emitter = function( options ) {
     // would have to be re-passed to the GPU each frame (since nothing
     // except the `params` attribute would have changed).
     this.resetFlags = {
-        maxAge: utils.ensureTypedArg( options.maxAge._randomise, types.BOOLEAN, !!options.maxAge._spread ),
-        position: utils.ensureTypedArg( options.position._randomise, types.BOOLEAN, !!options.position._spread && !!options.position._spread.lengthSq() ),
-        velocity: utils.ensureTypedArg( options.velocity._randomise, types.BOOLEAN, !!options.velocity._spread && !!options.velocity._spread.lengthSq() ),
-        acceleration: utils.ensureTypedArg( options.acceleration._randomise, types.BOOLEAN, !!options.acceleration._spread && !!options.acceleration._spread.lengthSq() ),
-        radius: utils.ensureTypedArg( options.radius._randomise, types.BOOLEAN, !!options.radius._spread ),
-        drag: utils.ensureTypedArg( options.drag._randomise, types.BOOLEAN, !!options.drag._spread ),
-        wiggle: utils.ensureTypedArg( options.wiggle._randomise, types.BOOLEAN, !!options.wiggle._spread ),
-        rotation: utils.ensureTypedArg( options.rotation._randomise, types.BOOLEAN, !!options.rotation._spread ),
-        size: utils.ensureTypedArg( options.size._randomise, types.BOOLEAN, !!options.size._spread && ( !!options.size._spread.length || options.size._spread ) ),
-        color: utils.ensureTypedArg( options.color._randomise, types.BOOLEAN, !!options.color._spread && ( !!options.color._spread.length || options.color._spread ) ),
-        opacity: utils.ensureTypedArg( options.opacity._randomise, types.BOOLEAN, !!options.opacity._spread && ( !!options.opacity._spread.length || options.opacity._spread ) ),
-        angle: utils.ensureTypedArg( options.angle._randomise, types.BOOLEAN, !!options.angle._spread && ( !!options.angle._spread.length || options.angle._spread ) ),
+        // params: utils.ensureTypedArg( options.maxAge.randomise, types.BOOLEAN, !!options.maxAge.spread ) ||
+        //     utils.ensureTypedArg( options.wiggle.randomise, types.BOOLEAN, !!options.wiggle.spread ),
+        position: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false ) ||
+            utils.ensureTypedArg( options.radius.randomise, types.BOOLEAN, false ),
+        velocity: utils.ensureTypedArg( options.velocity.randomise, types.BOOLEAN, false ),
+        acceleration: utils.ensureTypedArg( options.acceleration.randomise, types.BOOLEAN, false ) ||
+            utils.ensureTypedArg( options.drag.randomise, types.BOOLEAN, false ),
+        rotation: utils.ensureTypedArg( options.rotation.randomise, types.BOOLEAN, false ),
+        rotationCenter: utils.ensureTypedArg( options.rotation.randomise, types.BOOLEAN, false ),
+        size: utils.ensureTypedArg( options.size.randomise, types.BOOLEAN, false ),
+        color: utils.ensureTypedArg( options.color.randomise, types.BOOLEAN, false ),
+        opacity: utils.ensureTypedArg( options.opacity.randomise, types.BOOLEAN, false ),
+        angle: utils.ensureTypedArg( options.angle.randomise, types.BOOLEAN, false ),
     };
 
     this.updateFlags = {};
@@ -1880,10 +1895,10 @@ SPE.Emitter = function( options ) {
     // which attribute.
     this.updateMap = {
         maxAge: 'params',
-        position: 'position',
-        velocity: 'velocity',
-        acceleration: 'acceleration',
-        radius: 'position',
+        position: 'position', //
+        velocity: 'velocity', //
+        acceleration: 'acceleration', //
+        radius: 'position', //
         drag: 'acceleration',
         wiggle: 'params',
         rotation: 'rotation',
@@ -1893,9 +1908,9 @@ SPE.Emitter = function( options ) {
         angle: 'angle'
     };
 
-    for ( var i in this.resetFlags ) {
-        this.updateFlags[ i ] = false;
-        this.updateCounts[ i ] = 0;
+    for ( var i in this.updateMap ) {
+        // this.updateFlags[ i ] = false;
+        // this.updateCounts[ i ] = 0;
         this._createGetterSetters( this[ i ], i );
     }
 
@@ -1931,10 +1946,29 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
 
             set: ( function( prop ) {
                 return function( value ) {
-                    var mapName = self.updateMap[ propName ];
-                    self.updateFlags[ mapName ] = true;
-                    self.updateCounts[ mapName ] = 0.0;
+                    var mapName = self.updateMap[ propName ],
+                        prevValue = this[ prop ],
+                        length = SPE.valueOverLifetimeLength;
+
+                    if ( prop === '_rotationCenter' ) {
+                        self.updateFlags.rotationCenter = true;
+                        self.updateCounts.rotationCenter = 0.0;
+                    }
+                    else if ( prop === '_randomise' ) {
+                        self.resetFlags[ mapName ] = value;
+                    }
+                    else {
+                        self.updateFlags[ mapName ] = true;
+                        self.updateCounts[ mapName ] = 0.0;
+                    }
+
                     this[ prop ] = value;
+
+                    // If the previous value was an array, then make
+                    // sure the provided value is interpolated correctly.
+                    if ( Array.isArray( prevValue ) ) {
+                        SPE.utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length )
+                    }
                 };
             }( i ) )
         } )
@@ -1970,20 +2004,44 @@ SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     // this.particlesPerSecond = Math.max( this.particlesPerSecond, 1 );
 };
 
-SPE.Emitter.prototype._assignValue = function( prop, index ) {
-    console.log( prop );
 
+
+SPE.Emitter.prototype._assignValue = function( prop, index ) {
     switch ( prop ) {
         case 'position':
             this._assignPositionValue( index );
             break;
 
-        case 'velocity':
-            this._assignVelocityValue( index );
+        case 'radius':
+            if ( this.position._distribution !== SPE.distributions.BOX ) {
+                this._assignPositionValue( index );
+            }
             break;
 
+        case 'velocity':
         case 'acceleration':
-            this._assignAccelerationValue( index );
+            this._assignForceValue( index, prop );
+            break;
+
+        case 'size':
+        case 'opacity':
+            this._assignLifetimeValue( index, prop );
+            break;
+
+        case 'angle':
+            this._assignAngleValue( index );
+            break;
+
+        case 'params':
+            this._assignParamsValue( index );
+            break;
+
+        case 'rotation':
+            this._assignRotationValue( index );
+            break;
+
+        case 'color':
+            this._assignColorValue( index );
             break;
     }
 };
@@ -2012,10 +2070,10 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
     }
 };
 
-SPE.Emitter.prototype._assignVelocityValue = function( index ) {
+SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
     var distributions = SPE.distributions,
         utils = SPE.utils,
-        prop = this.velocity,
+        prop = this[ attrName ],
         value = prop._value,
         spread = prop._spread,
         distribution = prop._distribution,
@@ -2026,70 +2084,96 @@ SPE.Emitter.prototype._assignVelocityValue = function( index ) {
 
     switch ( distribution ) {
         case distributions.BOX:
-            utils.randomVector3( this.attributes.velocity, index, value, spread );
+            utils.randomVector3( this.attributes[ attrName ], index, value, spread );
             break;
 
         case distributions.SPHERE:
         case distributions.DISC:
             pos = this.attributes.position.typedArray.array;
 
-            // Ensure position values aren't zero, otherwise no velocity will be
+            // Ensure position values aren't zero, otherwise no force will be
             // applied.
             positionX = utils.zeroToEpsilon( pos[ index * 3 ], true );
             positionY = utils.zeroToEpsilon( pos[ index * 3 + 1 ], true );
             positionZ = utils.zeroToEpsilon( pos[ index * 3 + 2 ], true );
 
             utils.randomDirectionVector3OnSphere(
-                this.attributes.velocity, index,
+                this.attributes[ attrName ], index,
                 positionX, positionY, positionZ,
                 this.position._value,
-                this.velocity._value.x,
-                this.velocity._spread.x
+                this[ attrName ]._value.x,
+                this[ attrName ]._spread.x
             );
             break;
+    }
+
+    if ( attrName === 'acceleration' ) {
+        var drag = utils.clamp( utils.randomFloat( this.drag._value, this.drag._spread ), 0, 1 );
+        this.attributes.acceleration.typedArray.array[ index * 4 + 3 ] = drag;
     }
 };
 
-SPE.Emitter.prototype._assignAccelerationValue = function( index ) {
-    var distributions = SPE.distributions,
+SPE.Emitter.prototype._assignLifetimeValue = function( index, propName ) {
+    var array = this.attributes[ propName ].typedArray,
+        prop = emitter[ propName ],
         utils = SPE.utils,
-        prop = this.acceleration,
-        value = prop._value,
-        spread = prop._spread,
-        distribution = prop._distribution,
-        pos,
-        positionX,
-        positionY,
-        positionZ;
+        value;
 
-    switch ( distribution ) {
-        case distributions.BOX:
-            utils.randomVector3( this.attributes.acceleration, index, value, spread );
-            break;
-
-        case distributions.SPHERE:
-        case distributions.DISC:
-            pos = this.attributes.position.typedArray.array;
-
-            // Ensure position values aren't zero, otherwise no acceleration will be
-            // applied.
-            positionX = utils.zeroToEpsilon( pos[ index * 3 ], true );
-            positionY = utils.zeroToEpsilon( pos[ index * 3 + 1 ], true );
-            positionZ = utils.zeroToEpsilon( pos[ index * 3 + 2 ], true );
-
-            utils.randomDirectionVector3OnSphere(
-                this.attributes.acceleration, index,
-                positionX, positionY, positionZ,
-                this.position._value,
-                this.acceleration._value.x,
-                this.acceleration._spread.x
-            );
-            break;
+    if ( utils.arrayValuesAreEqual( prop._value ) && utils.arrayValuesAreEqual( prop._spread ) ) {
+        value = Math.abs( utils.randomFloat( prop._value[ 0 ], prop._spread[ 0 ] ) );
+        array.setVec4Components( index, value, value, value, value );
     }
+    else {
+        array.setVec4Components( index,
+            Math.abs( utils.randomFloat( prop._value[ 0 ], prop._spread[ 0 ] ) ),
+            Math.abs( utils.randomFloat( prop._value[ 1 ], prop._spread[ 1 ] ) ),
+            Math.abs( utils.randomFloat( prop._value[ 2 ], prop._spread[ 2 ] ) ),
+            Math.abs( utils.randomFloat( prop._value[ 3 ], prop._spread[ 3 ] ) )
+        );
+    }
+};
 
-    // Assign drag to w component.
-    var drag = utils.clamp( utils.randomFloat( this.drag._value, this.drag._spread ), 0, 1 );
-    this.attributes.acceleration.typedArray.array[ index * 4 + 3 ] = drag;
+SPE.Emitter.prototype._assignAngleValue = function( index ) {
+    var array = this.attributes.angle.typedArray,
+        prop = emitter.angle,
+        utils = SPE.utils,
+        value;
+
+    if ( utils.arrayValuesAreEqual( prop._value ) && utils.arrayValuesAreEqual( prop._spread ) ) {
+        value = utils.randomFloat( prop._value[ 0 ], prop._spread[ 0 ] );
+        array.setVec4Components( index, value, value, value, value );
+    }
+    else {
+        array.setVec4Components( index,
+            utils.randomFloat( prop._value[ 0 ], prop._spread[ 0 ] ),
+            utils.randomFloat( prop._value[ 1 ], prop._spread[ 1 ] ),
+            utils.randomFloat( prop._value[ 2 ], prop._spread[ 2 ] ),
+            utils.randomFloat( prop._value[ 3 ], prop._spread[ 3 ] )
+        );
+    }
+};
+
+SPE.Emitter.prototype._assignParamsValue = function( index ) {
+    this.attributes.params.typedArray.setVec4Components( index,
+        this.isStatic ? 1 : 0,
+        0.0,
+        Math.abs( SPE.utils.randomFloat( this.maxAge._value, this.maxAge._spread ) ),
+        SPE.utils.randomFloat( this.wiggle._value, this.wiggle._spread )
+    );
+};
+
+SPE.Emitter.prototype._assignRotationValue = function( index ) {
+    this.attributes.rotation.typedArray.setVec3Components( index,
+        SPE.utils.getPackedRotationAxis( this.rotation._axis, this.rotation._axisSpread ),
+        SPE.utils.randomFloat( this.rotation._angle, this.rotation._angleSpread ),
+        this.rotation._static ? 0 : 1
+    );
+
+    this.attributes.rotationCenter.typedArray.setVec3( index, this.rotation._center );
+};
+
+SPE.Emitter.prototype._assignColorValue = function( index ) {
+    SPE.utils.randomColorAsHex( this.attributes.color, index, this.color._value, this.color._spread );
 };
 
 SPE.Emitter.prototype._resetParticle = function( index ) {
@@ -2108,12 +2192,9 @@ SPE.Emitter.prototype._resetParticle = function( index ) {
             this._assignValue( key, index );
             this._updateAttributeUpdateRange( key, index );
 
-            if ( updateFlag === true && updateCounts[ key ] > this.particleCount ) {
+            if ( updateFlag === true && ( ++updateCounts[ key ] ) === this.particleCount ) {
                 updateFlags[ key ] = false;
                 updateCounts[ key ] = 0.0;
-            }
-            else if ( updateFlag === true ) {
-                ++updateCounts[ key ]
             }
         }
     }
@@ -2188,7 +2269,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
             age += dt;
 
             // Mark particle as dead
-            if ( age > maxAge ) {
+            if ( age >= maxAge ) {
                 age = 0.0;
                 alive = 0.0;
             }
@@ -2229,6 +2310,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
         if ( params[ index ] === 0.0 ) {
             // Mark the particle as alive.
             params[ index ] = 1.0;
+            // this.updateFlags.params = true;
             this._resetParticle( i );
 
             // Move each particle being activated to
@@ -2238,6 +2320,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
             // when frame rates are on the lower side of 60fps
             // or not constant (a very real possibility!)
             params[ index + 1 ] = dtPerParticle * ( i - activationStart );
+            // params[ index + 1 ] = 0.0;
 
             this._updateAttributeUpdateRange( 'params', i );
         }
@@ -2281,6 +2364,7 @@ SPE.Emitter.prototype.reset = function( force ) {
 SPE.Emitter.prototype.enable = function() {
     this.alive = true;
 };
+
 SPE.Emitter.prototype.disable = function() {
     this.alive = false;
 };
