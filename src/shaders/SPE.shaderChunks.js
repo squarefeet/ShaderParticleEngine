@@ -32,7 +32,7 @@ SPE.shaderChunks = {
         '    varying float vAngle;',
         '#endif',
         // 'varying float vIsAlive;',
-        // 'varying vec3 vLifetime;'
+        'varying vec3 vLifetime;'
     ].join( '\n' ),
 
     branchAvoidanceFunctions: [
@@ -204,17 +204,24 @@ SPE.shaderChunks = {
         '    #endif',
         '',
 
-        // '    float age = vLifetime.x;',
-        // '    float maxAge = vLifetime.y;',
-        // '    float positionInTime = vLifetime.z;',
-        // '    float totalFrames = textureAnimation.x + textureAnimation.y;',
-        // '    float frameTime = maxAge / totalFrames;',
-        // '    float frameNumber = floor(positionInTime * totalFrames);',
 
-        // // '    float frame = mod( frameNumber'
+        '    float age = vLifetime.x;',
+        '    float maxAge = vLifetime.y;',
+        '    float positionInTime = vLifetime.z * 1.5;',
+        '    float totalFrames = textureAnimation.x + textureAnimation.y;',
+        '    float frameTime = maxAge / totalFrames;',
+        '    float frameNumber = floor(positionInTime * totalFrames);',
 
-        // '    rotatedUV.x += mod( frameNumber, totalFrames );',
+        // Scale the texture so it fits in the frame
+        '    rotatedUV.x *= 1.0 / textureAnimation.x;',
+        '    rotatedUV.y *= 1.0 / textureAnimation.y;',
 
+        // Set the correct offset
+        '    rotatedUV.y += 1.0 / textureAnimation.y;',
+
+        '    float xPos = floor((positionInTime * textureAnimation.x) ) / textureAnimation.x;',
+        '    rotatedUV.x += xPos;',
+        // '    rotatedUV.y += floor((positionInTime * textureAnimation.x) ) / textureAnimation.x;',
         '    vec4 rotatedTexture = texture2D( texture, rotatedUV );',
     ].join( '\n' )
 };
