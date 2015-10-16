@@ -32,7 +32,10 @@ SPE.shaderChunks = {
         '    varying float vAngle;',
         '#endif',
         // 'varying float vIsAlive;',
-        'varying vec3 vLifetime;'
+
+        '#ifdef SHOULD_CALCULATE_SPRITE',
+        '    varying vec3 vLifetime;',
+        '#endif'
     ].join( '\n' ),
 
     branchAvoidanceFunctions: [
@@ -192,18 +195,19 @@ SPE.shaderChunks = {
 
     // Fragment chunks
     rotateTexture: [
+        '    vec2 vUv = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y );',
+        '',
         '    #ifdef SHOULD_ROTATE_TEXTURE',
         '       float x = gl_PointCoord.x - 0.5;',
-        '       float y = (1.0 - gl_PointCoord.y) - 0.5;',
+        '       float y = 1.0 - gl_PointCoord.y - 0.5;',
         '       float c = cos( -vAngle );',
         '       float s = sin( -vAngle );',
 
-        '       vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
-        '    #else',
-        '       vec2 rotatedUV = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y );',
+        '       vUv = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
         '    #endif',
         '',
 
+        // Spritesheets overwrite angle calculations.
         '    #ifdef SHOULD_CALCULATE_SPRITE',
         '        float age = vLifetime.x;',
         '        float maxAge = vLifetime.y;',
@@ -221,19 +225,11 @@ SPE.shaderChunks = {
         '        float columnNorm = column / framesX;',
         '        float rowNorm = row / framesY;',
 
-        '        float x = gl_PointCoord.x;',
-        '        float y = gl_PointCoord.y;',
-
-        '        x *= (1.0/framesX);',
-        '        y *= (1.0/framesY);',
-        '        x += columnNorm;',
-        '        y += rowNorm;',
-
-        '        vec4 rotatedTexture = texture2D( texture, vec2( x, 1.0 - y ) );',
-        '    #else',
-        '        vec4 rotatedTexture = texture2D( texture, rotatedUV );',
+        '        vUv.x = gl_PointCoord.x * (1.0/framesX) + columnNorm;',
+        '        vUv.y = 1.0 - (gl_PointCoord.y * (1.0/framesY) + rowNorm);',
         '    #endif',
 
-        // '       vec4 rotatedTexture = texture2D( texture, vec2( gl_PointCoord.x + vLifetime.x, 1.0 - gl_PointCoord.y ) );',
+        '',
+        '    vec4 rotatedTexture = texture2D( texture, vUv );',
     ].join( '\n' )
 };

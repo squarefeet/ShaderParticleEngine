@@ -27,8 +27,6 @@ SPE.shaders = {
         '    highp float alive = getAlive();',
         '    highp float maxAge = getMaxAge();',
         '    highp float positionInTime = (age / maxAge);',
-        // '    highp float positionInTime = age;',
-        // '    highp float isAlive = when_le( positionInTime, 1.0 );',
         '    highp float isAlive = when_eq( alive, 1.0 );',
 
         '    #ifdef SHOULD_WIGGLE_PARTICLES',
@@ -40,7 +38,9 @@ SPE.shaders = {
         // Save the positionInTime value to a varying so
         // it can be accessed in the fragment shader to
         // animate textures.
+        '#ifdef SHOULD_CALCULATE_SPRITE',
         '    vLifetime = vec3( age, maxAge, positionInTime );',
+        '#endif',
 
         // Save the value is isAlive to a varying for
         // access in the fragment shader
@@ -61,7 +61,7 @@ SPE.shaders = {
         // Can't figure out why positionInTime needs to be multiplied
         // by 0.6 to give the desired result...Should be value between
         // 0.0 and 1.0!?
-        '    float drag = (1.0 - (positionInTime * 0.6) * acceleration.w);',
+        '    float drag = 1.0 - (positionInTime * 0.5) * acceleration.w;',
         // 'float drag = 1.0;',
 
         // Integrate forces...

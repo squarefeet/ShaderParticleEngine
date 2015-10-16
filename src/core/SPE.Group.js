@@ -111,13 +111,13 @@ SPE.Group = function( options ) {
         position: new SPE.ShaderAttribute( 'v3', true ),
         acceleration: new SPE.ShaderAttribute( 'v4', true ), // w component is drag
         velocity: new SPE.ShaderAttribute( 'v3', true ),
-        rotation: new SPE.ShaderAttribute( 'v4' ),
-        rotationCenter: new SPE.ShaderAttribute( 'v3' ),
+        rotation: new SPE.ShaderAttribute( 'v4', true ),
+        rotationCenter: new SPE.ShaderAttribute( 'v3', true ),
         params: new SPE.ShaderAttribute( 'v4', true ), // Holds (alive, age, delay, wiggle)
-        size: new SPE.ShaderAttribute( 'v4' ),
-        angle: new SPE.ShaderAttribute( 'v4' ),
+        size: new SPE.ShaderAttribute( 'v4', true ),
+        angle: new SPE.ShaderAttribute( 'v4', true ),
         color: new SPE.ShaderAttribute( 'v4' ),
-        opacity: new SPE.ShaderAttribute( 'v4' )
+        opacity: new SPE.ShaderAttribute( 'v4', true )
     };
 
     this.attributeKeys = Object.keys( this.attributes );
@@ -148,10 +148,15 @@ SPE.Group.constructor = SPE.Group;
 
 
 SPE.Group.prototype._updateDefines = function( emitter ) {
-    this.defines.SHOULD_ROTATE_TEXTURE = this.defines.SHOULD_ROTATE_TEXTURE || !!Math.max(
-        Math.max.apply( null, emitter.angle.value ),
-        Math.max.apply( null, emitter.angle.spread )
-    );
+    // Only do angle calculation if there's no spritesheet defined.
+    //
+    // Saves calculations being done and then overwritten in the shaders.
+    if ( !this.defines.SHOULD_CALCULATE_SPRITE ) {
+        this.defines.SHOULD_ROTATE_TEXTURE = this.defines.SHOULD_ROTATE_TEXTURE || !!Math.max(
+            Math.max.apply( null, emitter.angle.value ),
+            Math.max.apply( null, emitter.angle.spread )
+        );
+    }
 
     this.defines.SHOULD_ROTATE_PARTICLES = this.defines.SHOULD_ROTATE_PARTICLES || !!Math.max(
         emitter.rotation.angle,
@@ -249,57 +254,23 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         particleStartTime = relativeIndex / emitter.particlesPerSecond;
 
         emitter._assignPositionValue( i );
-        emitter._assignVelocityValue( i );
-        emitter._assignAccelerationValue( i );
-
-        // TODO:
-        //  - Apply same logic to color, angle, opacity
-        if ( utils.arrayValuesAreEqual( emitter.size._value ) && utils.arrayValuesAreEqual( emitter.size._spread ) ) {
-            var size = Math.abs( utils.randomFloat( emitter.size._value[ 0 ], emitter.size._spread[ 0 ] ) );
-            attributes.size.typedArray.setVec4Components( i, size, size, size, size );
-        }
-        else {
-            attributes.size.typedArray.setVec4Components( i,
-                Math.abs( utils.randomFloat( emitter.size._value[ 0 ], emitter.size._spread[ 0 ] ) ),
-                Math.abs( utils.randomFloat( emitter.size._value[ 1 ], emitter.size._spread[ 1 ] ) ),
-                Math.abs( utils.randomFloat( emitter.size._value[ 2 ], emitter.size._spread[ 2 ] ) ),
-                Math.abs( utils.randomFloat( emitter.size._value[ 3 ], emitter.size._spread[ 3 ] ) )
-            );
-        }
-
-        attributes.angle.typedArray.setVec4Components( i,
-            utils.randomFloat( emitter.angle._value[ 0 ], emitter.angle._spread[ 0 ] ),
-            utils.randomFloat( emitter.angle._value[ 1 ], emitter.angle._spread[ 1 ] ),
-            utils.randomFloat( emitter.angle._value[ 2 ], emitter.angle._spread[ 2 ] ),
-            utils.randomFloat( emitter.angle._value[ 3 ], emitter.angle._spread[ 3 ] )
-        );
+        emitter._assignForceValue( i, 'velocity' );
+        emitter._assignForceValue( i, 'acceleration' );
+        emitter._assignLifetimeValue( i, 'opacity' );
+        emitter._assignLifetimeValue( i, 'size' );
+        emitter._assignAngleValue( i );
+        emitter._assignRotationValue( i );
+        emitter._assignParamsValue( i );
+        emitter._assignColorValue( i );
 
         // alive, age, maxAge, wiggle
-        attributes.params.typedArray.setVec4Components( i,
-            emitter.isStatic ? 1 : 0,
-            0,
-            Math.abs( utils.randomFloat( emitter.maxAge._value, emitter.maxAge._spread ) ),
-            utils.randomFloat( emitter.wiggle._value, emitter.wiggle._spread )
-        );
+        // attributes.params.typedArray.setVec4Components( i,
+        //     emitter.isStatic ? 1 : 0,
+        //     0,
+        //     Math.abs( utils.randomFloat( emitter.maxAge._value, emitter.maxAge._spread ) ),
+        //     utils.randomFloat( emitter.wiggle._value, emitter.wiggle._spread )
+        // );
 
-
-        utils.randomColorAsHex( attributes.color, i, emitter.color._value, emitter.color._spread );
-
-
-        attributes.opacity.typedArray.setVec4Components( i,
-            Math.abs( utils.randomFloat( emitter.opacity._value[ 0 ], emitter.opacity._spread[ 0 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity._value[ 1 ], emitter.opacity._spread[ 1 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity._value[ 2 ], emitter.opacity._spread[ 2 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity._value[ 3 ], emitter.opacity._spread[ 3 ] ) )
-        );
-
-        attributes.rotation.typedArray.setVec3Components( i,
-            utils.getPackedRotationAxis( emitter.rotation._axis, emitter.rotation._axisSpread ),
-            utils.randomFloat( emitter.rotation._angle, emitter.rotation._angleSpread ),
-            emitter.rotation._static ? 0 : 1
-        );
-
-        attributes.rotationCenter.typedArray.setVec3( i, emitter.rotation._center );
     }
 
     // Update the geometry and make sure the attributes are referencing
