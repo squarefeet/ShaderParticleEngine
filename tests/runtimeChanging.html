@@ -37,7 +37,7 @@
 				clock = new THREE.Clock(),
 
 				group = new SPE.Group( {
-					texture: THREE.ImageUtils.loadTexture( '../../examples/img/flames.jpg' ),
+					texture: THREE.ImageUtils.loadTexture( '../../examples/img/test-sprite.jpg' ),
 
 					// Possible API for animated textures...
 					tex: {
@@ -61,14 +61,14 @@
 				} ),
 
 				emitter = new SPE.Emitter( {
-					particleCount: 100,
+					particleCount: 1,
 					maxAge: {
-						value: 4,
+						value: 2,
 						spread: 0
 					},
 					position: {
 						value: new THREE.Vector3( 0, 0, 0 ),
-						spread: new THREE.Vector3( 5, 0, 5 ),
+						spread: new THREE.Vector3( 0, 0, 0 ),
 						// spreadClamp: new THREE.Vector3( 5, 5, 5 ),
 						// distribution: SPE.distributions.BOX,
 						randomise: true
@@ -79,14 +79,14 @@
 						scale: new THREE.Vector3( 1, 1, 1 )
 					},
 					velocity: {
-						value: new THREE.Vector3( 0, 2, 0 ),
-						spread: new THREE.Vector3( 0, 1, 0 ),
+						value: new THREE.Vector3( 0, 0, 0 ),
+						spread: new THREE.Vector3( 0, 0, 0 ),
 						// distribution: SPE.distributions.BOX,
 						randomise: false
 					},
 					acceleration: {
 						value: new THREE.Vector3( 0, 0, 0 ),
-						spread: new THREE.Vector3( 0.1, 0, 0.1 ),
+						spread: new THREE.Vector3( 0, 0, 0 ),
 						// distribution: SPE.distributions.BOX,
 						randomise: false
 					},
@@ -114,7 +114,7 @@
 						// value: new THREE.Color( 1, 1, 1 )
 					},
 					opacity: {
-						value: [0, 1, 1, 0]
+						value: 1
 					},
 					angle: {
 						value: 0,
