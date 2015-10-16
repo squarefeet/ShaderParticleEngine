@@ -1,8 +1,8 @@
 var SPE = {
     distributions: {
-        SPHERE: 1,
-        DISC: 2,
-        BOX: 3
+        BOX: 1,
+        SPHERE: 2,
+        DISC: 3,
     },
 
     // Set this value to however many 'steps' you
@@ -22,8 +22,8 @@ var SPE = {
     // 	  value-over-lifetime properties for ALL
     // 	  emitters and ALL groups.
     //
-    // 	- Only values >= 1 && <= 4 are allowed.
-    valueOverLifetimeLength: 4
+    // 	- Only values >= 3 && <= 4 are allowed.
+    valueOverLifetimeLength: 3
 };;
 
 /**
@@ -301,6 +301,9 @@ SPE.ShaderAttribute = function( type, dynamicBuffer, arrayType ) {
     this.typedArray = null;
     this.bufferAttribute = null;
     this.dynamicBuffer = !!dynamicBuffer;
+
+    this.updateMin = 0;
+    this.updateMax = 0;
 }
 
 SPE.ShaderAttribute.constructor = SPE.ShaderAttribute;
@@ -313,6 +316,25 @@ SPE.ShaderAttribute.typeSizeMap = {
     c: 3,
     m3: 9,
     m4: 16
+};
+
+SPE.ShaderAttribute.prototype.setUpdateRange = function( min, max ) {
+    this.updateMin = Math.min( min * this.componentSize, this.updateMin * this.componentSize );
+    this.updateMax = Math.max( max * this.componentSize, this.updateMax * this.componentSize );
+};
+
+SPE.ShaderAttribute.prototype.flagUpdate = function() {
+    var attr = this.bufferAttribute,
+        range = attr.updateRange;
+
+    range.offset = this.updateMin;
+    range.count = ( this.updateMax - this.updateMin ) + this.componentSize;
+    attr.needsUpdate = true;
+};
+
+SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
+    this.updateMin = 0;
+    this.updateMax = 0;
 };
 
 SPE.ShaderAttribute.prototype._ensureTypedArray = function( size ) {
@@ -376,6 +398,7 @@ SPE.shaderChunks = {
         'uniform float deltaTime;',
         'uniform float runTime;',
         'uniform sampler2D texture;',
+        'uniform vec4 textureAnimation;',
         'uniform float scale;',
     ].join( '\n' ),
 
@@ -397,6 +420,7 @@ SPE.shaderChunks = {
         '    varying float vAngle;',
         '#endif',
         // 'varying float vIsAlive;',
+        'varying vec3 vLifetime;'
     ].join( '\n' ),
 
     branchAvoidanceFunctions: [
@@ -558,15 +582,28 @@ SPE.shaderChunks = {
     rotateTexture: [
         '    #ifdef SHOULD_ROTATE_TEXTURE',
         '       float x = gl_PointCoord.x - 0.5;',
-        '       float y = gl_PointCoord.y - 0.5;',
-        '       float c = cos( vAngle );',
-        '       float s = sin( vAngle );',
+        '       float y = (1.0 - gl_PointCoord.y) - 0.5;',
+        '       float c = cos( -vAngle );',
+        '       float s = sin( -vAngle );',
 
         '       vec2 rotatedUV = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
-        '       vec4 rotatedTexture = texture2D( texture, rotatedUV );',
         '    #else',
-        '       vec4 rotatedTexture = texture2D( texture, gl_PointCoord.xy );',
-        '    #endif'
+        '       vec2 rotatedUV = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y );',
+        '    #endif',
+        '',
+
+        // '    float age = vLifetime.x;',
+        // '    float maxAge = vLifetime.y;',
+        // '    float positionInTime = vLifetime.z;',
+        // '    float totalFrames = textureAnimation.x + textureAnimation.y;',
+        // '    float frameTime = maxAge / totalFrames;',
+        // '    float frameNumber = floor(positionInTime * totalFrames);',
+
+        // // '    float frame = mod( frameNumber'
+
+        // '    rotatedUV.x += mod( frameNumber, totalFrames );',
+
+        '    vec4 rotatedTexture = texture2D( texture, rotatedUV );',
     ].join( '\n' )
 };;
 
@@ -607,7 +644,10 @@ SPE.shaders = {
         '        float wiggleCos = isAlive * cos( wiggleAmount );',
         '    #endif',
 
-
+        // Save the positionInTime value to a varying so
+        // it can be accessed in the fragment shader to
+        // animate textures.
+        // '    vLifetime = vec3( age, maxAge, positionInTime );',
 
         // Save the value is isAlive to a varying for
         // access in the fragment shader
@@ -809,20 +849,20 @@ SPE.utils = {
         maxLength = maxLength || 3;
 
         // First, ensure both properties are arrays.
-        if ( Array.isArray( property.value ) === false ) {
-            property.value = [ property.value ];
+        if ( Array.isArray( property._value ) === false ) {
+            property._value = [ property._value ];
         }
 
-        if ( Array.isArray( property.spread ) === false ) {
-            property.spread = [ property.spread ];
+        if ( Array.isArray( property._spread ) === false ) {
+            property._spread = [ property._spread ];
         }
 
-        var valueLength = this.clamp( property.value.length, minLength, maxLength ),
-            spreadLength = this.clamp( property.spread.length, minLength, maxLength ),
+        var valueLength = this.clamp( property._value.length, minLength, maxLength ),
+            spreadLength = this.clamp( property._spread.length, minLength, maxLength ),
             desiredLength = Math.max( valueLength, spreadLength );
 
-        property.value = this.interpolateArray( property.value, desiredLength );
-        property.spread = this.interpolateArray( property.spread, desiredLength );
+        property._value = this.interpolateArray( property._value, desiredLength );
+        property._spread = this.interpolateArray( property._spread, desiredLength );
     },
 
 
@@ -925,6 +965,16 @@ SPE.utils = {
         }
 
         return n + multiple - remainder;
+    },
+
+    arrayValuesAreEqual: function( array ) {
+        for ( var i = 0; i < array.length - 1; ++i ) {
+            if ( array[ i ] !== array[ i + 1 ] ) {
+                return false;
+            }
+        }
+
+        return true;
     },
 
     // colorsAreEqual: function() {
@@ -1153,31 +1203,16 @@ SPE.Group = function( options ) {
     this._poolCreationSettings = null;
     this._createNewWhenPoolEmpty = 0;
 
-    this.bufferUpdateRanges = {
-        position: {
-            min: 0,
-            max: 0
-        },
-        velocity: {
-            min: 0,
-            max: 0
-        },
-        acceleration: {
-            min: 0,
-            max: 0
-        },
-        params: {
-            min: 0,
-            max: 0
-        }
-    };
-
 
     // Map of uniforms to be applied to the ShaderMaterial instance.
     this.uniforms = {
         texture: {
             type: 't',
             value: this.texture
+        },
+        textureAnimation: {
+            type: 'v4',
+            value: new THREE.Vector4( 2, 2, 128, 128 )
         },
         fogColor: {
             type: 'c',
@@ -1203,7 +1238,6 @@ SPE.Group = function( options ) {
             type: 'f',
             value: 0
         },
-
         scale: {
             type: 'f',
             value: this.scale
@@ -1236,6 +1270,9 @@ SPE.Group = function( options ) {
         color: new SPE.ShaderAttribute( 'v4' ),
         opacity: new SPE.ShaderAttribute( 'v4' )
     };
+
+    this.attributeKeys = Object.keys( this.attributes );
+    this.attributeCount = this.attributeKeys.length;
 
     // Create the ShaderMaterial instance that'll help render the
     // particles.
@@ -1301,10 +1338,10 @@ SPE.Group.prototype._applyAttributesToGeometry = function() {
         else {
             geometry.addAttribute( attr, attribute.bufferAttribute );
         }
+
+        attribute.bufferAttribute.needsUpdate = true;
     }
 };
-
-
 
 SPE.Group.prototype.addEmitter = function( emitter ) {
     // Ensure an actual emitter instance is passed here.
@@ -1333,7 +1370,8 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // Set the `particlesPerSecond` value (PPS) on the emitter.
     // It's used to determine how many particles to release
     // on a per-frame basis.
-    emitter._calculatePPSValue( emitter.maxAge.value + emitter.maxAge.spread );
+    emitter._calculatePPSValue( emitter.maxAge._value + emitter.maxAge._spread );
+    emitter._setBufferUpdateRanges( this.attributeKeys );
 
     // Store the offset value in the TypedArray attributes for this emitter.
     emitter.attributeOffset = start;
@@ -1342,7 +1380,6 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // Store reference to the attributes on the emitter for
     // easier access during the emitter's tick function.
     emitter.attributes = this.attributes;
-    // emitter.maxAge = this.maxAge;
 
 
 
@@ -1366,49 +1403,54 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         emitter._assignVelocityValue( i );
         emitter._assignAccelerationValue( i );
 
-        attributes.size.typedArray.setVec4Components( i,
-            Math.abs( utils.randomFloat( emitter.size.value[ 0 ], emitter.size.spread[ 0 ] ) ),
-            Math.abs( utils.randomFloat( emitter.size.value[ 1 ], emitter.size.spread[ 1 ] ) ),
-            Math.abs( utils.randomFloat( emitter.size.value[ 2 ], emitter.size.spread[ 2 ] ) ),
-            Math.abs( utils.randomFloat( emitter.size.value[ 3 ], emitter.size.spread[ 3 ] ) )
-        );
+        // TODO:
+        //  - Apply same logic to color, angle, opacity
+        if ( utils.arrayValuesAreEqual( emitter.size._value ) && utils.arrayValuesAreEqual( emitter.size._spread ) ) {
+            var size = Math.abs( utils.randomFloat( emitter.size._value[ 0 ], emitter.size._spread[ 0 ] ) );
+            attributes.size.typedArray.setVec4Components( i, size, size, size, size );
+        }
+        else {
+            attributes.size.typedArray.setVec4Components( i,
+                Math.abs( utils.randomFloat( emitter.size._value[ 0 ], emitter.size._spread[ 0 ] ) ),
+                Math.abs( utils.randomFloat( emitter.size._value[ 1 ], emitter.size._spread[ 1 ] ) ),
+                Math.abs( utils.randomFloat( emitter.size._value[ 2 ], emitter.size._spread[ 2 ] ) ),
+                Math.abs( utils.randomFloat( emitter.size._value[ 3 ], emitter.size._spread[ 3 ] ) )
+            );
+        }
 
         attributes.angle.typedArray.setVec4Components( i,
-            utils.randomFloat( emitter.angle.value[ 0 ], emitter.angle.spread[ 0 ] ),
-            utils.randomFloat( emitter.angle.value[ 1 ], emitter.angle.spread[ 1 ] ),
-            utils.randomFloat( emitter.angle.value[ 2 ], emitter.angle.spread[ 2 ] ),
-            utils.randomFloat( emitter.angle.value[ 3 ], emitter.angle.spread[ 3 ] )
+            utils.randomFloat( emitter.angle._value[ 0 ], emitter.angle._spread[ 0 ] ),
+            utils.randomFloat( emitter.angle._value[ 1 ], emitter.angle._spread[ 1 ] ),
+            utils.randomFloat( emitter.angle._value[ 2 ], emitter.angle._spread[ 2 ] ),
+            utils.randomFloat( emitter.angle._value[ 3 ], emitter.angle._spread[ 3 ] )
         );
 
         // alive, age, maxAge, wiggle
         attributes.params.typedArray.setVec4Components( i,
+            emitter.isStatic ? 1 : 0,
             0,
-            0,
-            Math.abs( utils.randomFloat( emitter.maxAge.value, emitter.maxAge.spread ) ),
-            utils.randomFloat( emitter.wiggle.value, emitter.wiggle.spread )
+            Math.abs( utils.randomFloat( emitter.maxAge._value, emitter.maxAge._spread ) ),
+            utils.randomFloat( emitter.wiggle._value, emitter.wiggle._spread )
         );
 
 
-        utils.randomColorAsHex( attributes.color, i, emitter.color.value, emitter.color.spread );
+        utils.randomColorAsHex( attributes.color, i, emitter.color._value, emitter.color._spread );
 
-        // utils.randomColor( attributes.colorStart, i, emitter.color.value[ 0 ], emitter.color.spread[ 0 ] );
-        // utils.randomColor( attributes.colorMiddle, i, emitter.color.value[ 1 ], emitter.color.spread[ 1 ] );
-        // utils.randomColor( attributes.colorEnd, i, emitter.color.value[ 2 ], emitter.color.spread[ 2 ] );
 
         attributes.opacity.typedArray.setVec4Components( i,
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 0 ], emitter.opacity.spread[ 0 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 1 ], emitter.opacity.spread[ 1 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 2 ], emitter.opacity.spread[ 2 ] ) ),
-            Math.abs( utils.randomFloat( emitter.opacity.value[ 3 ], emitter.opacity.spread[ 3 ] ) )
+            Math.abs( utils.randomFloat( emitter.opacity._value[ 0 ], emitter.opacity._spread[ 0 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity._value[ 1 ], emitter.opacity._spread[ 1 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity._value[ 2 ], emitter.opacity._spread[ 2 ] ) ),
+            Math.abs( utils.randomFloat( emitter.opacity._value[ 3 ], emitter.opacity._spread[ 3 ] ) )
         );
 
         attributes.rotation.typedArray.setVec3Components( i,
-            utils.getPackedRotationAxis( emitter.rotation.axis, emitter.rotation.axisSpread ),
-            utils.randomFloat( emitter.rotation.angle, emitter.rotation.angleSpread ),
-            emitter.rotation.static ? 0 : 1
+            utils.getPackedRotationAxis( emitter.rotation._axis, emitter.rotation._axisSpread ),
+            utils.randomFloat( emitter.rotation._angle, emitter.rotation._angleSpread ),
+            emitter.rotation._static ? 0 : 1
         );
 
-        attributes.rotationCenter.typedArray.setVec3( i, emitter.rotation.center );
+        attributes.rotationCenter.typedArray.setVec3( i, emitter.rotation._center );
     }
 
     // Update the geometry and make sure the attributes are referencing
@@ -1606,6 +1648,37 @@ SPE.Group.prototype.triggerPoolEmitter = function( numEmitters, position ) {
 };
 
 
+SPE.Group.prototype._resetBufferRanges = function() {
+    var keys = this.attributeKeys,
+        i = this.attributeCount - 1,
+        attrs = this.attributes;
+
+    for ( i; i >= 0; --i ) {
+        attrs[ keys[ i ] ].resetUpdateRange();
+    }
+};
+
+
+SPE.Group.prototype._updateBuffers = function( emitter ) {
+    var keys = this.attributeKeys,
+        i = this.attributeCount - 1,
+        attrs = this.attributes,
+        emitterRanges = emitter.bufferUpdateRanges,
+        key,
+        emitterAttr,
+        attr;
+
+    for ( i; i >= 0; --i ) {
+        key = keys[ i ];
+        emitterAttr = emitterRanges[ key ];
+        attr = attrs[ key ];
+        attr.setUpdateRange( emitterAttr.min, emitterAttr.max );
+        // attr.setUpdateRange( 0, 1000000 );
+        attr.flagUpdate();
+    }
+};
+
+
 SPE.Group.prototype.tick = function( dt ) {
     var emitters = this.emitters,
         numEmitters = emitters.length,
@@ -1617,30 +1690,13 @@ SPE.Group.prototype.tick = function( dt ) {
     }
 
     this._updateUniforms( deltaTime );
+    this._resetBufferRanges();
 
-    // TODO:
-    //  - Optimise this...
-    //  - Include other attributes.
-    for ( var i = 0; i < numEmitters; ++i ) {
-        emitters[ i ].tick( deltaTime );
-        bufferUpdateRanges.params.min = Math.min( bufferUpdateRanges.params.min, emitters[ i ].bufferUpdateRanges.params.min );
-        bufferUpdateRanges.params.max = Math.max( bufferUpdateRanges.params.max, emitters[ i ].bufferUpdateRanges.params.max );
-        bufferUpdateRanges.position.min = Math.min( bufferUpdateRanges.position.min, emitters[ i ].bufferUpdateRanges.position.min );
-        bufferUpdateRanges.position.max = Math.max( bufferUpdateRanges.position.max, emitters[ i ].bufferUpdateRanges.position.max );
+    for ( var i = 0, emitter; i < numEmitters; ++i ) {
+        emitter = emitters[ i ];
+        emitter.tick( deltaTime );
+        this._updateBuffers( emitter );
     }
-
-    this.attributes.params.bufferAttribute.updateRange.offset = bufferUpdateRanges.params.min;
-    this.attributes.params.bufferAttribute.updateRange.count = ( bufferUpdateRanges.params.max - bufferUpdateRanges.params.min ) + 4;
-    this.attributes.params.bufferAttribute.needsUpdate = true;
-
-    this.attributes.position.bufferAttribute.updateRange.offset = bufferUpdateRanges.position.min;
-    this.attributes.position.bufferAttribute.updateRange.count = ( bufferUpdateRanges.position.max - bufferUpdateRanges.position.min ) + 3;
-    this.attributes.position.bufferAttribute.needsUpdate = true;
-
-    bufferUpdateRanges.params.min = 0;
-    bufferUpdateRanges.position.max = 0;
-    bufferUpdateRanges.position.min = 0;
-    bufferUpdateRanges.position.max = 0;
 };;
 
 SPE.Emitter = function( options ) {
@@ -1673,56 +1729,56 @@ SPE.Emitter = function( options ) {
     //
     // Btw, values over lifetimes are just the new way of referring to *Start, *Middle, and *End.
     this.position = {
-        value: utils.ensureInstanceOf( options.position.value, THREE.Vector3, new THREE.Vector3() ),
-        spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() ),
-        spreadClamp: utils.ensureInstanceOf( options.position.spreadClamp, THREE.Vector3, new THREE.Vector3() ),
-        distribution: utils.ensureTypedArg( options.position.distribution, types.NUMBER, this.type )
+        _value: utils.ensureInstanceOf( options.position.value, THREE.Vector3, new THREE.Vector3() ),
+        _spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() ),
+        _spreadClamp: utils.ensureInstanceOf( options.position.spreadClamp, THREE.Vector3, new THREE.Vector3() ),
+        _distribution: utils.ensureTypedArg( options.position.distribution, types.NUMBER, this.type )
     };
 
     // TODO: Use this as the old `speed` property.
     this.velocity = {
-        value: utils.ensureInstanceOf( options.velocity.value, THREE.Vector3, new THREE.Vector3() ),
-        spread: utils.ensureInstanceOf( options.velocity.spread, THREE.Vector3, new THREE.Vector3() ),
-        distribution: utils.ensureTypedArg( options.velocity.distribution, types.NUMBER, this.type )
+        _value: utils.ensureInstanceOf( options.velocity.value, THREE.Vector3, new THREE.Vector3() ),
+        _spread: utils.ensureInstanceOf( options.velocity.spread, THREE.Vector3, new THREE.Vector3() ),
+        _distribution: utils.ensureTypedArg( options.velocity.distribution, types.NUMBER, this.type )
     };
 
     this.acceleration = {
-        value: utils.ensureInstanceOf( options.acceleration.value, THREE.Vector3, new THREE.Vector3() ),
-        spread: utils.ensureInstanceOf( options.acceleration.spread, THREE.Vector3, new THREE.Vector3() ),
-        distribution: utils.ensureTypedArg( options.acceleration.distribution, types.NUMBER, this.type )
+        _value: utils.ensureInstanceOf( options.acceleration.value, THREE.Vector3, new THREE.Vector3() ),
+        _spread: utils.ensureInstanceOf( options.acceleration.spread, THREE.Vector3, new THREE.Vector3() ),
+        _distribution: utils.ensureTypedArg( options.acceleration.distribution, types.NUMBER, this.type )
     };
 
     this.radius = {
-        value: utils.ensureTypedArg( options.radius.value, types.NUMBER, 10 ),
-        spread: utils.ensureTypedArg( options.radius.spread, types.NUMBER, 0 ),
-        spreadClamp: utils.ensureTypedArg( options.radius.spreadClamp, types.NUMBER, 0 ),
-        scale: utils.ensureInstanceOf( options.radius.scale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) )
+        _value: utils.ensureTypedArg( options.radius.value, types.NUMBER, 10 ),
+        _spread: utils.ensureTypedArg( options.radius.spread, types.NUMBER, 0 ),
+        _spreadClamp: utils.ensureTypedArg( options.radius.spreadClamp, types.NUMBER, 0 ),
+        _scale: utils.ensureInstanceOf( options.radius.scale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) )
     };
 
     this.drag = {
-        value: utils.ensureTypedArg( options.drag.value, types.NUMBER, 0 ),
-        spread: utils.ensureTypedArg( options.drag.spread, types.NUMBER, 0 )
+        _value: utils.ensureTypedArg( options.drag.value, types.NUMBER, 0 ),
+        _spread: utils.ensureTypedArg( options.drag.spread, types.NUMBER, 0 )
     };
 
     this.wiggle = {
-        value: utils.ensureTypedArg( options.wiggle.value, types.NUMBER, 0 ),
-        spread: utils.ensureTypedArg( options.wiggle.spread, types.NUMBER, 0 )
+        _value: utils.ensureTypedArg( options.wiggle.value, types.NUMBER, 0 ),
+        _spread: utils.ensureTypedArg( options.wiggle.spread, types.NUMBER, 0 )
     };
 
 
     this.rotation = {
-        axis: utils.ensureInstanceOf( options.rotation.axis, THREE.Vector3, new THREE.Vector3( 0.0, 1.0, 0.0 ) ),
-        axisSpread: utils.ensureInstanceOf( options.rotation.axisSpread, THREE.Vector3, new THREE.Vector3() ),
-        angle: utils.ensureTypedArg( options.rotation.angle, types.NUMBER, 0 ),
-        angleSpread: utils.ensureTypedArg( options.rotation.angleSpread, types.NUMBER, 0 ),
-        static: utils.ensureTypedArg( options.rotation.static, types.BOOLEAN, false ),
-        center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, this.position.value ),
+        _axis: utils.ensureInstanceOf( options.rotation.axis, THREE.Vector3, new THREE.Vector3( 0.0, 1.0, 0.0 ) ),
+        _axisSpread: utils.ensureInstanceOf( options.rotation.axisSpread, THREE.Vector3, new THREE.Vector3() ),
+        _angle: utils.ensureTypedArg( options.rotation.angle, types.NUMBER, 0 ),
+        _angleSpread: utils.ensureTypedArg( options.rotation.angleSpread, types.NUMBER, 0 ),
+        _static: utils.ensureTypedArg( options.rotation.static, types.BOOLEAN, false ),
+        _center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, this.position._value ),
     };
 
 
     this.maxAge = {
-        value: utils.ensureTypedArg( options.maxAge.value, types.NUMBER, 2 ),
-        spread: utils.ensureTypedArg( options.maxAge.spread, types.NUMBER, 0 )
+        _value: utils.ensureTypedArg( options.maxAge.value, types.NUMBER, 2 ),
+        _spread: utils.ensureTypedArg( options.maxAge.spread, types.NUMBER, 0 )
     };
 
 
@@ -1730,23 +1786,23 @@ SPE.Emitter = function( options ) {
     // The following properties can support either single values, or an array of values that change
     // the property over a particle's lifetime (value over lifetime).
     this.color = {
-        value: utils.ensureArrayInstanceOf( options.color.value, THREE.Color, new THREE.Color() ),
-        spread: utils.ensureArrayInstanceOf( options.color.spread, THREE.Vector3, new THREE.Vector3() )
+        _value: utils.ensureArrayInstanceOf( options.color.value, THREE.Color, new THREE.Color() ),
+        _spread: utils.ensureArrayInstanceOf( options.color.spread, THREE.Vector3, new THREE.Vector3() )
     };
 
     this.opacity = {
-        value: utils.ensureArrayTypedArg( options.opacity.value, types.NUMBER, 1 ),
-        spread: utils.ensureArrayTypedArg( options.opacity.spread, types.NUMBER, 0 )
+        _value: utils.ensureArrayTypedArg( options.opacity.value, types.NUMBER, 1 ),
+        _spread: utils.ensureArrayTypedArg( options.opacity.spread, types.NUMBER, 0 )
     };
 
     this.size = {
-        value: utils.ensureArrayTypedArg( options.size.value, types.NUMBER, 1 ),
-        spread: utils.ensureArrayTypedArg( options.size.spread, types.NUMBER, 0 )
+        _value: utils.ensureArrayTypedArg( options.size.value, types.NUMBER, 1 ),
+        _spread: utils.ensureArrayTypedArg( options.size.spread, types.NUMBER, 0 )
     };
 
     this.angle = {
-        value: utils.ensureArrayTypedArg( options.angle.value, types.NUMBER, 0 ),
-        spread: utils.ensureArrayTypedArg( options.angle.spread, types.NUMBER, 0 )
+        _value: utils.ensureArrayTypedArg( options.angle.value, types.NUMBER, 0 ),
+        _spread: utils.ensureArrayTypedArg( options.angle.spread, types.NUMBER, 0 )
     };
 
 
@@ -1785,38 +1841,49 @@ SPE.Emitter = function( options ) {
     // would have to be re-passed to the GPU each frame (since nothing
     // except the `params` attribute would have changed).
     this.resetFlags = {
-        maxAge: utils.ensureTypedArg( options.maxAge.randomise, types.BOOLEAN, !!options.maxAge.spread ),
-        position: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, !!options.position.spread && !!options.position.spread.lengthSq() ),
-        velocity: utils.ensureTypedArg( options.velocity.randomise, types.BOOLEAN, !!options.velocity.spread && !!options.velocity.spread.lengthSq() ),
-        acceleration: utils.ensureTypedArg( options.acceleration.randomise, types.BOOLEAN, !!options.acceleration.spread && !!options.acceleration.spread.lengthSq() ),
-        radius: utils.ensureTypedArg( options.radius.randomise, types.BOOLEAN, !!options.radius.spread ),
-        drag: utils.ensureTypedArg( options.drag.randomise, types.BOOLEAN, !!options.drag.spread ),
-        wiggle: utils.ensureTypedArg( options.wiggle.randomise, types.BOOLEAN, !!options.wiggle.spread ),
-        rotation: utils.ensureTypedArg( options.rotation.randomise, types.BOOLEAN, !!options.rotation.spread ),
-        size: utils.ensureTypedArg( options.size.randomise, types.BOOLEAN, !!options.size.spread && ( !!options.size.spread.length || options.size.spread ) ),
-        color: utils.ensureTypedArg( options.color.randomise, types.BOOLEAN, !!options.color.spread && ( !!options.color.spread.length || options.color.spread ) ),
-        opacity: utils.ensureTypedArg( options.opacity.randomise, types.BOOLEAN, !!options.opacity.spread && ( !!options.opacity.spread.length || options.opacity.spread ) ),
-        angle: utils.ensureTypedArg( options.angle.randomise, types.BOOLEAN, !!options.angle.spread && ( !!options.angle.spread.length || options.angle.spread ) ),
+        maxAge: utils.ensureTypedArg( options.maxAge._randomise, types.BOOLEAN, !!options.maxAge._spread ),
+        position: utils.ensureTypedArg( options.position._randomise, types.BOOLEAN, !!options.position._spread && !!options.position._spread.lengthSq() ),
+        velocity: utils.ensureTypedArg( options.velocity._randomise, types.BOOLEAN, !!options.velocity._spread && !!options.velocity._spread.lengthSq() ),
+        acceleration: utils.ensureTypedArg( options.acceleration._randomise, types.BOOLEAN, !!options.acceleration._spread && !!options.acceleration._spread.lengthSq() ),
+        radius: utils.ensureTypedArg( options.radius._randomise, types.BOOLEAN, !!options.radius._spread ),
+        drag: utils.ensureTypedArg( options.drag._randomise, types.BOOLEAN, !!options.drag._spread ),
+        wiggle: utils.ensureTypedArg( options.wiggle._randomise, types.BOOLEAN, !!options.wiggle._spread ),
+        rotation: utils.ensureTypedArg( options.rotation._randomise, types.BOOLEAN, !!options.rotation._spread ),
+        size: utils.ensureTypedArg( options.size._randomise, types.BOOLEAN, !!options.size._spread && ( !!options.size._spread.length || options.size._spread ) ),
+        color: utils.ensureTypedArg( options.color._randomise, types.BOOLEAN, !!options.color._spread && ( !!options.color._spread.length || options.color._spread ) ),
+        opacity: utils.ensureTypedArg( options.opacity._randomise, types.BOOLEAN, !!options.opacity._spread && ( !!options.opacity._spread.length || options.opacity._spread ) ),
+        angle: utils.ensureTypedArg( options.angle._randomise, types.BOOLEAN, !!options.angle._spread && ( !!options.angle._spread.length || options.angle._spread ) ),
     };
 
-    this.bufferUpdateRanges = {
-        position: {
-            min: 0,
-            max: 0
-        },
-        velocity: {
-            min: 0,
-            max: 0
-        },
-        acceleration: {
-            min: 0,
-            max: 0
-        },
-        params: {
-            min: 0,
-            max: 0
-        }
+    this.updateFlags = {};
+    this.updateCounts = {};
+
+    // A map to indicate which emitter parameters should update
+    // which attribute.
+    this.updateMap = {
+        maxAge: 'params',
+        position: 'position',
+        velocity: 'velocity',
+        acceleration: 'acceleration',
+        radius: 'position',
+        drag: 'acceleration',
+        wiggle: 'params',
+        rotation: 'rotation',
+        size: 'size',
+        color: 'color',
+        opacity: 'opacity',
+        angle: 'angle'
     };
+
+    for ( var i in this.resetFlags ) {
+        this.updateFlags[ i ] = false;
+        this.updateCounts[ i ] = 0;
+        this._createGetterSetters( this[ i ], i );
+    }
+
+    this.bufferUpdateRanges = {};
+    this.attributeKeys = null;
+    this.attributeCount = 0;
 
 
     // Ensure that the value-over-lifetime property objects above
@@ -1831,14 +1898,42 @@ SPE.Emitter = function( options ) {
 
 SPE.Emitter.constructor = SPE.Emitter;
 
-// SPE.Emitter.prototype._ensureProperty = function( options, name, type, defaultValue, spreadValue ) {
-//     options[ name ] = utils.ensureTypedArg( options[ name ], SPE.utils.types.OBJECT, {} );
+SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
+    var self = this;
 
-//     this[ name ] = {
-//         value: utils.ensureInstanceOf( options[ name ].value, THREE.Vector3, new THREE.Vector3() ),
-//         spread: utils.ensureInstanceOf( options[ name].spread, THREE.Vector3, new THREE.Vector3() ),
-//     }
-// };
+    for ( var i in propObj ) {
+        var name = i.replace( '_', '' );
+
+        Object.defineProperty( propObj, name, {
+            get: ( function( prop ) {
+                return function() {
+                    return this[ prop ];
+                };
+            }( i ) ),
+
+            set: ( function( prop ) {
+                return function( value ) {
+                    var mapName = self.updateMap[ propName ];
+                    self.updateFlags[ mapName ] = true;
+                    self.updateCounts[ mapName ] = 0.0;
+                    this[ prop ] = value;
+                };
+            }( i ) )
+        } )
+    }
+};
+
+SPE.Emitter.prototype._setBufferUpdateRanges = function( keys ) {
+    this.attributeKeys = keys;
+    this.attributeCount = keys.length;
+
+    for ( var i = this.attributeCount - 1; i >= 0; --i ) {
+        this.bufferUpdateRanges[ keys[ i ] ] = {
+            min: Number.POSITIVE_INFINITY,
+            max: Number.NEGATIVE_INFINITY
+        };
+    }
+};
 
 SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     var particleCount = this.particleCount;
@@ -1857,22 +1952,40 @@ SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     // this.particlesPerSecond = Math.max( this.particlesPerSecond, 1 );
 };
 
+SPE.Emitter.prototype._assignValue = function( prop, index ) {
+    console.log( prop );
+
+    switch ( prop ) {
+        case 'position':
+            this._assignPositionValue( index );
+            break;
+
+        case 'velocity':
+            this._assignVelocityValue( index );
+            break;
+
+        case 'acceleration':
+            this._assignAccelerationValue( index );
+            break;
+    }
+};
+
 SPE.Emitter.prototype._assignPositionValue = function( index ) {
     var distributions = SPE.distributions,
         utils = SPE.utils,
         prop = this.position,
         attr = this.attributes.position,
-        value = prop.value,
-        spread = prop.spread,
-        distribution = prop.distribution;
+        value = prop._value,
+        spread = prop._spread,
+        distribution = prop._distribution;
 
     switch ( distribution ) {
         case distributions.BOX:
-            utils.randomVector3( attr, index, value, spread, prop.spreadClamp );
+            utils.randomVector3( attr, index, value, spread, prop._spreadClamp );
             break;
 
         case SPE.distributions.SPHERE:
-            utils.randomVector3OnSphere( attr, index, value, this.radius.value, this.radius.spread, this.radius.scale, this.radius.spreadClamp );
+            utils.randomVector3OnSphere( attr, index, value, this.radius._value, this.radius._spread, this.radius._scale, this.radius._spreadClamp );
             break;
     }
 };
@@ -1881,9 +1994,9 @@ SPE.Emitter.prototype._assignVelocityValue = function( index ) {
     var distributions = SPE.distributions,
         utils = SPE.utils,
         prop = this.velocity,
-        value = prop.value,
-        spread = prop.spread,
-        distribution = prop.distribution,
+        value = prop._value,
+        spread = prop._spread,
+        distribution = prop._distribution,
         positionX,
         positionY,
         positionZ;
@@ -1901,9 +2014,9 @@ SPE.Emitter.prototype._assignVelocityValue = function( index ) {
             utils.randomDirectionVector3OnSphere(
                 this.attributes.velocity, index,
                 positionX, positionY, positionZ,
-                this.position.value,
-                this.velocity.value.x,
-                this.velocity.spread.x
+                this.position._value,
+                this.velocity._value.x,
+                this.velocity._spread.x
             );
             break;
     }
@@ -1913,9 +2026,9 @@ SPE.Emitter.prototype._assignAccelerationValue = function( index ) {
     var distributions = SPE.distributions,
         utils = SPE.utils,
         prop = this.acceleration,
-        value = prop.value,
-        spread = prop.spread,
-        distribution = prop.distribution,
+        value = prop._value,
+        spread = prop._spread,
+        distribution = prop._distribution,
         positionX,
         positionY,
         positionZ;
@@ -1933,102 +2046,80 @@ SPE.Emitter.prototype._assignAccelerationValue = function( index ) {
             utils.randomDirectionVector3OnSphere(
                 this.attributes.acceleration, index,
                 positionX, positionY, positionZ,
-                this.position.value,
-                this.acceleration.value.x,
-                this.acceleration.spread.x
+                this.position._value,
+                this.acceleration._value.x,
+                this.acceleration._spread.x
             );
             break;
     }
 
-    // TODO:
-    // - Assign drag to w component.
-    var drag = utils.clamp( utils.randomFloat( this.drag.value, this.drag.spread ), 0, 1 );
+    // Assign drag to w component.
+    var drag = utils.clamp( utils.randomFloat( this.drag._value, this.drag._spread ), 0, 1 );
     this.attributes.acceleration.typedArray.array[ index * 4 + 3 ] = drag;
-};
-
-SPE.Emitter.prototype._updateBuffers = function() {
-    var flags = this.resetFlags,
-        ranges = this.bufferUpdateRanges,
-        attributes = this.attributes,
-        attr,
-        range = 0;
-
-    if ( flags.position === true ) {
-        range = ranges.position.max - ranges.position.min;
-        attr = attributes.position.bufferAttribute;
-
-        if ( range !== 0 ) {
-            attr.offset = ranges.position.min;
-            attr.count = range + 3;
-            attr.dynamic = true;
-            attr.needsUpdate = true;
-
-            ranges.position.min = 0;
-            ranges.position.max = 0;
-        }
-    }
-
-    if ( flags.velocity === true ) {
-        range = ranges.velocity.max - ranges.velocity.min;
-        attr = attributes.velocity.bufferAttribute;
-
-        if ( range !== 0 ) {
-            attr.offset = ranges.velocity.min;
-            attr.count = range + 3;
-            attr.dynamic = true;
-            attr.needsUpdate = true;
-
-            ranges.velocity.min = 0;
-            ranges.velocity.max = 0;
-        }
-    }
-
-    if ( flags.acceleration === true ) {
-        range = ranges.acceleration.max - ranges.acceleration.min;
-
-        attr = attributes.acceleration.bufferAttribute;
-
-        if ( range !== 0 ) {
-            attr.offset = ranges.acceleration.min;
-            attr.count = range + 4;
-            attr.dynamic = true;
-            attr.needsUpdate = true;
-
-            ranges.acceleration.min = 0;
-            ranges.acceleration.max = 0;
-        }
-    }
 };
 
 SPE.Emitter.prototype._resetParticle = function( index ) {
     var resetFlags = this.resetFlags,
-        ranges = this.bufferUpdateRanges,
-        range;
+        updateFlags = this.updateFlags,
+        updateCounts = this.updateCounts,
+        keys = this.attributeKeys,
+        key,
+        updateFlag;
 
-    if ( resetFlags.position === true ) {
-        range = ranges.position;
-        this._assignPositionValue( index );
-        range.min = Math.min( range.min, index * 3 );
-        range.max = Math.max( range.max, index * 3 );
-        this.attributes.position.bufferAttribute.needsUpdate = true;
+    for ( var i = this.attributeCount - 1; i >= 0; --i ) {
+        key = keys[ i ];
+        updateFlag = updateFlags[ key ];
+
+        if ( resetFlags[ key ] || updateFlag ) {
+            this._assignValue( key, index );
+            this._updateAttributeUpdateRange( key, index );
+
+            if ( updateFlag === true && updateCounts[ key ] > this.particleCount ) {
+                updateFlags[ key ] = false;
+                updateCounts[ key ] = 0.0;
+            }
+            else if ( updateFlag === true ) {
+                ++updateCounts[ key ]
+            }
+        }
     }
+};
 
-    if ( resetFlags.velocity === true ) {
-        range = ranges.velocity;
-        this._assignVelocityValue( index );
-        range.min = Math.min( range.min, index * 3 );
-        range.max = Math.max( range.max, index * 3 );
-        this.attributes.velocity.bufferAttribute.needsUpdate = true;
+SPE.Emitter.prototype._updateAttributeUpdateRange = function( attr, i ) {
+    var ranges = this.bufferUpdateRanges[ attr ],
+        min = ranges.min,
+        max = ranges.max;
+
+    ranges.min = Math.min( i, ranges.min );
+    ranges.max = Math.max( i, ranges.max );
+};
+
+SPE.Emitter.prototype._resetBufferRanges = function() {
+    var ranges = this.bufferUpdateRanges,
+        keys = this.bufferUpdateKeys,
+        i = this.bufferUpdateCount - 1,
+        key;
+
+    for ( i; i >= 0; --i ) {
+        key = keys[ i ];
+        ranges[ key ].min = Number.POSITIVE_INFINITY;
+        ranges[ key ].max = Number.NEGATIVE_INFINITY;
     }
+};
 
-    if ( resetFlags.acceleration === true ) {
-        range = ranges.acceleration;
-        this._assignAccelerationValue( index );
-        range.min = Math.min( range.min, index * 4 );
-        range.max = Math.max( range.max, index * 4 );
-        this.attributes.acceleration.bufferAttribute.needsUpdate = true;
-    }
-
+SPE.Emitter.prototype._resetUpdateFlags = function() {
+    this.position.needsUpdate = false;
+    this.velocity.needsUpdate = false;
+    this.acceleration.needsUpdate = false;
+    this.radius.needsUpdate = false;
+    this.drag.needsUpdate = false;
+    this.wiggle.needsUpdate = false;
+    this.rotation.needsUpdate = false;
+    this.maxAge.needsUpdate = false;
+    this.color.needsUpdate = false;
+    this.opacity.needsUpdate = false;
+    this.size.needsUpdate = false;
+    this.angle.needsUpdate = false;
 };
 
 
@@ -2041,10 +2132,13 @@ SPE.Emitter.prototype.tick = function( dt ) {
         end = start + this.particleCount,
         params = this.attributes.params.typedArray.array, // vec3( alive, age, maxAge, wiggle )
         ppsDt = this.particlesPerSecond * this.activeMultiplier * dt,
-        activationIndex = this.activationIndex,
-        updatedParamsMin = 0,
-        updatedParamsMax = 0,
-        paramsUpdateRange = this.bufferUpdateRanges.params;
+        activationIndex = this.activationIndex;
+
+    // Reset the buffer update indices.
+    this._resetBufferRanges();
+
+    // Reset update flags
+    this._resetUpdateFlags();
 
     // Increment age for those particles that are alive,
     // and kill off any particles whose age is over the limit.
@@ -2065,11 +2159,10 @@ SPE.Emitter.prototype.tick = function( dt ) {
                 alive = 0.0;
             }
 
-            updatedParamsMin = Math.min( updatedParamsMin, index );
-            updatedParamsMax = Math.max( updatedParamsMax, index );
-
             params[ index ] = alive;
             params[ index + 1 ] = age;
+
+            this._updateAttributeUpdateRange( 'params', i );
         }
     }
 
@@ -2111,8 +2204,8 @@ SPE.Emitter.prototype.tick = function( dt ) {
             // when frame rates are on the lower side of 60fps
             // or not constant (a very real possibility!)
             params[ index + 1 ] = dtPerParticle * ( i - activationStart );
-            updatedParamsMin = Math.min( updatedParamsMin, index );
-            updatedParamsMax = Math.max( updatedParamsMax, index );
+
+            this._updateAttributeUpdateRange( 'params', i );
         }
     }
 
@@ -2126,15 +2219,6 @@ SPE.Emitter.prototype.tick = function( dt ) {
 
     // Increment the age of the emitter.
     this.age += dt;
-
-
-    // this._updatePostTick( updatedParamsMin, updatedParamsMax );
-
-    // Finally, update the buffers.
-    // this._updateBuffers();
-
-    paramsUpdateRange.min = updatedParamsMin;
-    paramsUpdateRange.max = updatedParamsMax;
 };
 
 SPE.Emitter.prototype.reset = function( force ) {
