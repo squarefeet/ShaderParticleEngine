@@ -895,6 +895,24 @@ SPE.utils = {
         return Math.max( min, Math.min( value, max ) );
     },
 
+    zeroToEpsilon: function( value, randomise ) {
+        var epsilon = 0.00001,
+            result = value;
+
+        if ( value === 0 ) {
+            result = randomise ? Math.random() * epsilon * 10 : epsilon;
+        }
+
+        else if ( value > 0 && value < epsilon ) {
+            result = randomise ? Math.random() * epsilon * 10 : epsilon;;
+        }
+        else if ( value < 0 && value > -epsilon ) {
+            result = -( randomise ? Math.random() * epsilon * 10 : epsilon );
+        }
+
+        return result;
+    },
+
     // Linearly interpolate two values.
     //
     // `start` and `end` values MUST be of the same type/instance
@@ -1104,8 +1122,8 @@ SPE.utils = {
         }
 
         // Set position on sphere
-        x = r * Math.cos( t ) * rand;
-        y = r * Math.sin( t ) * rand;
+        x = Math.cos( t ) * rand;
+        y = Math.sin( t ) * rand;
 
         // Apply radius scale to this position
         x *= radiusScale.x;
@@ -1984,8 +2002,12 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
             utils.randomVector3( attr, index, value, spread, prop._spreadClamp );
             break;
 
-        case SPE.distributions.SPHERE:
+        case distributions.SPHERE:
             utils.randomVector3OnSphere( attr, index, value, this.radius._value, this.radius._spread, this.radius._scale, this.radius._spreadClamp );
+            break;
+
+        case distributions.DISC:
+            utils.randomVector3OnDisc( attr, index, value, this.radius._value, this.radius._spread, this.radius._scale, this.radius._spreadClamp );
             break;
     }
 };
@@ -1997,6 +2019,7 @@ SPE.Emitter.prototype._assignVelocityValue = function( index ) {
         value = prop._value,
         spread = prop._spread,
         distribution = prop._distribution,
+        pos,
         positionX,
         positionY,
         positionZ;
@@ -2006,10 +2029,15 @@ SPE.Emitter.prototype._assignVelocityValue = function( index ) {
             utils.randomVector3( this.attributes.velocity, index, value, spread );
             break;
 
-        case SPE.distributions.SPHERE:
-            positionX = this.attributes.position.typedArray.array[ index * 3 ];
-            positionY = this.attributes.position.typedArray.array[ index * 3 + 1 ];
-            positionZ = this.attributes.position.typedArray.array[ index * 3 + 2 ];
+        case distributions.SPHERE:
+        case distributions.DISC:
+            pos = this.attributes.position.typedArray.array;
+
+            // Ensure position values aren't zero, otherwise no velocity will be
+            // applied.
+            positionX = utils.zeroToEpsilon( pos[ index * 3 ], true );
+            positionY = utils.zeroToEpsilon( pos[ index * 3 + 1 ], true );
+            positionZ = utils.zeroToEpsilon( pos[ index * 3 + 2 ], true );
 
             utils.randomDirectionVector3OnSphere(
                 this.attributes.velocity, index,
@@ -2029,6 +2057,7 @@ SPE.Emitter.prototype._assignAccelerationValue = function( index ) {
         value = prop._value,
         spread = prop._spread,
         distribution = prop._distribution,
+        pos,
         positionX,
         positionY,
         positionZ;
@@ -2038,10 +2067,15 @@ SPE.Emitter.prototype._assignAccelerationValue = function( index ) {
             utils.randomVector3( this.attributes.acceleration, index, value, spread );
             break;
 
-        case SPE.distributions.SPHERE:
-            positionX = this.attributes.position.typedArray.array[ index * 3 ];
-            positionY = this.attributes.position.typedArray.array[ index * 3 + 1 ];
-            positionZ = this.attributes.position.typedArray.array[ index * 3 + 2 ];
+        case distributions.SPHERE:
+        case distributions.DISC:
+            pos = this.attributes.position.typedArray.array;
+
+            // Ensure position values aren't zero, otherwise no acceleration will be
+            // applied.
+            positionX = utils.zeroToEpsilon( pos[ index * 3 ], true );
+            positionY = utils.zeroToEpsilon( pos[ index * 3 + 1 ], true );
+            positionZ = utils.zeroToEpsilon( pos[ index * 3 + 2 ], true );
 
             utils.randomDirectionVector3OnSphere(
                 this.attributes.acceleration, index,

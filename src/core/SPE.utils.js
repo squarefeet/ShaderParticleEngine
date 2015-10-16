@@ -118,6 +118,24 @@ SPE.utils = {
         return Math.max( min, Math.min( value, max ) );
     },
 
+    zeroToEpsilon: function( value, randomise ) {
+        var epsilon = 0.00001,
+            result = value;
+
+        if ( value === 0 ) {
+            result = randomise ? Math.random() * epsilon * 10 : epsilon;
+        }
+
+        else if ( value > 0 && value < epsilon ) {
+            result = randomise ? Math.random() * epsilon * 10 : epsilon;;
+        }
+        else if ( value < 0 && value > -epsilon ) {
+            result = -( randomise ? Math.random() * epsilon * 10 : epsilon );
+        }
+
+        return result;
+    },
+
     // Linearly interpolate two values.
     //
     // `start` and `end` values MUST be of the same type/instance
@@ -327,8 +345,8 @@ SPE.utils = {
         }
 
         // Set position on sphere
-        x = r * Math.cos( t ) * rand;
-        y = r * Math.sin( t ) * rand;
+        x = Math.cos( t ) * rand;
+        y = Math.sin( t ) * rand;
 
         // Apply radius scale to this position
         x *= radiusScale.x;
