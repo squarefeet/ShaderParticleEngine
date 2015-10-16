@@ -420,7 +420,7 @@ SPE.shaderChunks = {
         '    varying float vAngle;',
         '#endif',
         // 'varying float vIsAlive;',
-        'varying vec3 vLifetime;'
+        // 'varying vec3 vLifetime;'
     ].join( '\n' ),
 
     branchAvoidanceFunctions: [
