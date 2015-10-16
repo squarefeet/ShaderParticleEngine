@@ -13,14 +13,16 @@ SPE.Group = function( options ) {
     // the value of this property will be used to advance the simulation.
     this.fixedTimeStep = utils.ensureTypedArg( options.fixedTimeStep, types.NUMBER, 0.016 );
 
-    // Set properties used in the uniforms map.
+    // Set properties used in the uniforms map, starting with the
+    // texture stuff.
     this.texture = utils.ensureInstanceOf( options.texture.value, THREE.Texture, null );
     this.textureFrames = utils.ensureInstanceOf( options.texture.frames, THREE.Vector2, new THREE.Vector2( 1, 1 ) );
-    this.hasPerspective = utils.ensureTypedArg( options.hasPerspective, types.BOOLEAN, true );
-    this.colorize = utils.ensureTypedArg( options.colorize, types.BOOLEAN, true );
-
+    this.textureFrameCount = utils.ensureTypedArg( options.texture.frameCount, types.NUMBER, this.textureFrames.x * this.textureFrames.y );
+    this.textureLoop = utils.ensureTypedArg( options.texture.loop, types.NUMBER, 1 );
     this.textureFrames.max( new THREE.Vector2( 1, 1 ) );
 
+    this.hasPerspective = utils.ensureTypedArg( options.hasPerspective, types.BOOLEAN, true );
+    this.colorize = utils.ensureTypedArg( options.colorize, types.BOOLEAN, true );
 
 
     // Set properties used to define the ShaderMaterial's appearance.
@@ -51,8 +53,13 @@ SPE.Group = function( options ) {
             value: this.texture
         },
         textureAnimation: {
-            type: 'v2',
-            value: this.textureFrames
+            type: 'v4',
+            value: new THREE.Vector4(
+                this.textureFrames.x,
+                this.textureFrames.y,
+                this.textureFrameCount,
+                Math.max( Math.abs( this.textureLoop ), 1.0 )
+            )
         },
         fogColor: {
             type: 'c',

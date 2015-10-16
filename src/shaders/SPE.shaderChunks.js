@@ -10,7 +10,7 @@ SPE.shaderChunks = {
         'uniform float deltaTime;',
         'uniform float runTime;',
         'uniform sampler2D texture;',
-        'uniform vec2 textureAnimation;',
+        'uniform vec4 textureAnimation;',
         'uniform float scale;',
     ].join( '\n' ),
 
@@ -205,28 +205,29 @@ SPE.shaderChunks = {
         '',
 
         '    #ifdef SHOULD_CALCULATE_SPRITE',
-        '        highp float age = vLifetime.x;',
-        '        highp float maxAge = vLifetime.y;',
-        '        highp float positionInTime = vLifetime.z;',
+        '        float age = vLifetime.x;',
+        '        float maxAge = vLifetime.y;',
+        '        float positionInTime = vLifetime.z;',
 
-        '        highp float framesX = textureAnimation.x;',
-        '        highp float framesY = textureAnimation.y;',
-        '        highp float totalFrames = (framesX + framesY);',
-        '        highp float frameNumber = positionInTime * totalFrames;',
+        '        float framesX = textureAnimation.x;',
+        '        float framesY = textureAnimation.y;',
+        '        float loopCount = textureAnimation.w;',
+        '        float totalFrames = textureAnimation.z;',
+        '        float frameNumber = mod( (positionInTime * loopCount) * totalFrames, totalFrames );',
 
-        '        highp float column = floor( mod( frameNumber, framesX ) );',
-        '        highp float row = floor( frameNumber / framesY );',
+        '        float column = floor(mod( frameNumber, framesX ));',
+        '        float row = floor( (frameNumber - column) / framesX );',
 
-        '        highp float columnNorm = column / framesX;',
-        '        highp float rowNorm = row / framesY;',
+        '        float columnNorm = column / framesX;',
+        '        float rowNorm = row / framesY;',
 
-        '        highp float x = gl_PointCoord.x;',
-        '        highp float y = gl_PointCoord.y;',
+        '        float x = gl_PointCoord.x;',
+        '        float y = gl_PointCoord.y;',
 
         '        x *= (1.0/framesX);',
         '        y *= (1.0/framesY);',
-        '        x += columnNorm * when_gt( framesX, 1.0 );',
-        '        y += rowNorm * when_gt( framesY, 1.0 );',
+        '        x += columnNorm;',
+        '        y += rowNorm;',
 
         '        vec4 rotatedTexture = texture2D( texture, vec2( x, 1.0 - y ) );',
         '    #else',
