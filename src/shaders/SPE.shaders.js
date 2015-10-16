@@ -23,11 +23,13 @@ SPE.shaders = {
         //
         // Setup...
         //
-        '    float age = getAge();',
-        '    float alive = getAlive();',
-        '    float maxAge = getMaxAge();',
-        '    float positionInTime = (age / maxAge);',
-        '    float isAlive = when_gt( alive, 0.0 );',
+        '    highp float age = getAge();',
+        '    highp float alive = getAlive();',
+        '    highp float maxAge = getMaxAge();',
+        '    highp float positionInTime = (age / maxAge);',
+        // '    highp float positionInTime = age;',
+        // '    highp float isAlive = when_le( positionInTime, 1.0 );',
+        '    highp float isAlive = when_eq( alive, 1.0 );',
 
         '    #ifdef SHOULD_WIGGLE_PARTICLES',
         '        float wiggleAmount = positionInTime * getWiggle();',
@@ -60,6 +62,7 @@ SPE.shaders = {
         // by 0.6 to give the desired result...Should be value between
         // 0.0 and 1.0!?
         '    float drag = (1.0 - (positionInTime * 0.6) * acceleration.w);',
+        // 'float drag = 1.0;',
 
         // Integrate forces...
         '    force += vel;',
@@ -149,6 +152,8 @@ SPE.shaders = {
         THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
 
         SPE.shaderChunks.varyings,
+
+        SPE.shaderChunks.branchAvoidanceFunctions,
 
         'void main() {',
         '    vec3 outgoingLight = vColor.xyz;',

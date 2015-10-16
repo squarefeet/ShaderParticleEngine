@@ -519,6 +519,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
             // when frame rates are on the lower side of 60fps
             // or not constant (a very real possibility!)
             params[ index + 1 ] = dtPerParticle * ( i - activationStart );
+            // params[ index + 1 ] = 0.0;
 
             this._updateAttributeUpdateRange( 'params', i );
         }

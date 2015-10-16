@@ -37,7 +37,9 @@
 				clock = new THREE.Clock(),
 
 				group = new SPE.Group( {
-					texture: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' ),
+					texture: {
+						value: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' ),
+					},
 					// fixedTimeStep: 0.016,
 					// blending: THREE.NormalBlending,
 					// colorize: true,
@@ -51,7 +53,7 @@
 				} ),
 
 				emitter = new SPE.Emitter( {
-					particleCount: 50,
+					particleCount: 5000,
 
 					maxAge: {
 						value: 3,
@@ -62,7 +64,7 @@
 						value: new THREE.Vector3( 0, 0, 0 ),
 						spread: new THREE.Vector3( 0, 0, 0 ),
 						spreadClamp: new THREE.Vector3( 0, 0, 0 ),
-						distribution: SPE.distributions.DISC,
+						distribution: SPE.distributions.BOX,
 						randomise: false
 					},
 

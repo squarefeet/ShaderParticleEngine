@@ -37,15 +37,12 @@
 				clock = new THREE.Clock(),
 
 				group = new SPE.Group( {
-					texture: THREE.ImageUtils.loadTexture( '../../examples/img/test-sprite.jpg' ),
+					// texture: THREE.ImageUtils.loadTexture( '../../examples/img/test-sprite.jpg' ),
 
 					// Possible API for animated textures...
-					tex: {
-						value: THREE.ImageUtils.loadTexture( '../../examples/img/test-sprite.jpg' ),
-						frames: {
-							x: 2,
-							y: 2
-						}
+					texture: {
+						value: THREE.ImageUtils.loadTexture( '../../examples/img/test-sprite-tall.jpg' ),
+						frames: new THREE.Vector2( 1, 4 )
 					},
 
 					// fixedTimeStep: 0.016,
@@ -63,7 +60,7 @@
 				emitter = new SPE.Emitter( {
 					particleCount: 1,
 					maxAge: {
-						value: 2,
+						value: 4,
 						spread: 0
 					},
 					position: {
@@ -107,7 +104,7 @@
 					// 	center: new THREE.Vector3( 0, 0, 0 )
 					// },
 					size: {
-						value: 20,
+						value: 50,
 						spread: 0
 					},
 					color: {

@@ -4,6 +4,7 @@ SPE.Group = function( options ) {
 
     // Ensure we have a map of options to play with
     options = utils.ensureTypedArg( options, types.OBJECT, {} );
+    options.texture = utils.ensureTypedArg( options.texture, types.OBJECT, {} );
 
     // Assign a UUID to this instance
     this.uuid = THREE.Math.generateUUID();
@@ -13,9 +14,12 @@ SPE.Group = function( options ) {
     this.fixedTimeStep = utils.ensureTypedArg( options.fixedTimeStep, types.NUMBER, 0.016 );
 
     // Set properties used in the uniforms map.
-    this.texture = utils.ensureInstanceOf( options.texture, THREE.Texture, null );
+    this.texture = utils.ensureInstanceOf( options.texture.value, THREE.Texture, null );
+    this.textureFrames = utils.ensureInstanceOf( options.texture.frames, THREE.Vector2, new THREE.Vector2( 1, 1 ) );
     this.hasPerspective = utils.ensureTypedArg( options.hasPerspective, types.BOOLEAN, true );
     this.colorize = utils.ensureTypedArg( options.colorize, types.BOOLEAN, true );
+
+    this.textureFrames.max( new THREE.Vector2( 1, 1 ) );
 
 
 
@@ -47,8 +51,8 @@ SPE.Group = function( options ) {
             value: this.texture
         },
         textureAnimation: {
-            type: 'v4',
-            value: new THREE.Vector4( 2, 2, 128, 128 )
+            type: 'v2',
+            value: this.textureFrames
         },
         fogColor: {
             type: 'c',
@@ -88,7 +92,9 @@ SPE.Group = function( options ) {
 
         SHOULD_ROTATE_TEXTURE: false,
         SHOULD_ROTATE_PARTICLES: false,
-        SHOULD_WIGGLE_PARTICLES: false
+        SHOULD_WIGGLE_PARTICLES: false,
+
+        SHOULD_CALCULATE_SPRITE: this.textureFrames.x > 1 || this.textureFrames.y > 1
     };
 
     // Map of all attributes to be applied to the particles.

@@ -10,7 +10,7 @@ SPE.shaderChunks = {
         'uniform float deltaTime;',
         'uniform float runTime;',
         'uniform sampler2D texture;',
-        'uniform vec4 textureAnimation;',
+        'uniform vec2 textureAnimation;',
         'uniform float scale;',
     ].join( '\n' ),
 
@@ -91,7 +91,7 @@ SPE.shaderChunks = {
     floatOverLifetime: [
         'float getFloatOverLifetime( in float positionInTime, in vec4 attr ) {',
         '    float value = 0.0;',
-        '    float deltaAge = positionInTime * float( VALUE_OVER_LIFETIME_LENGTH );',
+        '    float deltaAge = positionInTime * float( VALUE_OVER_LIFETIME_LENGTH - 1 );',
         '    float fIndex = 0.0;',
         '    float shouldApplyValue = 0.0;',
 
@@ -131,8 +131,8 @@ SPE.shaderChunks = {
         '}',
 
         'float getMaxAge() {',
-        '   return max( getAge(), params.z );',
-        // '   return params.z;',
+        // '   return max( getAge(), params.z );',
+        '   return params.z;',
         '}',
 
         'float getWiggle() {',
@@ -181,7 +181,7 @@ SPE.shaderChunks = {
 
         '      float angle = 0.0;',
         '      angle += when_eq( rotation.z, 0.0 ) * rotation.y;',
-        '      angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime * 1.35 );',
+        '      angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime );',
         '      translated = rotationCenter - pos;',
         '      rotationMatrix = getRotationMatrix( axis, angle );',
         '      return center + vec3( rotationMatrix * vec4( translated, 1.0 ) );',
@@ -204,24 +204,35 @@ SPE.shaderChunks = {
         '    #endif',
         '',
 
+        '    #ifdef SHOULD_CALCULATE_SPRITE',
+        '        highp float age = vLifetime.x;',
+        '        highp float maxAge = vLifetime.y;',
+        '        highp float positionInTime = vLifetime.z;',
 
-        '    float age = vLifetime.x;',
-        '    float maxAge = vLifetime.y;',
-        '    float positionInTime = vLifetime.z * 1.5;',
-        '    float totalFrames = textureAnimation.x + textureAnimation.y;',
-        '    float frameTime = maxAge / totalFrames;',
-        '    float frameNumber = floor(positionInTime * totalFrames);',
+        '        highp float framesX = textureAnimation.x;',
+        '        highp float framesY = textureAnimation.y;',
+        '        highp float totalFrames = (framesX + framesY);',
+        '        highp float frameNumber = positionInTime * totalFrames;',
 
-        // Scale the texture so it fits in the frame
-        '    rotatedUV.x *= 1.0 / textureAnimation.x;',
-        '    rotatedUV.y *= 1.0 / textureAnimation.y;',
+        '        highp float column = floor( mod( frameNumber, framesX ) );',
+        '        highp float row = floor( frameNumber / framesY );',
 
-        // Set the correct offset
-        '    rotatedUV.y += 1.0 / textureAnimation.y;',
+        '        highp float columnNorm = column / framesX;',
+        '        highp float rowNorm = row / framesY;',
 
-        '    float xPos = floor((positionInTime * textureAnimation.x) ) / textureAnimation.x;',
-        '    rotatedUV.x += xPos;',
-        // '    rotatedUV.y += floor((positionInTime * textureAnimation.x) ) / textureAnimation.x;',
-        '    vec4 rotatedTexture = texture2D( texture, rotatedUV );',
+        '        highp float x = gl_PointCoord.x;',
+        '        highp float y = gl_PointCoord.y;',
+
+        '        x *= (1.0/framesX);',
+        '        y *= (1.0/framesY);',
+        '        x += columnNorm * when_gt( framesX, 1.0 );',
+        '        y += rowNorm * when_gt( framesY, 1.0 );',
+
+        '        vec4 rotatedTexture = texture2D( texture, vec2( x, 1.0 - y ) );',
+        '    #else',
+        '        vec4 rotatedTexture = texture2D( texture, rotatedUV );',
+        '    #endif',
+
+        // '       vec4 rotatedTexture = texture2D( texture, vec2( gl_PointCoord.x + vLifetime.x, 1.0 - gl_PointCoord.y ) );',
     ].join( '\n' )
 };

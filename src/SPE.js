@@ -23,5 +23,5 @@ var SPE = {
     // 	  emitters and ALL groups.
     //
     // 	- Only values >= 3 && <= 4 are allowed.
-    valueOverLifetimeLength: 3
+    valueOverLifetimeLength: 4
 };
