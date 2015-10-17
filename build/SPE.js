@@ -2115,7 +2115,7 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
 
 SPE.Emitter.prototype._assignLifetimeValue = function( index, propName ) {
     var array = this.attributes[ propName ].typedArray,
-        prop = emitter[ propName ],
+        prop = this[ propName ],
         utils = SPE.utils,
         value;
 
@@ -2284,9 +2284,6 @@ SPE.Emitter.prototype.tick = function( dt ) {
     // If the emitter is dead, reset the age of the emitter to zero,
     // ready to go again if required
     if ( this.alive === false ) {
-        // this._updatePostTick( updatedParamsMin, updatedParamsMax );
-        paramsUpdateRange.min = updatedParamsMin;
-        paramsUpdateRange.max = updatedParamsMax;
         this.age = 0.0;
         return;
     }
