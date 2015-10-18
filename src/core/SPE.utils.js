@@ -1,3 +1,6 @@
+/* jshint undef: true, unused: true, strict: true */
+/* globals SPE */
+
 SPE.utils = {
     types: {
         BOOLEAN: 'boolean',
@@ -7,6 +10,8 @@ SPE.utils = {
     },
 
     ensureTypedArg: function( arg, type, defaultValue ) {
+        'use strict';
+
         if ( typeof arg === type ) {
             return arg;
         }
@@ -16,6 +21,8 @@ SPE.utils = {
     },
 
     ensureArrayTypedArg: function( arg, type, defaultValue ) {
+        'use strict';
+
         // If the argument being checked is an array, loop through
         // it and ensure all the values are of the correct type,
         // falling back to the defaultValue if any aren't.
@@ -35,6 +42,8 @@ SPE.utils = {
     },
 
     ensureInstanceOf: function( arg, instance, defaultValue ) {
+        'use strict';
+
         if ( instance !== undefined && arg instanceof instance ) {
             return arg;
         }
@@ -44,6 +53,8 @@ SPE.utils = {
     },
 
     ensureArrayInstanceOf: function( arg, instance, defaultValue ) {
+        'use strict';
+
         // If the argument being checked is an array, loop through
         // it and ensure all the values are of the correct type,
         // falling back to the defaultValue if any aren't.
@@ -68,6 +79,8 @@ SPE.utils = {
     // `spread` are of equal length, and no longer than the `maxLength`
     // argument.
     ensureValueOverLifetimeCompliance: function( property, minLength, maxLength ) {
+        'use strict';
+
         minLength = minLength || 3;
         maxLength = maxLength || 3;
 
@@ -97,6 +110,8 @@ SPE.utils = {
     //
     //  returns [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     interpolateArray: function( srcArray, newLength ) {
+        'use strict';
+
         var newArray = [ srcArray[ 0 ] ],
             factor = ( srcArray.length - 1 ) / ( newLength - 1 );
 
@@ -115,10 +130,14 @@ SPE.utils = {
     },
 
     clamp: function( value, min, max ) {
+        'use strict';
+
         return Math.max( min, Math.min( value, max ) );
     },
 
     zeroToEpsilon: function( value, randomise ) {
+        'use strict';
+
         var epsilon = 0.00001,
             result = value;
 
@@ -127,7 +146,7 @@ SPE.utils = {
         }
 
         else if ( value > 0 && value < epsilon ) {
-            result = randomise ? Math.random() * epsilon * 10 : epsilon;;
+            result = randomise ? Math.random() * epsilon * 10 : epsilon;
         }
         else if ( value < 0 && value > -epsilon ) {
             result = -( randomise ? Math.random() * epsilon * 10 : epsilon );
@@ -147,6 +166,8 @@ SPE.utils = {
     //  - THREE.Vector4
     //  - THREE.Color
     lerpTypeAgnostic: function( start, end, delta ) {
+        'use strict';
+
         var types = this.types,
             out;
 
@@ -182,15 +203,19 @@ SPE.utils = {
             return out;
         }
         else {
-            console.warn( "Invalid argument types, or argument types do not match:", start, end );
+            console.warn( 'Invalid argument types, or argument types do not match:', start, end );
         }
     },
 
     lerp: function( start, end, delta ) {
+        'use strict';
+
         return start + ( ( end - start ) * delta );
     },
 
     roundToNearestMultiple: function( n, multiple ) {
+        'use strict';
+
         if ( multiple === 0 ) {
             return n;
         }
@@ -209,6 +234,8 @@ SPE.utils = {
     },
 
     arrayValuesAreEqual: function( array ) {
+        'use strict';
+
         for ( var i = 0; i < array.length - 1; ++i ) {
             if ( array[ i ] !== array[ i + 1 ] ) {
                 return false;
@@ -240,11 +267,15 @@ SPE.utils = {
 
 
     randomFloat: function( base, spread ) {
+        'use strict';
+
         return base + spread * ( Math.random() - 0.5 );
     },
 
     // TODO: Use this.randomFloat to add spread values in random* functions?
     randomVector3: function( attribute, index, base, spread, spreadClamp ) {
+        'use strict';
+
         var x = base.x + ( Math.random() * spread.x - ( spread.x * 0.5 ) ),
             y = base.y + ( Math.random() * spread.y - ( spread.y * 0.5 ) ),
             z = base.z + ( Math.random() * spread.z - ( spread.z * 0.5 ) );
@@ -262,6 +293,8 @@ SPE.utils = {
     },
 
     randomColor: function( attribute, index, base, spread ) {
+        'use strict';
+
         var r = base.r + ( Math.random() * spread.x ),
             g = base.g + ( Math.random() * spread.y ),
             b = base.b + ( Math.random() * spread.z );
@@ -275,6 +308,8 @@ SPE.utils = {
     },
 
     randomColorAsHex: ( function() {
+        'use strict';
+
         var workingColor = new THREE.Color();
 
         return function( attribute, index, base, spread ) {
@@ -302,6 +337,8 @@ SPE.utils = {
     }() ),
 
     randomVector3OnSphere: function( attribute, index, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
+        'use strict';
+
         var depth = 2 * Math.random() - 1,
             t = 6.2832 * Math.random(),
             r = Math.sqrt( 1 - depth * depth ),
@@ -334,6 +371,8 @@ SPE.utils = {
     },
 
     randomVector3OnDisc: function( attribute, index, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
+        'use strict';
+
         var t = 6.2832 * Math.random(),
             rand = Math.abs( this.randomFloat( radius, radiusSpread ) ),
             x = 0,
@@ -363,6 +402,8 @@ SPE.utils = {
 
 
     randomDirectionVector3OnSphere: ( function() {
+        'use strict';
+
         var v = new THREE.Vector3();
 
         return function( attribute, index, posX, posY, posZ, emitterPosition, speed, speedSpread ) {
@@ -379,6 +420,8 @@ SPE.utils = {
     }() ),
 
     getPackedRotationAxis: ( function() {
+        'use strict';
+
         var v = new THREE.Vector3(),
             vSpread = new THREE.Vector3(),
             c = new THREE.Color();

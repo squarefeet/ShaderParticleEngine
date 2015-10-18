@@ -1,4 +1,9 @@
+/* jshint undef: true, unused: true, strict: true */
+/* globals SPE */
+
 SPE.ShaderAttribute = function( type, dynamicBuffer, arrayType ) {
+    'use strict';
+
     var typeMap = SPE.ShaderAttribute.typeSizeMap;
 
     this.type = typeof type === 'string' && typeMap.hasOwnProperty( type ) ? type : 'f';
@@ -10,7 +15,7 @@ SPE.ShaderAttribute = function( type, dynamicBuffer, arrayType ) {
 
     this.updateMin = 0;
     this.updateMax = 0;
-}
+};
 
 SPE.ShaderAttribute.constructor = SPE.ShaderAttribute;
 
@@ -25,11 +30,15 @@ SPE.ShaderAttribute.typeSizeMap = {
 };
 
 SPE.ShaderAttribute.prototype.setUpdateRange = function( min, max ) {
+    'use strict';
+
     this.updateMin = Math.min( min * this.componentSize, this.updateMin * this.componentSize );
     this.updateMax = Math.max( max * this.componentSize, this.updateMax * this.componentSize );
 };
 
 SPE.ShaderAttribute.prototype.flagUpdate = function() {
+    'use strict';
+
     var attr = this.bufferAttribute,
         range = attr.updateRange;
 
@@ -39,11 +48,15 @@ SPE.ShaderAttribute.prototype.flagUpdate = function() {
 };
 
 SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
+    'use strict';
+
     this.updateMin = 0;
     this.updateMax = 0;
 };
 
 SPE.ShaderAttribute.prototype._ensureTypedArray = function( size ) {
+    'use strict';
+
     // Condition that's most likely to be true at the top: no change.
     if ( this.typedArray !== null && this.typedArray.size === size * this.componentSize ) {
         return;
@@ -62,6 +75,8 @@ SPE.ShaderAttribute.prototype._ensureTypedArray = function( size ) {
 };
 
 SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
+    'use strict';
+
     // Make sure the typedArray is present and correct.
     this._ensureTypedArray( size );
 
@@ -85,6 +100,8 @@ SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
 };
 
 SPE.ShaderAttribute.prototype.getLength = function() {
+    'use strict';
+
     if ( this.typedArray === null ) {
         return 0;
     }

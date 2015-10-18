@@ -1,3 +1,6 @@
+/* jshint undef: true, unused: true, strict: true */
+/* globals SPE */
+
 SPE.shaders = {
     vertex: [
         SPE.shaderChunks.defines,
@@ -5,8 +8,8 @@ SPE.shaders = {
         SPE.shaderChunks.attributes,
         SPE.shaderChunks.varyings,
 
-        THREE.ShaderChunk[ "common" ],
-        THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
+        THREE.ShaderChunk.common,
+        THREE.ShaderChunk.logdepthbuf_pars_vertex,
 
         SPE.shaderChunks.branchAvoidanceFunctions,
         SPE.shaderChunks.unpackColor,
@@ -139,7 +142,7 @@ SPE.shaders = {
         '	 gl_PointSize = pointSizePerspective;',
         '	 gl_Position = projectionMatrix * mvPos;',
 
-        THREE.ShaderChunk[ "logdepthbuf_vertex" ],
+        THREE.ShaderChunk.logdepthbuf_vertex,
 
         '}'
     ].join( '\n' ),
@@ -147,9 +150,9 @@ SPE.shaders = {
     fragment: [
         SPE.shaderChunks.uniforms,
 
-        THREE.ShaderChunk[ "common" ],
-        THREE.ShaderChunk[ "fog_pars_fragment" ],
-        THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
+        THREE.ShaderChunk.common,
+        THREE.ShaderChunk.fog_pars_fragment,
+        THREE.ShaderChunk.logdepthbuf_pars_fragment,
 
         SPE.shaderChunks.varyings,
 
@@ -160,11 +163,11 @@ SPE.shaders = {
 
         SPE.shaderChunks.rotateTexture,
 
-        THREE.ShaderChunk[ "logdepthbuf_fragment" ],
+        THREE.ShaderChunk.logdepthbuf_fragment,
 
         '    outgoingLight = vColor.xyz * rotatedTexture.xyz;',
 
-        THREE.ShaderChunk[ "fog_fragment" ],
+        THREE.ShaderChunk.fog_fragment,
 
         '    gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
         '}'

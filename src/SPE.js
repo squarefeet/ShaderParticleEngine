@@ -1,3 +1,5 @@
+/* jshint undef: true, unused: true, strict: true */
+
 var SPE = {
     distributions: {
         BOX: 1,

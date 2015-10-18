@@ -1,4 +1,10 @@
+/* jshint undef: true, unused: true, strict: true */
+/* globals SPE */
+
+
 SPE.Group = function( options ) {
+    'use strict';
+
     var utils = SPE.utils,
         types = utils.types;
 
@@ -148,6 +154,8 @@ SPE.Group.constructor = SPE.Group;
 
 
 SPE.Group.prototype._updateDefines = function( emitter ) {
+    'use strict';
+
     // Only do angle calculation if there's no spritesheet defined.
     //
     // Saves calculations being done and then overwritten in the shaders.
@@ -170,6 +178,8 @@ SPE.Group.prototype._updateDefines = function( emitter ) {
 };
 
 SPE.Group.prototype._applyAttributesToGeometry = function() {
+    'use strict';
+
     var attributes = this.attributes,
         geometry = this.geometry,
         geometryAttributes = geometry.attributes,
@@ -198,6 +208,8 @@ SPE.Group.prototype._applyAttributesToGeometry = function() {
 };
 
 SPE.Group.prototype.addEmitter = function( emitter ) {
+    'use strict';
+
     // Ensure an actual emitter instance is passed here.
     //
     // Decided not to throw here, just in case a scene's
@@ -218,8 +230,7 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
 
     var attributes = this.attributes,
         start = attributes.position.getLength() / 3,
-        totalParticleCount = start + emitter.particleCount,
-        utils = SPE.utils;
+        totalParticleCount = start + emitter.particleCount;
 
     // Set the `particlesPerSecond` value (PPS) on the emitter.
     // It's used to determine how many particles to release
@@ -293,6 +304,8 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
 };
 
 SPE.Group.prototype.removeEmitter = function( emitter ) {
+    'use strict';
+
     var emitterIndex = this.emitterIDs.indexOf( emitter.uuid );
 
     // Ensure an actual emitter instance is passed here.
@@ -327,6 +340,8 @@ SPE.Group.prototype.removeEmitter = function( emitter ) {
 };
 
 SPE.Group.prototype._updateUniforms = function( dt ) {
+    'use strict';
+
     this.uniforms.runTime.value += dt;
     this.uniforms.deltaTime.value = dt;
 };
@@ -339,6 +354,8 @@ SPE.Group.prototype._updateUniforms = function( dt ) {
  * @return {ShaderParticleEmitter | null}
  */
 SPE.Group.prototype.getFromPool = function() {
+    'use strict';
+
     var that = this,
         pool = that._pool,
         createNew = that._createNewWhenPoolEmpty;
@@ -351,7 +368,7 @@ SPE.Group.prototype.getFromPool = function() {
     }
 
     return null;
-},
+};
 
 
 /**
@@ -361,6 +378,8 @@ SPE.Group.prototype.getFromPool = function() {
  * @return {this}
  */
 SPE.Group.prototype.releaseIntoPool = function( emitter ) {
+    'use strict';
+
     if ( !( emitter instanceof SPE.Emitter ) ) {
         console.error( 'Will not add non-emitter to particle group pool:', emitter );
         return;
@@ -379,6 +398,8 @@ SPE.Group.prototype.releaseIntoPool = function( emitter ) {
  * @return {Array}
  */
 SPE.Group.prototype.getPool = function() {
+    'use strict';
+
     return this._pool;
 };
 
@@ -392,6 +413,8 @@ SPE.Group.prototype.getPool = function() {
  * @return {this}
  */
 SPE.Group.prototype.addPool = function( numEmitters, emitterSettings, createNew ) {
+    'use strict';
+
     var that = this,
         emitter;
 
@@ -419,6 +442,8 @@ SPE.Group.prototype.addPool = function( numEmitters, emitterSettings, createNew 
  * @return {this}
  */
 SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
+    'use strict';
+
     var that = this,
         emitter = that.getFromPool();
 
@@ -453,6 +478,8 @@ SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
  * @return {this}
  */
 SPE.Group.prototype.triggerPoolEmitter = function( numEmitters, position ) {
+    'use strict';
+
     var that = this;
 
     if ( typeof numEmitters === 'number' && numEmitters > 1 ) {
@@ -469,6 +496,8 @@ SPE.Group.prototype.triggerPoolEmitter = function( numEmitters, position ) {
 
 
 SPE.Group.prototype._resetBufferRanges = function() {
+    'use strict';
+
     var keys = this.attributeKeys,
         i = this.attributeCount - 1,
         attrs = this.attributes;
@@ -480,6 +509,8 @@ SPE.Group.prototype._resetBufferRanges = function() {
 
 
 SPE.Group.prototype._updateBuffers = function( emitter ) {
+    'use strict';
+
     var keys = this.attributeKeys,
         i = this.attributeCount - 1,
         attrs = this.attributes,
@@ -500,10 +531,11 @@ SPE.Group.prototype._updateBuffers = function( emitter ) {
 
 
 SPE.Group.prototype.tick = function( dt ) {
+    'use strict';
+
     var emitters = this.emitters,
         numEmitters = emitters.length,
-        deltaTime = dt || this.fixedTimeStep,
-        bufferUpdateRanges = this.bufferUpdateRanges;
+        deltaTime = dt || this.fixedTimeStep;
 
     if ( numEmitters === 0 ) {
         return;

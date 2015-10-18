@@ -1,3 +1,6 @@
+/* jshint undef: true, unused: true, strict: true */
+/* globals SPE */
+
 SPE.shaderChunks = {
     defines: [
         // '#define PI 3.141592653589793',

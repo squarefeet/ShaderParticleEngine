@@ -1,4 +1,9 @@
+/* jshint undef: true, unused: true, strict: true */
+/* globals SPE */
+
 SPE.Emitter = function( options ) {
+    'use strict';
+
     var utils = SPE.utils,
         types = utils.types,
         lifetimeLength = SPE.valueOverLifetimeLength;
@@ -162,7 +167,7 @@ SPE.Emitter = function( options ) {
         size: utils.ensureTypedArg( options.size.randomise, types.BOOLEAN, false ),
         color: utils.ensureTypedArg( options.color.randomise, types.BOOLEAN, false ),
         opacity: utils.ensureTypedArg( options.opacity.randomise, types.BOOLEAN, false ),
-        angle: utils.ensureTypedArg( options.angle.randomise, types.BOOLEAN, false ),
+        angle: utils.ensureTypedArg( options.angle.randomise, types.BOOLEAN, false )
     };
 
     this.updateFlags = {};
@@ -209,6 +214,8 @@ SPE.Emitter = function( options ) {
 SPE.Emitter.constructor = SPE.Emitter;
 
 SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
+    'use strict';
+
     var self = this;
 
     for ( var i in propObj ) {
@@ -244,15 +251,17 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
                     // If the previous value was an array, then make
                     // sure the provided value is interpolated correctly.
                     if ( Array.isArray( prevValue ) ) {
-                        SPE.utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length )
+                        SPE.utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length );
                     }
                 };
             }( i ) )
-        } )
+        } );
     }
 };
 
 SPE.Emitter.prototype._setBufferUpdateRanges = function( keys ) {
+    'use strict';
+
     this.attributeKeys = keys;
     this.attributeCount = keys.length;
 
@@ -265,6 +274,8 @@ SPE.Emitter.prototype._setBufferUpdateRanges = function( keys ) {
 };
 
 SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
+    'use strict';
+
     var particleCount = this.particleCount;
 
 
@@ -284,6 +295,8 @@ SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
 
 
 SPE.Emitter.prototype._assignValue = function( prop, index ) {
+    'use strict';
+
     switch ( prop ) {
         case 'position':
             this._assignPositionValue( index );
@@ -324,6 +337,8 @@ SPE.Emitter.prototype._assignValue = function( prop, index ) {
 };
 
 SPE.Emitter.prototype._assignPositionValue = function( index ) {
+    'use strict';
+
     var distributions = SPE.distributions,
         utils = SPE.utils,
         prop = this.position,
@@ -348,6 +363,8 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
 };
 
 SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
+    'use strict';
+
     var distributions = SPE.distributions,
         utils = SPE.utils,
         prop = this[ attrName ],
@@ -391,6 +408,8 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
 };
 
 SPE.Emitter.prototype._assignLifetimeValue = function( index, propName ) {
+    'use strict';
+
     var array = this.attributes[ propName ].typedArray,
         prop = this[ propName ],
         utils = SPE.utils,
@@ -411,8 +430,10 @@ SPE.Emitter.prototype._assignLifetimeValue = function( index, propName ) {
 };
 
 SPE.Emitter.prototype._assignAngleValue = function( index ) {
+    'use strict';
+
     var array = this.attributes.angle.typedArray,
-        prop = emitter.angle,
+        prop = this.angle,
         utils = SPE.utils,
         value;
 
@@ -431,6 +452,8 @@ SPE.Emitter.prototype._assignAngleValue = function( index ) {
 };
 
 SPE.Emitter.prototype._assignParamsValue = function( index ) {
+    'use strict';
+
     this.attributes.params.typedArray.setVec4Components( index,
         this.isStatic ? 1 : 0,
         0.0,
@@ -440,6 +463,8 @@ SPE.Emitter.prototype._assignParamsValue = function( index ) {
 };
 
 SPE.Emitter.prototype._assignRotationValue = function( index ) {
+    'use strict';
+
     this.attributes.rotation.typedArray.setVec3Components( index,
         SPE.utils.getPackedRotationAxis( this.rotation._axis, this.rotation._axisSpread ),
         SPE.utils.randomFloat( this.rotation._angle, this.rotation._angleSpread ),
@@ -450,10 +475,14 @@ SPE.Emitter.prototype._assignRotationValue = function( index ) {
 };
 
 SPE.Emitter.prototype._assignColorValue = function( index ) {
+    'use strict';
+
     SPE.utils.randomColorAsHex( this.attributes.color, index, this.color._value, this.color._spread );
 };
 
 SPE.Emitter.prototype._resetParticle = function( index ) {
+    'use strict';
+
     var resetFlags = this.resetFlags,
         updateFlags = this.updateFlags,
         updateCounts = this.updateCounts,
@@ -478,15 +507,17 @@ SPE.Emitter.prototype._resetParticle = function( index ) {
 };
 
 SPE.Emitter.prototype._updateAttributeUpdateRange = function( attr, i ) {
-    var ranges = this.bufferUpdateRanges[ attr ],
-        min = ranges.min,
-        max = ranges.max;
+    'use strict';
+
+    var ranges = this.bufferUpdateRanges[ attr ];
 
     ranges.min = Math.min( i, ranges.min );
     ranges.max = Math.max( i, ranges.max );
 };
 
 SPE.Emitter.prototype._resetBufferRanges = function() {
+    'use strict';
+
     var ranges = this.bufferUpdateRanges,
         keys = this.bufferUpdateKeys,
         i = this.bufferUpdateCount - 1,
@@ -499,7 +530,11 @@ SPE.Emitter.prototype._resetBufferRanges = function() {
     }
 };
 
+// TODO:
+//  - Remove.
 SPE.Emitter.prototype._resetUpdateFlags = function() {
+    'use strict';
+
     this.position.needsUpdate = false;
     this.velocity.needsUpdate = false;
     this.acceleration.needsUpdate = false;
@@ -516,6 +551,8 @@ SPE.Emitter.prototype._resetUpdateFlags = function() {
 
 
 SPE.Emitter.prototype.tick = function( dt ) {
+    'use strict';
+
     if ( this.isStatic ) {
         return;
     }
@@ -613,6 +650,8 @@ SPE.Emitter.prototype.tick = function( dt ) {
 };
 
 SPE.Emitter.prototype.reset = function( force ) {
+    'use strict';
+
     this.age = 0.0;
     this.alive = false;
 
@@ -636,9 +675,13 @@ SPE.Emitter.prototype.reset = function( force ) {
 };
 
 SPE.Emitter.prototype.enable = function() {
+    'use strict';
+
     this.alive = true;
 };
 
 SPE.Emitter.prototype.disable = function() {
+    'use strict';
+
     this.alive = false;
 };
