@@ -38,19 +38,6 @@ SPE.shaders = {
         '        float wiggleCos = isAlive * cos( wiggleAmount );',
         '    #endif',
 
-        // Save the positionInTime value to a varying so
-        // it can be accessed in the fragment shader to
-        // animate textures.
-        '#ifdef SHOULD_CALCULATE_SPRITE',
-        '    vLifetime = vec3( age, maxAge, positionInTime );',
-        '#endif',
-
-        // Save the value is isAlive to a varying for
-        // access in the fragment shader
-        // '	vIsAlive = isAlive;',
-
-
-
         //
         // Forces
         //
@@ -61,11 +48,8 @@ SPE.shaders = {
         '    vec3 force = vec3( 0.0 );',
         '    vec3 pos = vec3( position );',
 
-        // Can't figure out why positionInTime needs to be multiplied
-        // by 0.6 to give the desired result...Should be value between
-        // 0.0 and 1.0!?
+        // Calculate the required drag to apply to the forces.
         '    float drag = 1.0 - (positionInTime * 0.5) * acceleration.w;',
-        // 'float drag = 1.0;',
 
         // Integrate forces...
         '    force += vel;',
@@ -127,12 +111,30 @@ SPE.shaders = {
         '	 vColor = vec4( c, o );',
 
         // Determine angle
-        //
         '    #ifdef SHOULD_ROTATE_TEXTURE',
         '	     vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
         '    #endif',
 
+        // If this particle is using a sprite-sheet as a texture, we'll have to figure out
+        // what frame of the texture the particle is using at it's current position in time.
+        '    #ifdef SHOULD_CALCULATE_SPRITE',
+        '        float framesX = textureAnimation.x;',
+        '        float framesY = textureAnimation.y;',
+        '        float loopCount = textureAnimation.w;',
+        '        float totalFrames = textureAnimation.z;',
+        '        float frameNumber = mod( (positionInTime * loopCount) * totalFrames, totalFrames );',
 
+        '        float column = floor(mod( frameNumber, framesX ));',
+        '        float row = floor( (frameNumber - column) / framesX );',
+
+        '        float columnNorm = column / framesX;',
+        '        float rowNorm = row / framesY;',
+
+        '        vSpriteSheet.x = 1.0 / framesX;',
+        '        vSpriteSheet.y = 1.0 / framesY;',
+        '        vSpriteSheet.z = columnNorm;',
+        '        vSpriteSheet.w = rowNorm;',
+        '    #endif',
 
         //
         // Write values

@@ -2,7 +2,7 @@ SPE Dev Todo List
 =================
 
 * General optimization.
-* Add Browserify support (see [here](https://github.com/squarefeet/ShaderParticleEngine/pull/62)).
+* ~~Add Browserify support (see [here](https://github.com/squarefeet/ShaderParticleEngine/pull/62))~~.
 * ~~Add Bower support (see [here](https://github.com/squarefeet/ShaderParticleEngine/pull/76)).~~
 	* Credit @giuliandrimba for bower.json.
 * Add unit tests.
@@ -12,3 +12,4 @@ SPE Dev Todo List
 * Triangle distribution option.
 * Angle velocity (see [here](https://github.com/squarefeet/ShaderParticleEngine/pull/25)).
 * Look into adding proper angleAlignVelocity support.
+* [Publish to NPM](https://gist.github.com/coolaj86/1318304)

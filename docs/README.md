@@ -1,22 +1,37 @@
 Shader Particle Engine
 ======================
 
+Contents
+--------
+* [Overview](#overview)
+* [Changelog](#changelog)
+* [API Documentation](#api-documentation)
+* [Annotated Source](#annotated-source)
+
+
+Overview
+--------
 The purpose of this library is to make creating particle effects using THREE.js and WebGL as simple as possible. The heavy-lifting is done by the GPU, freeing up CPU cycles.
 
-There are two main parts to the library, `SPE.Group` and `SPE.Emitter`.
+Emitters are created by first creating an instance of `SPE.Group`. It is in the group where `ShaderMaterial` settings are applied, and the texture for all emitters added to that group is set. Multiple groups can be created, but if efficiency is a high-priority then as few groups as possible should be created. The group takes care of uploading emitter data to the GPU for simulation and rendering, so the fewer chunks of data that get sent the better.
+
+Once a group has been created, an instance of `SPE.Emitter` can then be added to it. Each emitter can have its own behaviour and appearance.
 
 
+For more information on groups and emitters, see the docs below:
 
-SPE.Group
+* [Group documentation](./SPE.Group.md)
+* [Emitter documentation](./SPE.Emitter.md)
+
+
+Changelog
 ---------
-A group is where emitters sharing the same texture and appearance attributes (`blending`, `depthTest`, etc.) should be added. Any number of groups can be created, but it's best to keep the number as low as possible to avoid sending more data than necessary to the GPU.
+A full changelog can be seen [here](./APIChangelog.md).
 
-[Group documentation](./SPE.Group.md)
+API Documentation
+--------------------
+Full api documentation (created using the wonderful [JSDoc](http://usejsdoc.org/)) is available [here](./api/index.html).
 
-SPE.Emitter
------------
-An emitter is where you can customise the appearance and behaviour of your particles. Many options are available, including size, color, position, various forces, etc. Emitters with different parameters can be added to the same group.
-
-[Emitter documentation](./SPE.Emitter.md)
-
-
+Annotated Source
+--------------------
+An annotated version of the library (created using the equally wonderful [Docco](https://jashkenas.github.io/docco/)) can be found [here](./source/index.html).

@@ -2,13 +2,13 @@
 /* globals SPE */
 
 SPE.shaderChunks = {
+    // Register color-packing define statements.
     defines: [
-        // '#define PI 3.141592653589793',
-        // '#define PI_2 6.283185307179586',
         '#define PACKED_COLOR_SIZE 256.0',
         '#define PACKED_COLOR_DIVISOR 255.0'
     ].join( '\n' ),
 
+    // All uniforms used by vertex / fragment shaders
     uniforms: [
         'uniform float deltaTime;',
         'uniform float runTime;',
@@ -17,6 +17,11 @@ SPE.shaderChunks = {
         'uniform float scale;',
     ].join( '\n' ),
 
+    // All attributes used by the vertex shader.
+    //
+    // Note that some attributes are squashed into other ones:
+    //
+    // * Drag is acceleration.w
     attributes: [
         'attribute vec4 acceleration;',
         'attribute vec3 velocity;',
@@ -29,21 +34,22 @@ SPE.shaderChunks = {
         'attribute vec4 opacity;'
     ].join( '\n' ),
 
+    //
     varyings: [
         'varying vec4 vColor;',
         '#ifdef SHOULD_ROTATE_TEXTURE',
         '    varying float vAngle;',
         '#endif',
-        // 'varying float vIsAlive;',
 
         '#ifdef SHOULD_CALCULATE_SPRITE',
-        '    varying vec3 vLifetime;',
+        '    varying vec4 vSpriteSheet;',
         '#endif'
     ].join( '\n' ),
 
+
+    // Branch-avoiding comparison fns
+    // - http://theorangeduck.com/page/avoiding-shader-conditionals
     branchAvoidanceFunctions: [
-        // Branch-avoiding comparison fns
-        // - http://theorangeduck.com/page/avoiding-shader-conditionals
         'float when_gt(float x, float y) {',
         '    return max(sign(x - y), 0.0);',
         '}',
@@ -75,10 +81,11 @@ SPE.shaderChunks = {
         '}',
     ].join( '\n' ),
 
+
+    // From:
+    // - http://stackoverflow.com/a/12553149
+    // - https://stackoverflow.com/questions/22895237/hexadecimal-to-rgb-values-in-webgl-shader
     unpackColor: [
-        // From:
-        // - http://stackoverflow.com/a/12553149
-        // - https://stackoverflow.com/questions/22895237/hexadecimal-to-rgb-values-in-webgl-shader
         'vec3 unpackColor( in float hex ) {',
         '   vec3 c = vec3( 0.0 );',
 
@@ -101,8 +108,8 @@ SPE.shaderChunks = {
         '    float fIndex = 0.0;',
         '    float shouldApplyValue = 0.0;',
 
-        // This might look a little odd, but it's quite elegant. Uses
-        // basic maths to avoid branching. Nice.
+        // This might look a little odd, but it's faster in the testing I've done than using branches.
+        // Uses basic maths to avoid branching.
         //
         // Take a look at the branch-avoidance functions defined above,
         // and be sure to check out The Orange Duck site where I got this
@@ -137,7 +144,6 @@ SPE.shaderChunks = {
         '}',
 
         'float getMaxAge() {',
-        // '   return max( getAge(), params.z );',
         '   return params.z;',
         '}',
 
@@ -212,24 +218,13 @@ SPE.shaderChunks = {
 
         // Spritesheets overwrite angle calculations.
         '    #ifdef SHOULD_CALCULATE_SPRITE',
-        '        float age = vLifetime.x;',
-        '        float maxAge = vLifetime.y;',
-        '        float positionInTime = vLifetime.z;',
+        '        float framesX = vSpriteSheet.x;',
+        '        float framesY = vSpriteSheet.y;',
+        '        float columnNorm = vSpriteSheet.z;',
+        '        float rowNorm = vSpriteSheet.w;',
 
-        '        float framesX = textureAnimation.x;',
-        '        float framesY = textureAnimation.y;',
-        '        float loopCount = textureAnimation.w;',
-        '        float totalFrames = textureAnimation.z;',
-        '        float frameNumber = mod( (positionInTime * loopCount) * totalFrames, totalFrames );',
-
-        '        float column = floor(mod( frameNumber, framesX ));',
-        '        float row = floor( (frameNumber - column) / framesX );',
-
-        '        float columnNorm = column / framesX;',
-        '        float rowNorm = row / framesY;',
-
-        '        vUv.x = gl_PointCoord.x * (1.0/framesX) + columnNorm;',
-        '        vUv.y = 1.0 - (gl_PointCoord.y * (1.0/framesY) + rowNorm);',
+        '        vUv.x = gl_PointCoord.x * framesX + columnNorm;',
+        '        vUv.y = 1.0 - (gl_PointCoord.y * framesY + rowNorm);',
         '    #endif',
 
         '',
