@@ -27,3 +27,11 @@ var SPE = {
     // 	- Only values >= 3 && <= 4 are allowed.
     valueOverLifetimeLength: 4
 };
+
+// Module loader support:
+if ( typeof define === 'function' && define.amd ) {
+    define( 'spe', SPE );
+}
+else if ( typeof exports !== 'undefined' && typeof module !== 'undefined' ) {
+    module.exports = SPE;
+}
