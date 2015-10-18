@@ -1,9 +1,39 @@
 {
-    "name": "Shader-Particles",
+    "name": "Shader-Particle-Engine",
+    "description": "A GLSL-focused particle engine for THREE.js.",
     "version": "1.0.0",
+
+    "author": "Luke Moody",
+
+    "licenses": [ {
+        "type": "MIT",
+        "https://github.com/squarefeet/ShaderParticleEngine/blob/master/LICENSE"
+    } ],
+
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/squarefeet/ShaderParticleEngine.git"
+    },
+
+    "bugs": {
+        "url": "https://github.com/squarefeet/ShaderParticleEngine/issues"
+    },
+
+    "homepage": "https://github.com/squarefeet/ShaderParticleEngine/",
+
+    "keywords": [
+        "three.js",
+        "webgl",
+        "particle"
+        "particles",
+        "glsl",
+        "shader",
+        "spe"
+    ],
+
     "devDependencies": {
         "grunt": "~0.4.1",
         "grunt-contrib-concat": "~0.3.0",
-        "grunt-contrib-uglify": "~0.2.2"
+        "grunt-contrib-uglify": "~0.9.2"
     }
 }
