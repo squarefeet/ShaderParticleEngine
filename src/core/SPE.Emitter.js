@@ -708,6 +708,7 @@ SPE.Emitter.prototype._resetUpdateFlags = function() {
 };
 
 SPE.Emitter.prototype._decrementParticleCount = function() {
+    'use strict';
     --this.activeParticleCount;
 
     // TODO:
@@ -715,6 +716,7 @@ SPE.Emitter.prototype._decrementParticleCount = function() {
 };
 
 SPE.Emitter.prototype._incrementParticleCount = function() {
+    'use strict';
     ++this.activeParticleCount;
 
     // TODO:
@@ -910,6 +912,7 @@ SPE.Emitter.prototype.disable = function() {
  * @see SPE.Group.prototype.removeEmitter
  */
 SPE.Emitter.prototype.remove = function() {
+    'use strict';
     if ( this.group !== null ) {
         this.group.removeEmitter( this );
     }

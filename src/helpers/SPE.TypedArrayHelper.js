@@ -65,13 +65,13 @@ SPE.TypedArrayHelper.prototype.setSize = function( size, noComponentMultiply ) {
  * @returns {Object} The SPE.TypedArrayHelper instance.
  */
 SPE.TypedArrayHelper.prototype.splice = function( start, end ) {
+    'use strict';
     start *= this.componentSize;
     end *= this.componentSize;
 
     var data = [],
         array = this.array,
-        size = array.length,
-        difference = size - ( start + end );
+        size = array.length;
 
     for ( var i = 0; i < size; ++i ) {
         if ( i < start || i >= end ) {

@@ -497,12 +497,12 @@ SPE.Group.prototype.addPool = function( numEmitters, emitterOptions, createNew )
         emitter;
 
     // Save relevant settings and flags.
-    that._poolCreationSettings = emitterSettings;
+    that._poolCreationSettings = emitterOptions;
     that._createNewWhenPoolEmpty = !!createNew;
 
     // Create the emitters, add them to this group and the pool.
     for ( var i = 0; i < numEmitters; ++i ) {
-        emitter = new SPE.Emitter( emitterSettings );
+        emitter = new SPE.Emitter( emitterOptions );
         that.addEmitter( emitter );
         that.releaseIntoPool( emitter );
     }

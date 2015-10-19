@@ -150,13 +150,13 @@ SPE.TypedArrayHelper.prototype.setSize = function( size, noComponentMultiply ) {
  * @returns {Object} The SPE.TypedArrayHelper instance.
  */
 SPE.TypedArrayHelper.prototype.splice = function( start, end ) {
+    'use strict';
     start *= this.componentSize;
     end *= this.componentSize;
 
     var data = [],
         array = this.array,
-        size = array.length,
-        difference = size - ( start + end );
+        size = array.length;
 
     for ( var i = 0; i < size; ++i ) {
         if ( i < start || i >= end ) {
@@ -2187,12 +2187,12 @@ SPE.Group.prototype.addPool = function( numEmitters, emitterOptions, createNew )
         emitter;
 
     // Save relevant settings and flags.
-    that._poolCreationSettings = emitterSettings;
+    that._poolCreationSettings = emitterOptions;
     that._createNewWhenPoolEmpty = !!createNew;
 
     // Create the emitters, add them to this group and the pool.
     for ( var i = 0; i < numEmitters; ++i ) {
-        emitter = new SPE.Emitter( emitterSettings );
+        emitter = new SPE.Emitter( emitterOptions );
         that.addEmitter( emitter );
         that.releaseIntoPool( emitter );
     }
@@ -3035,6 +3035,7 @@ SPE.Emitter.prototype._resetUpdateFlags = function() {
 };
 
 SPE.Emitter.prototype._decrementParticleCount = function() {
+    'use strict';
     --this.activeParticleCount;
 
     // TODO:
@@ -3042,6 +3043,7 @@ SPE.Emitter.prototype._decrementParticleCount = function() {
 };
 
 SPE.Emitter.prototype._incrementParticleCount = function() {
+    'use strict';
     ++this.activeParticleCount;
 
     // TODO:
@@ -3237,6 +3239,7 @@ SPE.Emitter.prototype.disable = function() {
  * @see SPE.Group.prototype.removeEmitter
  */
 SPE.Emitter.prototype.remove = function() {
+    'use strict';
     if ( this.group !== null ) {
         this.group.removeEmitter( this );
     }

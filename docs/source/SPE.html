@@ -194,13 +194,13 @@ SPE.TypedArrayHelper.prototype.setSize = <span class="hljs-function"><span class
  * @returns {Object} The SPE.TypedArrayHelper instance.
  */</span>
 SPE.TypedArrayHelper.prototype.splice = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> start, end </span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
     start *= <span class="hljs-keyword">this</span>.componentSize;
     end *= <span class="hljs-keyword">this</span>.componentSize;
 
     <span class="hljs-keyword">var</span> data = [],
         array = <span class="hljs-keyword">this</span>.array,
-        size = array.length,
-        difference = size - ( start + end );
+        size = array.length;
 
     <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; size; ++i ) {
         <span class="hljs-keyword">if</span> ( i &lt; start || i &gt;= end ) {
@@ -3224,7 +3224,7 @@ SPE.Group.prototype.addPool = <span class="hljs-function"><span class="hljs-keyw
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    that._poolCreationSettings = emitterSettings;
+            <div class="content"><div class='highlight'><pre>    that._poolCreationSettings = emitterOptions;
     that._createNewWhenPoolEmpty = !!createNew;</pre></div></div>
             
         </li>
@@ -3241,7 +3241,7 @@ SPE.Group.prototype.addPool = <span class="hljs-function"><span class="hljs-keyw
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; numEmitters; ++i ) {
-        emitter = <span class="hljs-keyword">new</span> SPE.Emitter( emitterSettings );
+        emitter = <span class="hljs-keyword">new</span> SPE.Emitter( emitterOptions );
         that.addEmitter( emitter );
         that.releaseIntoPool( emitter );
     }
@@ -4331,6 +4331,7 @@ SPE.Emitter.prototype._resetBufferRanges = <span class="hljs-function"><span cla
 };
 
 SPE.Emitter.prototype._decrementParticleCount = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
     --<span class="hljs-keyword">this</span>.activeParticleCount;</pre></div></div>
             
         </li>
@@ -4352,6 +4353,7 @@ SPE.Emitter.prototype._decrementParticleCount = <span class="hljs-function"><spa
             <div class="content"><div class='highlight'><pre>};
 
 SPE.Emitter.prototype._incrementParticleCount = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
     ++<span class="hljs-keyword">this</span>.activeParticleCount;</pre></div></div>
             
         </li>
@@ -4742,6 +4744,7 @@ SPE.Emitter.prototype.disable = <span class="hljs-function"><span class="hljs-ke
  * @see SPE.Group.prototype.removeEmitter
  */</span>
 SPE.Emitter.prototype.remove = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
     <span class="hljs-keyword">if</span> ( <span class="hljs-keyword">this</span>.group !== <span class="hljs-literal">null</span> ) {
         <span class="hljs-keyword">this</span>.group.removeEmitter( <span class="hljs-keyword">this</span> );
     }
