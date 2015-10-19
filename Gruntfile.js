@@ -29,10 +29,13 @@ module.exports = function( grunt ) {
         min: {
             options: {
                 mangle: true,
+                exportAll: true,
                 compress: {
                     dead_code: true,
                 },
-                banner: licenseBanner
+                banner: licenseBanner,
+                report: 'min',
+                maxLineLen: 1000,
             },
             files: {}
         }
@@ -47,7 +50,8 @@ module.exports = function( grunt ) {
 
         concat: {
             options: {
-                separator: ';\n\n'
+                separator: '\n\n',
+                banner: licenseBanner,
             },
             dist: {
                 src: files,

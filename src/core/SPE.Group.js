@@ -291,8 +291,6 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         return;
     }
 
-    console.time( 'SPE.Group.prototype.addEmitter' );
-
 
     var attributes = this.attributes,
         start = attributes.position.getLength() / 3,
@@ -367,8 +365,6 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
 
     // Update the material since defines might have changed
     this.material.needsUpdate = true;
-
-    console.timeEnd( 'SPE.Group.prototype.addEmitter' );
 
     return this;
 };

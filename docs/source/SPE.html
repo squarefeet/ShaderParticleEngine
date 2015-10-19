@@ -30,7 +30,14 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/* Shader-Particle-Engine 1.0.0
+ * 
+ * (c) 2015 Luke Moody (http://www.github.com/squarefeet) &amp; Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
+ *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
+ *
+ * Shader-Particle-Engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
+ */</span>
+<span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
 
 <span class="hljs-comment">/**
  * @typedef {Number} distribution
@@ -125,7 +132,7 @@
 }
 <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( <span class="hljs-keyword">typeof</span> exports !== <span class="hljs-string">'undefined'</span> &amp;&amp; <span class="hljs-keyword">typeof</span> <span class="hljs-built_in">module</span> !== <span class="hljs-string">'undefined'</span> ) {
     <span class="hljs-built_in">module</span>.exports = SPE;
-};
+}
 
 <span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
 <span class="hljs-comment">/* globals SPE */</span>
@@ -458,7 +465,7 @@ SPE.TypedArrayHelper.prototype.getComponentValueAtIndex = <span class="hljs-func
 <span class="hljs-pi">    'use strict'</span>;
 
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.array.subarray( <span class="hljs-keyword">this</span>.indexOffset + ( index * <span class="hljs-keyword">this</span>.componentSize ) );
-};;
+};
 
 <span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
 <span class="hljs-comment">/* globals SPE */</span>
@@ -736,7 +743,7 @@ SPE.ShaderAttribute.prototype.getLength = <span class="hljs-function"><span clas
     }
 
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.typedArray.array.length;
-};;
+};
 
 <span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
 <span class="hljs-comment">/* globals SPE */</span>
@@ -1105,7 +1112,7 @@ from (link above).</p>
         <span class="hljs-string">''</span>,
         <span class="hljs-string">'    vec4 rotatedTexture = texture2D( texture, vUv );'</span>,
     ].join( <span class="hljs-string">'\n'</span> )
-};;
+};
 
 <span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
 <span class="hljs-comment">/* globals SPE */</span>
@@ -1484,7 +1491,7 @@ what frame of the texture the particle is using at it’s current position in ti
         <span class="hljs-string">'    gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );'</span>,
         <span class="hljs-string">'}'</span>
     ].join( <span class="hljs-string">'\n'</span> )
-};;
+};
 
 <span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
 <span class="hljs-comment">/* globals SPE */</span>
@@ -2351,7 +2358,7 @@ checking the type.</p>
             <span class="hljs-keyword">return</span> c.getHex();
         };
     }() )
-};;
+};
 
 <span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
 <span class="hljs-comment">/* globals SPE */</span>
@@ -2832,8 +2839,6 @@ of stopping execution if exceptions aren’t caught.</p>
         <span class="hljs-keyword">return</span>;
     }
 
-    <span class="hljs-built_in">console</span>.time( <span class="hljs-string">'SPE.Group.prototype.addEmitter'</span> );
-
 
     <span class="hljs-keyword">var</span> attributes = <span class="hljs-keyword">this</span>.attributes,
         start = attributes.position.getLength() / <span class="hljs-number">3</span>,
@@ -3035,8 +3040,6 @@ the typed arrays properly.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.material.needsUpdate = <span class="hljs-literal">true</span>;
-
-    <span class="hljs-built_in">console</span>.timeEnd( <span class="hljs-string">'SPE.Group.prototype.addEmitter'</span> );
 
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
 };
@@ -3386,7 +3389,7 @@ SPE.Group.prototype.tick = <span class="hljs-function"><span class="hljs-keyword
         emitter.tick( deltaTime );
         <span class="hljs-keyword">this</span>._updateBuffers( emitter );
     }
-};;
+};
 
 <span class="hljs-comment">/* jshint undef: true, unused: true, strict: true */</span>
 <span class="hljs-comment">/* globals SPE */</span>

@@ -1,3 +1,10 @@
+/* Shader-Particle-Engine 1.0.0
+ * 
+ * (c) 2015 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
+ *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
+ *
+ * Shader-Particle-Engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
+ */
 /* jshint undef: true, unused: true, strict: true */
 
 /**
@@ -81,7 +88,7 @@ if ( typeof define === 'function' && define.amd ) {
 }
 else if ( typeof exports !== 'undefined' && typeof module !== 'undefined' ) {
     module.exports = SPE;
-};
+}
 
 /* jshint undef: true, unused: true, strict: true */
 /* globals SPE */
@@ -414,7 +421,7 @@ SPE.TypedArrayHelper.prototype.getComponentValueAtIndex = function( index ) {
     'use strict';
 
     return this.array.subarray( this.indexOffset + ( index * this.componentSize ) );
-};;
+};
 
 /* jshint undef: true, unused: true, strict: true */
 /* globals SPE */
@@ -620,7 +627,7 @@ SPE.ShaderAttribute.prototype.getLength = function() {
     }
 
     return this.typedArray.array.length;
-};;
+};
 
 /* jshint undef: true, unused: true, strict: true */
 /* globals SPE */
@@ -854,7 +861,7 @@ SPE.shaderChunks = {
         '',
         '    vec4 rotatedTexture = texture2D( texture, vUv );',
     ].join( '\n' )
-};;
+};
 
 /* jshint undef: true, unused: true, strict: true */
 /* globals SPE */
@@ -1032,7 +1039,7 @@ SPE.shaders = {
         '    gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
         '}'
     ].join( '\n' )
-};;
+};
 
 /* jshint undef: true, unused: true, strict: true */
 /* globals SPE */
@@ -1686,7 +1693,7 @@ SPE.utils = {
             return c.getHex();
         };
     }() )
-};;
+};
 
 /* jshint undef: true, unused: true, strict: true */
 /* globals SPE */
@@ -1981,8 +1988,6 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         return;
     }
 
-    console.time( 'SPE.Group.prototype.addEmitter' );
-
 
     var attributes = this.attributes,
         start = attributes.position.getLength() / 3,
@@ -2057,8 +2062,6 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
 
     // Update the material since defines might have changed
     this.material.needsUpdate = true;
-
-    console.timeEnd( 'SPE.Group.prototype.addEmitter' );
 
     return this;
 };
@@ -2323,7 +2326,7 @@ SPE.Group.prototype.tick = function( dt ) {
         emitter.tick( deltaTime );
         this._updateBuffers( emitter );
     }
-};;
+};
 
 /* jshint undef: true, unused: true, strict: true */
 /* globals SPE */
