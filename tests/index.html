@@ -55,10 +55,10 @@
 				} ),
 
 				emitter = new SPE.Emitter( {
-					particleCount: 5000,
+					particleCount: 500,
 
 					maxAge: {
-						value: 3,
+						value: 2,
 						spread: 0
 					},
 
@@ -85,8 +85,8 @@
 					},
 
 					acceleration: {
-						value: new THREE.Vector3( 10, 0, 0 ),
-						spread: new THREE.Vector3( 0, 0, 0 ),
+						value: new THREE.Vector3( 0, 0, 0 ),
+						spread: new THREE.Vector3( 5, 0, 5 ),
 						distribution: SPE.distributions.DISC,
 						randomise: false
 					},
@@ -116,7 +116,7 @@
 					},
 
 					color: {
-						value: [ new THREE.Color( 1, 1, 0 ), new THREE.Color( 1, 0, 0 ), new THREE.Color( 0, 1, 0 ), new THREE.Color( 0, 1, 1 ) ]
+						value: [ new THREE.Color( 1, 1, 0 ), new THREE.Color( 0, 1, 1 ) ]
 					},
 
 					opacity: {

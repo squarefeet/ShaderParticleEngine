@@ -1,7 +1,3 @@
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
-
 /**
  * A helper to handle creating and updating a THREE.BufferAttribute instance.
  *

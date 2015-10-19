@@ -7,11 +7,11 @@
 	<p class="numParticles"></p>
 
     <!-- THREE.min.js r71 and FPS stats -->
-    <script type="text/javascript" src="./js/THREE-r71.min.js"></script>
+    <script type="text/javascript" src="./js/THREE-r72.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
 
 	<!-- ShaderParticles -->
-	<script type="text/javascript" src="../build/ShaderParticles.min.js"></script>
+	<script type="text/javascript" src="../build/SPE.min.js"></script>
 
 
 	<script type="text/javascript">
@@ -46,51 +46,54 @@
             return Math.random() * base - (base/2);
         }
 
+        function getRandomColor() {
+            var c = new THREE.Color();
+            c.setRGB( Math.random(), Math.random(), Math.random() );
+            return c;
+        }
+
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new SPE.Group({
-        		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 2
+        		texture: {
+                    value: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
+                }
         	});
 
             for( var i = 0; i < numEmitters; ++i ) {
             	emitter = new SPE.Emitter({
-            		position: new THREE.Vector3(
-                        getRandomNumber(window.innerWidth/5),
-                        getRandomNumber(window.innerHeight/5),
-                        getRandomNumber(200)
-                    ),
+                    maxAge: 2,
+            		position: {
+                        value: new THREE.Vector3(
+                            getRandomNumber(window.innerWidth/5),
+                            getRandomNumber(window.innerHeight/5),
+                            getRandomNumber(200)
+                        )
+                    },
 
-            		accelerationSpread: new THREE.Vector3(
-                        getRandomNumber(-10),
-                        getRandomNumber(-10),
-                        getRandomNumber(-10)
-                    ),
+            		acceleration:{
+                        spread: new THREE.Vector3(
+                            getRandomNumber(-10),
+                            getRandomNumber(-10),
+                            getRandomNumber(-10)
+                        )
+                    },
 
-                    velocitySpread: new THREE.Vector3(
-                        getRandomNumber(20),
-                        getRandomNumber(20),
-                        getRandomNumber(20)
-                    ),
+                    velocity: {
+                        spread: new THREE.Vector3(
+                            getRandomNumber(20),
+                            getRandomNumber(20),
+                            getRandomNumber(20)
+                        )
+                    },
 
-                    colorStart: (new THREE.Color()).setRGB(
-                        Math.random(),
-                        Math.random(),
-                        Math.random()
-                    ),
-                    colorEnd: (new THREE.Color()).setRGB(
-                        Math.random(),
-                        Math.random(),
-                        Math.random()
-                    ),
-            		sizeStart: 2,
-            		sizeEnd: 2,
+                    color: {
+                        value: [ getRandomColor(), getRandomColor() ]
+                    },
 
             		particleCount: 500,
 
-                    opacityStart: 0,
-                    opacityMiddle: 1,
-                    opacityEnd: 0
+                    opacity: [0, 1, 0]
             	});
 
             	particleGroup.addEmitter( emitter );

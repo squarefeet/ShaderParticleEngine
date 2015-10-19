@@ -1,4 +1,4 @@
-ShaderParticleEngine
+ShaderParticleEngine ![](https://travis-ci.org/squarefeet/ShaderParticleEngine.svg?branch=dev)
 ====================
 A GLSL-focused particle engine for THREE.js. Removes a lot of the heavy lifting away from the CPU and onto the GPU to save precious rendering time in busy scenes.
 

@@ -1,4 +1,6 @@
 module.exports = function( grunt ) {
+    'use strict';
+
     var packageJSON = grunt.file.readJSON( 'package.json' );
 
     var licenseBanner =
@@ -12,14 +14,14 @@ module.exports = function( grunt ) {
 
     // Specify input files and output paths
     var files = [
-            "src/SPE.js",
-            "src/helpers/SPE.TypedArrayHelper.js",
-            "src/helpers/SPE.ShaderAttribute.js",
-            "src/shaders/SPE.shaderChunks.js",
-            "src/shaders/SPE.shaders.js",
-            "src/core/SPE.utils.js",
-            "src/core/SPE.Group.js",
-            "src/core/SPE.Emitter.js",
+            'src/SPE.js',
+            'src/helpers/SPE.TypedArrayHelper.js',
+            'src/helpers/SPE.ShaderAttribute.js',
+            'src/shaders/SPE.shaderChunks.js',
+            'src/shaders/SPE.shaders.js',
+            'src/core/SPE.utils.js',
+            'src/core/SPE.Group.js',
+            'src/core/SPE.Emitter.js'
         ],
         outputPath = 'build/SPE.js',
         outputPathMin = outputPath.replace( '.js', '.min.js' );
@@ -84,5 +86,6 @@ module.exports = function( grunt ) {
     grunt.loadNpmTasks( 'grunt-jsdoc' );
     grunt.loadNpmTasks( 'grunt-docco2' );
 
-    grunt.registerTask( 'default', [ 'concat', 'uglify', 'jsdoc', 'docco' ] );
+    grunt.registerTask( 'default', [ 'concat', 'uglify' ] );
+    grunt.registerTask( 'docs', [ 'jsdoc', 'docco' ] );
 };

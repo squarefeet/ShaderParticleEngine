@@ -16,10 +16,10 @@
     "dojo" : false,
 
     "predef" : [ // Extra globals.
-        "ShaderParticleGroup",
-        "ShaderParticleEmitter",
-        "shaderParticleUtils",
-        "THREE"
+        "SPE",
+        "THREE",
+        "define",
+        "module"
     ],
 
     // Development.
@@ -27,8 +27,7 @@
     "devel" : true, // Allow development statements e.g. `console.log();`.
 
     // EcmaScript 5.
-    "es5" : false, // Allow EcmaScript 5 syntax.
-    "strict" : false, // Require `use strict` pragma in every file.
+    "strict" : true, // Require `use strict` pragma in every file.
     "globalstrict" : false, // Allow global "use strict" (also enables 'strict').
 
     // The Good Parts.
@@ -39,9 +38,9 @@
     "curly" : true, // Require {} for every new block or scope.
     "eqeqeq" : false, // Require triple equals i.e. `===`.
     "eqnull" : false, // Tolerate use of `== null`.
-    "evil" : true, // Tolerate use of `eval`.
+    "evil" : false, // Tolerate use of `eval`.
     "expr" : true, // Tolerate `ExpressionStatement` as Programs.
-    "forin" : false, // Tolerate `for in` loops without `hasOwnPrototype`.
+    "forin" : true, // Tolerate `for in` loops without `hasOwnPrototype`.
     "immed" : true, // Require immediate invocations to be wrapped in parens e.g. `( function(){}() );`
     "latedef" : true, // Prohibit variable use before definition.
     "loopfunc" : true, // Allow functions to be defined within loops.
@@ -61,5 +60,5 @@
     "onevar" : false, // Allow only one `var` statement per function.
     "plusplus" : false, // Prohibit use of `++` & `--`.
     "sub" : false, // Tolerate all forms of subscript notation besides dot notation e.g. `dict['key']` instead of `dict.key`.
-    "trailing" : true // Prohibit trailing whitespaces.
+    "trailing" : false // Prohibit trailing whitespaces.
 }

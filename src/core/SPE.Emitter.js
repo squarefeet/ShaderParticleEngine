@@ -1,6 +1,3 @@
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
 /**
  * An SPE.Emitter instance.
  * @typedef {Object} Emitter
@@ -352,7 +349,9 @@ SPE.Emitter = function( options ) {
     for ( var i in this.updateMap ) {
         // this.updateFlags[ i ] = false;
         // this.updateCounts[ i ] = 0;
-        this._createGetterSetters( this[ i ], i );
+        if ( this.updateMap.hasOwnProperty( i ) ) {
+            this._createGetterSetters( this[ i ], i );
+        }
     }
 
     this.bufferUpdateRanges = {};
@@ -378,43 +377,46 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
     var self = this;
 
     for ( var i in propObj ) {
-        var name = i.replace( '_', '' );
+        if ( propObj.hasOwnProperty( i ) ) {
 
-        Object.defineProperty( propObj, name, {
-            get: ( function( prop ) {
-                return function() {
-                    return this[ prop ];
-                };
-            }( i ) ),
+            var name = i.replace( '_', '' );
 
-            set: ( function( prop ) {
-                return function( value ) {
-                    var mapName = self.updateMap[ propName ],
-                        prevValue = this[ prop ],
-                        length = SPE.valueOverLifetimeLength;
+            Object.defineProperty( propObj, name, {
+                get: ( function( prop ) {
+                    return function() {
+                        return this[ prop ];
+                    };
+                }( i ) ),
 
-                    if ( prop === '_rotationCenter' ) {
-                        self.updateFlags.rotationCenter = true;
-                        self.updateCounts.rotationCenter = 0.0;
-                    }
-                    else if ( prop === '_randomise' ) {
-                        self.resetFlags[ mapName ] = value;
-                    }
-                    else {
-                        self.updateFlags[ mapName ] = true;
-                        self.updateCounts[ mapName ] = 0.0;
-                    }
+                set: ( function( prop ) {
+                    return function( value ) {
+                        var mapName = self.updateMap[ propName ],
+                            prevValue = this[ prop ],
+                            length = SPE.valueOverLifetimeLength;
 
-                    this[ prop ] = value;
+                        if ( prop === '_rotationCenter' ) {
+                            self.updateFlags.rotationCenter = true;
+                            self.updateCounts.rotationCenter = 0.0;
+                        }
+                        else if ( prop === '_randomise' ) {
+                            self.resetFlags[ mapName ] = value;
+                        }
+                        else {
+                            self.updateFlags[ mapName ] = true;
+                            self.updateCounts[ mapName ] = 0.0;
+                        }
 
-                    // If the previous value was an array, then make
-                    // sure the provided value is interpolated correctly.
-                    if ( Array.isArray( prevValue ) ) {
-                        SPE.utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length );
-                    }
-                };
-            }( i ) )
-        } );
+                        this[ prop ] = value;
+
+                        // If the previous value was an array, then make
+                        // sure the provided value is interpolated correctly.
+                        if ( Array.isArray( prevValue ) ) {
+                            SPE.utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length );
+                        }
+                    };
+                }( i ) )
+            } );
+        }
     }
 };
 

@@ -1,7 +1,3 @@
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
-
 /**
  * A bunch of utility functions used throughout the library.
  * @namespace

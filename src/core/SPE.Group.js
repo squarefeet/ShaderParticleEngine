@@ -1,6 +1,3 @@
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
 /**
  * An SPE.Group instance.
  * @typedef {Object} Group
@@ -244,23 +241,25 @@ SPE.Group.prototype._applyAttributesToGeometry = function() {
         geometryAttribute;
 
     for ( var attr in attributes ) {
-        attribute = attributes[ attr ];
+        if ( attributes.hasOwnProperty( attr ) ) {
+            attribute = attributes[ attr ];
 
-        // Update the array if this attribute exists on the geometry.
-        //
-        // This needs to be done because the attribute's typed array might have
-        // been resized and reinstantiated, and might now be looking at a
-        // different ArrayBuffer, so reference needs updating.
-        if ( geometryAttribute = geometryAttributes[ attr ] ) {
-            geometryAttribute.array = attribute.typedArray.array;
+            // Update the array if this attribute exists on the geometry.
+            //
+            // This needs to be done because the attribute's typed array might have
+            // been resized and reinstantiated, and might now be looking at a
+            // different ArrayBuffer, so reference needs updating.
+            if ( geometryAttribute = geometryAttributes[ attr ] ) {
+                geometryAttribute.array = attribute.typedArray.array;
+            }
+
+            // Add the attribute to the geometry if it doesn't already exist.
+            else {
+                geometry.addAttribute( attr, attribute.bufferAttribute );
+            }
+
+            attribute.bufferAttribute.needsUpdate = true;
         }
-
-        // Add the attribute to the geometry if it doesn't already exist.
-        else {
-            geometry.addAttribute( attr, attribute.bufferAttribute );
-        }
-
-        attribute.bufferAttribute.needsUpdate = true;
     }
 };
 
@@ -319,7 +318,9 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // Ensure the attributes and their BufferAttributes exist, and their
     // TypedArrays are of the correct size.
     for ( var attr in attributes ) {
-        attributes[ attr ]._createBufferAttribute( totalParticleCount );
+        if ( attributes.hasOwnProperty( attr ) ) {
+            attributes[ attr ]._createBufferAttribute( totalParticleCount );
+        }
     }
 
 
@@ -412,7 +413,9 @@ SPE.Group.prototype.removeEmitter = function( emitter ) {
     // The `.splice()` call here also marks each attribute's buffer
     // as needing to update it's entire contents.
     for ( var attr in this.attributes ) {
-        this.attributes[ attr ].splice( start, end );
+        if ( this.attributes.hasOwnProperty( attr ) ) {
+            this.attributes[ attr ].splice( start, end );
+        }
     }
 
     // Reset the emitter's group reference.

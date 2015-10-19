@@ -1,5 +1,3 @@
-/* jshint undef: true, unused: true, strict: true */
-
 /**
  * @typedef {Number} distribution
  * @property {Number} SPE.distributions.BOX Values will be distributed within a box.

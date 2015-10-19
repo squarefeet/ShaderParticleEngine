@@ -1,6 +1,3 @@
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
 /**
  * A helper class for TypedArrays.
  *

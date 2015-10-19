@@ -5,8 +5,6 @@
  *
  * Shader-Particle-Engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
  */
-/* jshint undef: true, unused: true, strict: true */
-
 /**
  * @typedef {Number} distribution
  * @property {Number} SPE.distributions.BOX Values will be distributed within a box.
@@ -89,9 +87,6 @@ if ( typeof define === 'function' && define.amd ) {
 else if ( typeof exports !== 'undefined' && typeof module !== 'undefined' ) {
     module.exports = SPE;
 }
-
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
 
 /**
  * A helper class for TypedArrays.
@@ -423,10 +418,6 @@ SPE.TypedArrayHelper.prototype.getComponentValueAtIndex = function( index ) {
     return this.array.subarray( this.indexOffset + ( index * this.componentSize ) );
 };
 
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
-
 /**
  * A helper to handle creating and updating a THREE.BufferAttribute instance.
  *
@@ -628,9 +619,6 @@ SPE.ShaderAttribute.prototype.getLength = function() {
 
     return this.typedArray.array.length;
 };
-
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
 
 SPE.shaderChunks = {
     // Register color-packing define statements.
@@ -863,9 +851,6 @@ SPE.shaderChunks = {
     ].join( '\n' )
 };
 
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
 SPE.shaders = {
     vertex: [
         SPE.shaderChunks.defines,
@@ -1040,10 +1025,6 @@ SPE.shaders = {
         '}'
     ].join( '\n' )
 };
-
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
 
 /**
  * A bunch of utility functions used throughout the library.
@@ -1695,9 +1676,6 @@ SPE.utils = {
     }() )
 };
 
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
 /**
  * An SPE.Group instance.
  * @typedef {Object} Group
@@ -1941,23 +1919,25 @@ SPE.Group.prototype._applyAttributesToGeometry = function() {
         geometryAttribute;
 
     for ( var attr in attributes ) {
-        attribute = attributes[ attr ];
+        if ( attributes.hasOwnProperty( attr ) ) {
+            attribute = attributes[ attr ];
 
-        // Update the array if this attribute exists on the geometry.
-        //
-        // This needs to be done because the attribute's typed array might have
-        // been resized and reinstantiated, and might now be looking at a
-        // different ArrayBuffer, so reference needs updating.
-        if ( geometryAttribute = geometryAttributes[ attr ] ) {
-            geometryAttribute.array = attribute.typedArray.array;
+            // Update the array if this attribute exists on the geometry.
+            //
+            // This needs to be done because the attribute's typed array might have
+            // been resized and reinstantiated, and might now be looking at a
+            // different ArrayBuffer, so reference needs updating.
+            if ( geometryAttribute = geometryAttributes[ attr ] ) {
+                geometryAttribute.array = attribute.typedArray.array;
+            }
+
+            // Add the attribute to the geometry if it doesn't already exist.
+            else {
+                geometry.addAttribute( attr, attribute.bufferAttribute );
+            }
+
+            attribute.bufferAttribute.needsUpdate = true;
         }
-
-        // Add the attribute to the geometry if it doesn't already exist.
-        else {
-            geometry.addAttribute( attr, attribute.bufferAttribute );
-        }
-
-        attribute.bufferAttribute.needsUpdate = true;
     }
 };
 
@@ -2016,7 +1996,9 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // Ensure the attributes and their BufferAttributes exist, and their
     // TypedArrays are of the correct size.
     for ( var attr in attributes ) {
-        attributes[ attr ]._createBufferAttribute( totalParticleCount );
+        if ( attributes.hasOwnProperty( attr ) ) {
+            attributes[ attr ]._createBufferAttribute( totalParticleCount );
+        }
     }
 
 
@@ -2109,7 +2091,9 @@ SPE.Group.prototype.removeEmitter = function( emitter ) {
     // The `.splice()` call here also marks each attribute's buffer
     // as needing to update it's entire contents.
     for ( var attr in this.attributes ) {
-        this.attributes[ attr ].splice( start, end );
+        if ( this.attributes.hasOwnProperty( attr ) ) {
+            this.attributes[ attr ].splice( start, end );
+        }
     }
 
     // Reset the emitter's group reference.
@@ -2327,9 +2311,6 @@ SPE.Group.prototype.tick = function( dt ) {
         this._updateBuffers( emitter );
     }
 };
-
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
 
 /**
  * An SPE.Emitter instance.
@@ -2682,7 +2663,9 @@ SPE.Emitter = function( options ) {
     for ( var i in this.updateMap ) {
         // this.updateFlags[ i ] = false;
         // this.updateCounts[ i ] = 0;
-        this._createGetterSetters( this[ i ], i );
+        if ( this.updateMap.hasOwnProperty( i ) ) {
+            this._createGetterSetters( this[ i ], i );
+        }
     }
 
     this.bufferUpdateRanges = {};
@@ -2708,43 +2691,46 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
     var self = this;
 
     for ( var i in propObj ) {
-        var name = i.replace( '_', '' );
+        if ( propObj.hasOwnProperty( i ) ) {
 
-        Object.defineProperty( propObj, name, {
-            get: ( function( prop ) {
-                return function() {
-                    return this[ prop ];
-                };
-            }( i ) ),
+            var name = i.replace( '_', '' );
 
-            set: ( function( prop ) {
-                return function( value ) {
-                    var mapName = self.updateMap[ propName ],
-                        prevValue = this[ prop ],
-                        length = SPE.valueOverLifetimeLength;
+            Object.defineProperty( propObj, name, {
+                get: ( function( prop ) {
+                    return function() {
+                        return this[ prop ];
+                    };
+                }( i ) ),
 
-                    if ( prop === '_rotationCenter' ) {
-                        self.updateFlags.rotationCenter = true;
-                        self.updateCounts.rotationCenter = 0.0;
-                    }
-                    else if ( prop === '_randomise' ) {
-                        self.resetFlags[ mapName ] = value;
-                    }
-                    else {
-                        self.updateFlags[ mapName ] = true;
-                        self.updateCounts[ mapName ] = 0.0;
-                    }
+                set: ( function( prop ) {
+                    return function( value ) {
+                        var mapName = self.updateMap[ propName ],
+                            prevValue = this[ prop ],
+                            length = SPE.valueOverLifetimeLength;
 
-                    this[ prop ] = value;
+                        if ( prop === '_rotationCenter' ) {
+                            self.updateFlags.rotationCenter = true;
+                            self.updateCounts.rotationCenter = 0.0;
+                        }
+                        else if ( prop === '_randomise' ) {
+                            self.resetFlags[ mapName ] = value;
+                        }
+                        else {
+                            self.updateFlags[ mapName ] = true;
+                            self.updateCounts[ mapName ] = 0.0;
+                        }
 
-                    // If the previous value was an array, then make
-                    // sure the provided value is interpolated correctly.
-                    if ( Array.isArray( prevValue ) ) {
-                        SPE.utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length );
-                    }
-                };
-            }( i ) )
-        } );
+                        this[ prop ] = value;
+
+                        // If the previous value was an array, then make
+                        // sure the provided value is interpolated correctly.
+                        if ( Array.isArray( prevValue ) ) {
+                            SPE.utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length );
+                        }
+                    };
+                }( i ) )
+            } );
+        }
     }
 };
 

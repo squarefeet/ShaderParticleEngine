@@ -1,6 +1,3 @@
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
 SPE.shaders = {
     vertex: [
         SPE.shaderChunks.defines,

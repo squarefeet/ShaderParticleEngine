@@ -1,6 +1,3 @@
-/* jshint undef: true, unused: true, strict: true */
-/* globals SPE */
-
 SPE.shaderChunks = {
     // Register color-packing define statements.
     defines: [
