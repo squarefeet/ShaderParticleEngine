@@ -2359,6 +2359,8 @@ SPE.Group.prototype.tick = function( dt ) {
  *                                          emitted, where 0 is 0%, and 1 is 100%.
  *                                          For example, having an emitter with 100 particles, a maxAge of 2, yields a particlesPerSecond
  *                                          value of 50. Setting `activeMultiplier` to 0.5, then, will only emit 25 particles per second (0.5 = 50%).
+ *                                          Values greater than 1 will emulate a burst of particles, causing the emitter to run out of particles
+ *                                          before it's next activation cycle.
  *
  *
  * @property {Object} [maxAge={}] An object describing the particle's maximum age in seconds.
