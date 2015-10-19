@@ -8,7 +8,8 @@ SPE Dev Todo List
 * Add unit tests.
 * Look into using FBO to store particle positions.
 	* Will enable Curl Noise, Gravity Wells, etc.
-* Full documentation.
+* ~~Full documentation.~~
+* Tutorials/guides.
 * Triangle distribution option.
 * Angle velocity (see [here](https://github.com/squarefeet/ShaderParticleEngine/pull/25)).
 * Look into adding proper angleAlignVelocity support.
