@@ -65,4 +65,4 @@ Most of the above properties can be randomised through use of a `spread` propert
 
 The general configuration properties consist of `duration`, `isStatic`, `particleCount`, and `activeMultiplier`.
 
-For more information on an emitter's properties and available values and types, see the [API documentation](./api/global.html#EmitterOptions)
+For more information on an emitter's properties and available values and types, see the [API documentation](https://squarefeet.github.io/ShaderParticleEngine/docs/api/global.html#EmitterOptions)
