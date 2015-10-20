@@ -116,7 +116,6 @@ SPE.shaderChunks = {
         '       shouldApplyValue = and( when_ge( deltaAge, fIndex ), when_lt( deltaAge, fIndex + 1.0 ) );',
         '       value += shouldApplyValue * mix( attr[ i ], attr[ i + 1 ], deltaAge - fIndex );',
         '    }',
-
         '    return value;',
         '}',
     ].join( '\n' ),

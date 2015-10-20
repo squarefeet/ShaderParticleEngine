@@ -98,9 +98,13 @@ SPE.ShaderAttribute.prototype.flagUpdate = function() {
         range = attr.updateRange;
 
     range.offset = this.updateMin;
-    range.count = ( this.updateMax - this.updateMin ) + this.componentSize;
+    range.count = Math.min( ( this.updateMax - this.updateMin ) + this.componentSize, this.typedArray.array.length );
+    // console.log( range.offset, range.count, this.typedArray.array.length );
+    // console.log( 'flagUpdate:', range.offset, range.count );
     attr.needsUpdate = true;
 };
+
+
 
 /**
  * Reset the index update counts for this attribute
@@ -110,6 +114,10 @@ SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
 
     this.updateMin = 0;
     this.updateMax = 0;
+};
+
+SPE.ShaderAttribute.prototype.resetDynamic = function() {
+    this.bufferAttribute.dynamic = this.dynamicBuffer;
 };
 
 /**
@@ -124,8 +132,14 @@ SPE.ShaderAttribute.prototype.splice = function( start, end ) {
 
     // Reset the reference to the attribute's typed array
     // since it has probably changed.
+    this.forceUpdateAll();
+};
+
+SPE.ShaderAttribute.prototype.forceUpdateAll = function() {
     this.bufferAttribute.array = this.typedArray.array;
+    this.bufferAttribute.updateRange.offset = 0;
     this.bufferAttribute.updateRange.count = -1;
+    this.bufferAttribute.dynamic = false;
     this.bufferAttribute.needsUpdate = true;
 };
 
@@ -178,6 +192,7 @@ SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
     // flag that it needs updating on the next render
     // cycle.
     if ( this.bufferAttribute !== null ) {
+        this.bufferAttribute.array = this.typedArray.array;
         this.bufferAttribute.needsUpdate = true;
         return;
     }

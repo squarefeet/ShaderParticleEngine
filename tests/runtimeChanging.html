@@ -20,15 +20,15 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.js"></script>
 		<script type="text/javascript" src="../examples/js/THREE-r72.js"></script>
 		<script type="text/javascript" src="../examples/js/Stats.min.js"></script>
-		<!-- <script type="text/javascript" src="../src/SPE.js"></script>
+		<script type="text/javascript" src="../src/SPE.js"></script>
 		<script type="text/javascript" src="../src/helpers/SPE.TypedArrayHelper.js"></script>
         <script type="text/javascript" src="../src/helpers/SPE.ShaderAttribute.js"></script>
         <script type="text/javascript" src="../src/shaders/SPE.shaderChunks.js"></script>
         <script type="text/javascript" src="../src/shaders/SPE.shaders.js"></script>
         <script type="text/javascript" src="../src/core/SPE.utils.js"></script>
         <script type="text/javascript" src="../src/core/SPE.Group.js"></script>
-        <script type="text/javascript" src="../src/core/SPE.Emitter.js"></script> -->
-        <script type="text/javascript" src="../build/SPE.min.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.Emitter.js"></script>
+        <!-- <script type="text/javascript" src="../build/SPE.min.js"></script> -->
 
 		<script type="text/javascript">
 			var scene = new THREE.Scene(),
@@ -38,7 +38,6 @@
 				clock = new THREE.Clock(),
 
 				group = new SPE.Group( {
-					// Possible API for animated textures...
 					texture: {
 						value: THREE.ImageUtils.loadTexture( '../../examples/img/sprite-flame2.jpg' ),
 						frames: new THREE.Vector2( 8, 4 ),
@@ -69,7 +68,7 @@
 						spread: new THREE.Vector3( 10, 0, 0 ),
 						spreadClamp: new THREE.Vector3( 0, 0, 0 ),
 						distribution: SPE.distributions.BOX,
-						randomise: false
+						randomise: true
 					},
 					radius: {
 						value: 5,

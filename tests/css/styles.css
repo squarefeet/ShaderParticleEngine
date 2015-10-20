@@ -1,0 +1,10 @@
+body {
+	margin: 0;
+	overflow: hidden;
+}
+
+#stats {
+	position: absolute;
+	top: 0;
+	z-index: 2;
+}

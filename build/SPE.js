@@ -146,32 +146,6 @@ SPE.TypedArrayHelper.prototype.setSize = function( size, noComponentMultiply ) {
 };
 
 /**
- * Perform a splice operation on this array's buffer.
- * @param  {Number} start The start index of the splice. Will be multiplied by the number of components for this attribute.
- * @param  {Number} end The end index of the splice. Will be multiplied by the number of components for this attribute.
- * @returns {Object} The SPE.TypedArrayHelper instance.
- */
-SPE.TypedArrayHelper.prototype.splice = function( start, end ) {
-    'use strict';
-    start *= this.componentSize;
-    end *= this.componentSize;
-
-    var data = [],
-        array = this.array,
-        size = array.length;
-
-    for ( var i = 0; i < size; ++i ) {
-        if ( i < start || i >= end ) {
-            data.push( array[ i ] );
-        }
-    }
-
-    this.setFromArray( 0, data );
-
-    return this;
-};
-
-/**
  * Shrinks the internal array.
  *
  * @param  {Number} size The new size of the typed array. Must be smaller than `this.array.length`.
@@ -199,6 +173,34 @@ SPE.TypedArrayHelper.prototype.grow = function( size ) {
     newArray.set( existingArray );
     this.array = newArray;
     this.size = size;
+
+    return this;
+};
+
+
+/**
+ * Perform a splice operation on this array's buffer.
+ * @param  {Number} start The start index of the splice. Will be multiplied by the number of components for this attribute.
+ * @param  {Number} end The end index of the splice. Will be multiplied by the number of components for this attribute.
+ * @returns {Object} The SPE.TypedArrayHelper instance.
+ */
+SPE.TypedArrayHelper.prototype.splice = function( start, end ) {
+    'use strict';
+    start *= this.componentSize;
+    end *= this.componentSize;
+
+    var data = [],
+        array = this.array,
+        size = array.length;
+
+    for ( var i = 0; i < size; ++i ) {
+        if ( i < start || i >= end ) {
+            data.push( array[ i ] );
+        }
+        // array[ i ] = 0;
+    }
+
+    this.setFromArray( 0, data );
 
     return this;
 };
@@ -518,9 +520,13 @@ SPE.ShaderAttribute.prototype.flagUpdate = function() {
         range = attr.updateRange;
 
     range.offset = this.updateMin;
-    range.count = ( this.updateMax - this.updateMin ) + this.componentSize;
+    range.count = Math.min( ( this.updateMax - this.updateMin ) + this.componentSize, this.typedArray.array.length );
+    // console.log( range.offset, range.count, this.typedArray.array.length );
+    // console.log( 'flagUpdate:', range.offset, range.count );
     attr.needsUpdate = true;
 };
+
+
 
 /**
  * Reset the index update counts for this attribute
@@ -530,6 +536,10 @@ SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
 
     this.updateMin = 0;
     this.updateMax = 0;
+};
+
+SPE.ShaderAttribute.prototype.resetDynamic = function() {
+    this.bufferAttribute.dynamic = this.dynamicBuffer;
 };
 
 /**
@@ -544,8 +554,14 @@ SPE.ShaderAttribute.prototype.splice = function( start, end ) {
 
     // Reset the reference to the attribute's typed array
     // since it has probably changed.
+    this.forceUpdateAll();
+};
+
+SPE.ShaderAttribute.prototype.forceUpdateAll = function() {
     this.bufferAttribute.array = this.typedArray.array;
+    this.bufferAttribute.updateRange.offset = 0;
     this.bufferAttribute.updateRange.count = -1;
+    this.bufferAttribute.dynamic = false;
     this.bufferAttribute.needsUpdate = true;
 };
 
@@ -598,6 +614,7 @@ SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
     // flag that it needs updating on the next render
     // cycle.
     if ( this.bufferAttribute !== null ) {
+        this.bufferAttribute.array = this.typedArray.array;
         this.bufferAttribute.needsUpdate = true;
         return;
     }
@@ -738,7 +755,6 @@ SPE.shaderChunks = {
         '       shouldApplyValue = and( when_ge( deltaAge, fIndex ), when_lt( deltaAge, fIndex + 1.0 ) );',
         '       value += shouldApplyValue * mix( attr[ i ], attr[ i + 1 ], deltaAge - fIndex );',
         '    }',
-
         '    return value;',
         '}',
     ].join( '\n' ),
@@ -1265,30 +1281,24 @@ SPE.utils = {
         var epsilon = 0.00001,
             result = value;
 
-        if ( value === 0 ) {
-            result = randomise ? Math.random() * epsilon * 10 : epsilon;
+        result = randomise ? Math.random() * epsilon * 10 : epsilon;
+
+        if ( value < 0 && value > -epsilon ) {
+            result = -result;
         }
 
-        else if ( value > 0 && value < epsilon ) {
-            result = randomise ? Math.random() * epsilon * 10 : epsilon;
-        }
-        else if ( value < 0 && value > -epsilon ) {
-            result = -( randomise ? Math.random() * epsilon * 10 : epsilon );
-        }
+        // if ( value === 0 ) {
+        //     result = randomise ? Math.random() * epsilon * 10 : epsilon;
+        // }
+        // else if ( value > 0 && value < epsilon ) {
+        //     result = randomise ? Math.random() * epsilon * 10 : epsilon;
+        // }
+        // else if ( value < 0 && value > -epsilon ) {
+        //     result = -( randomise ? Math.random() * epsilon * 10 : epsilon );
+        // }
 
         return result;
     },
-
-    // Linearly interpolate two values.
-    //
-    // `start` and `end` values MUST be of the same type/instance
-    //
-    // Supported types/instances:
-    //  - Number
-    //  - THREE.Vector2
-    //  - THREE.Vector3
-    //  - THREE.Vector4
-    //  - THREE.Color
 
     /**
      * Linearly interpolates two values of various types. The given values
@@ -1351,7 +1361,6 @@ SPE.utils = {
      */
     lerp: function( start, end, delta ) {
         'use strict';
-
         return start + ( ( end - start ) * delta );
     },
 
@@ -1365,11 +1374,13 @@ SPE.utils = {
     roundToNearestMultiple: function( n, multiple ) {
         'use strict';
 
+        var remainder = 0;
+
         if ( multiple === 0 ) {
             return n;
         }
 
-        var remainder = Math.abs( n ) % multiple;
+        remainder = Math.abs( n ) % multiple;
 
         if ( remainder === 0 ) {
             return n;
@@ -1430,7 +1441,6 @@ SPE.utils = {
      */
     randomFloat: function( base, spread ) {
         'use strict';
-
         return base + spread * ( Math.random() - 0.5 );
     },
 
@@ -1453,11 +1463,16 @@ SPE.utils = {
             y = base.y + ( Math.random() * spread.y - ( spread.y * 0.5 ) ),
             z = base.z + ( Math.random() * spread.z - ( spread.z * 0.5 ) );
 
+        // var x = this.randomFloat( base.x, spread.x ),
+        // y = this.randomFloat( base.y, spread.y ),
+        // z = this.randomFloat( base.z, spread.z );
+
         if ( spreadClamp ) {
             x = -spreadClamp.x * 0.5 + this.roundToNearestMultiple( x, spreadClamp.x );
             y = -spreadClamp.y * 0.5 + this.roundToNearestMultiple( y, spreadClamp.y );
             z = -spreadClamp.z * 0.5 + this.roundToNearestMultiple( z, spreadClamp.z );
         }
+
         attribute.typedArray.setVec3Components( index, x, y, z );
     },
 
@@ -1507,9 +1522,9 @@ SPE.utils = {
 
                 workingColor.copy( base[ i ] );
 
-                workingColor.r += ( Math.random() * spreadVector.x ) - ( spreadVector.x / 2 );
-                workingColor.g += ( Math.random() * spreadVector.y ) - ( spreadVector.y / 2 );
-                workingColor.b += ( Math.random() * spreadVector.z ) - ( spreadVector.z / 2 );
+                workingColor.r += ( Math.random() * spreadVector.x ) - ( spreadVector.x * 0.5 );
+                workingColor.g += ( Math.random() * spreadVector.y ) - ( spreadVector.y * 0.5 );
+                workingColor.b += ( Math.random() * spreadVector.z ) - ( spreadVector.z * 0.5 );
 
                 workingColor.r = this.clamp( workingColor.r, 0, 1 );
                 workingColor.g = this.clamp( workingColor.g, 0, 1 );
@@ -1671,6 +1686,7 @@ SPE.utils = {
             v.normalize();
 
             c.setRGB( v.x, v.y, v.z );
+
             return c.getHex();
         };
     }() )
@@ -1763,6 +1779,8 @@ SPE.Group = function( options ) {
     this.hasPerspective = utils.ensureTypedArg( options.hasPerspective, types.BOOLEAN, true );
     this.colorize = utils.ensureTypedArg( options.colorize, types.BOOLEAN, true );
 
+    this.maxParticleCount = utils.ensureTypedArg( options.maxParticleCount, types.NUMBER, null );
+
 
     // Set properties used to define the ShaderMaterial's appearance.
     this.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.AdditiveBlending );
@@ -1782,6 +1800,15 @@ SPE.Group = function( options ) {
     this._pool = [];
     this._poolCreationSettings = null;
     this._createNewWhenPoolEmpty = 0;
+
+    // Whether all attributes should be forced to updated
+    // their entire buffer contents on the next tick.
+    //
+    // Used when an emitter is removed.
+    this._attributesNeedRefresh = false;
+    this._attributesNeedDynamicReset = false;
+
+    this.particleCount = 0;
 
 
     // Map of uniforms to be applied to the ShaderMaterial instance.
@@ -1854,7 +1881,7 @@ SPE.Group = function( options ) {
         params: new SPE.ShaderAttribute( 'v4', true ), // Holds (alive, age, delay, wiggle)
         size: new SPE.ShaderAttribute( 'v4', true ),
         angle: new SPE.ShaderAttribute( 'v4', true ),
-        color: new SPE.ShaderAttribute( 'v4' ),
+        color: new SPE.ShaderAttribute( 'v4', true ),
         opacity: new SPE.ShaderAttribute( 'v4', true )
     };
 
@@ -1880,6 +1907,10 @@ SPE.Group = function( options ) {
     // the geometry and material are given to the latter.
     this.geometry = new THREE.BufferGeometry();
     this.mesh = new THREE.Points( this.geometry, this.material );
+
+    if ( this.maxParticleCount === null ) {
+        console.warn( 'SPE.Group: No maxParticleCount specified. Adding emitters after rendering will probably cause errors.' );
+    }
 };
 
 SPE.Group.constructor = SPE.Group;
@@ -1918,27 +1949,37 @@ SPE.Group.prototype._applyAttributesToGeometry = function() {
         attribute,
         geometryAttribute;
 
+    // Loop through all the shader attributes and assign (or re-assign)
+    // typed array buffers to each one.
     for ( var attr in attributes ) {
         if ( attributes.hasOwnProperty( attr ) ) {
             attribute = attributes[ attr ];
+            geometryAttribute = geometryAttributes[ attr ];
 
             // Update the array if this attribute exists on the geometry.
             //
             // This needs to be done because the attribute's typed array might have
             // been resized and reinstantiated, and might now be looking at a
             // different ArrayBuffer, so reference needs updating.
-            if ( geometryAttribute = geometryAttributes[ attr ] ) {
+            if ( geometryAttribute ) {
                 geometryAttribute.array = attribute.typedArray.array;
             }
 
-            // Add the attribute to the geometry if it doesn't already exist.
+            // // Add the attribute to the geometry if it doesn't already exist.
             else {
                 geometry.addAttribute( attr, attribute.bufferAttribute );
             }
 
+            // Mark the attribute as needing an update the next time a frame is rendered.
             attribute.bufferAttribute.needsUpdate = true;
         }
     }
+
+    // Mark the draw range on the geometry. This will ensure
+    // only the values in the attribute buffers that are
+    // associated with a particle will be used in THREE's
+    // render cycle.
+    this.geometry.setDrawRange( 0, this.particleCount );
 };
 
 /**
@@ -1959,19 +2000,33 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
         console.error( '`emitter` argument must be instance of SPE.Emitter. Was provided with:', emitter );
         return;
     }
+
+    // If the emitter already exists as a member of this group, then
+    // stop here, we don't want to add it again.
     else if ( this.emitterIDs.indexOf( emitter.uuid ) > -1 ) {
-        console.warn( 'Emitter already exists in this group. Will not add again.' );
+        console.error( 'Emitter already exists in this group. Will not add again.' );
         return;
     }
+
+    // And finally, if the emitter is a member of another group,
+    // don't add it to this group.
     else if ( emitter.group !== null ) {
         console.error( 'Emitter already belongs to another group. Will not add to requested group.' );
         return;
     }
 
-
     var attributes = this.attributes,
-        start = attributes.position.getLength() / 3,
-        totalParticleCount = start + emitter.particleCount;
+        start = this.particleCount,
+        end = start + emitter.particleCount;
+
+    // Update this group's particle count.
+    this.particleCount = end;
+
+    // Emit a warning if the emitter being added will exceed the buffer sizes specified.
+    if ( this.maxParticleCount !== null && this.particleCount > this.maxParticleCount ) {
+        console.warn( 'SPE.Group: maxParticleCount exceeded. Requesting', this.particleCount, 'particles, can support only', this.maxParticleCount );
+    }
+
 
     // Set the `particlesPerSecond` value (PPS) on the emitter.
     // It's used to determine how many particles to release
@@ -1997,38 +2052,28 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     // TypedArrays are of the correct size.
     for ( var attr in attributes ) {
         if ( attributes.hasOwnProperty( attr ) ) {
-            attributes[ attr ]._createBufferAttribute( totalParticleCount );
+            // When creating a buffer, pass through the maxParticle count
+            // if one is specified.
+            attributes[ attr ]._createBufferAttribute(
+                this.maxParticleCount !== null ?
+                this.maxParticleCount :
+                this.particleCount
+            );
         }
     }
 
-
-
     // Loop through each particle this emitter wants to have, and create the attributes values,
     // storing them in the TypedArrays that each attribute holds.
-    //
-    // TODO: Optimise this!
-    for ( var i = start, relativeIndex, particleStartTime; i < totalParticleCount; ++i ) {
-        relativeIndex = i - start;
-        particleStartTime = relativeIndex / emitter.particlesPerSecond;
-
+    for ( var i = start, relativeIndex, particleStartTime; i < end; ++i ) {
         emitter._assignPositionValue( i );
         emitter._assignForceValue( i, 'velocity' );
         emitter._assignForceValue( i, 'acceleration' );
-        emitter._assignLifetimeValue( i, 'opacity' );
-        emitter._assignLifetimeValue( i, 'size' );
+        emitter._assignAbsLifetimeValue( i, 'opacity' );
+        emitter._assignAbsLifetimeValue( i, 'size' );
         emitter._assignAngleValue( i );
         emitter._assignRotationValue( i );
         emitter._assignParamsValue( i );
         emitter._assignColorValue( i );
-
-        // alive, age, maxAge, wiggle
-        // attributes.params.typedArray.setVec4Components( i,
-        //     emitter.isStatic ? 1 : 0,
-        //     0,
-        //     Math.abs( utils.randomFloat( emitter.maxAge._value, emitter.maxAge._spread ) ),
-        //     utils.randomFloat( emitter.wiggle._value, emitter.wiggle._spread )
-        // );
-
     }
 
     // Update the geometry and make sure the attributes are referencing
@@ -2044,7 +2089,10 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
 
     // Update the material since defines might have changed
     this.material.needsUpdate = true;
+    this.geometry.needsUpdate = true;
+    this._attributesNeedRefresh = true;
 
+    // Return the group to enable chaining.
     return this;
 };
 
@@ -2069,21 +2117,26 @@ SPE.Group.prototype.removeEmitter = function( emitter ) {
         console.error( '`emitter` argument must be instance of SPE.Emitter. Was provided with:', emitter );
         return;
     }
+
+    // Issue an error if the emitter isn't a member of this group.
     else if ( emitterIndex === -1 ) {
-        console.warn( 'Emitter does not exist in this group. Will not remove.' );
+        console.error( 'Emitter does not exist in this group. Will not remove.' );
         return;
     }
 
-    // Kill all particles.
+    // Kill all particles by marking them as dead
+    // and their age as 0.
     var start = emitter.attributeOffset,
         end = start + emitter.particleCount,
         params = this.attributes.params.typedArray;
 
+    // Set alive and age to zero.
     for ( var i = start; i < end; ++i ) {
         params.array[ i * 4 ] = 0.0;
         params.array[ i * 4 + 1 ] = 0.0;
     }
 
+    // Remove the emitter from this group's "store".
     this.emitters.splice( emitterIndex, 1 );
     this.emitterIDs.splice( emitterIndex, 1 );
 
@@ -2096,8 +2149,15 @@ SPE.Group.prototype.removeEmitter = function( emitter ) {
         }
     }
 
-    // Reset the emitter's group reference.
-    emitter.group = null;
+    // Ensure this group's particle count is correct.
+    this.particleCount -= emitter.particleCount;
+
+    // Call the emitter's remove method.
+    emitter._onRemove();
+
+    // Set a flag to indicate that the attribute buffers should
+    // be updated in their entirety on the next frame.
+    this._attributesNeedRefresh = true;
 };
 
 
@@ -2111,15 +2171,14 @@ SPE.Group.prototype.removeEmitter = function( emitter ) {
 SPE.Group.prototype.getFromPool = function() {
     'use strict';
 
-    var that = this,
-        pool = that._pool,
-        createNew = that._createNewWhenPoolEmpty;
+    var pool = this._pool,
+        createNew = this._createNewWhenPoolEmpty;
 
     if ( pool.length ) {
         return pool.pop();
     }
     else if ( createNew ) {
-        return new SPE.Emitter( that._poolCreationSettings );
+        return new SPE.Emitter( this._poolCreationSettings );
     }
 
     return null;
@@ -2154,7 +2213,6 @@ SPE.Group.prototype.releaseIntoPool = function( emitter ) {
  */
 SPE.Group.prototype.getPool = function() {
     'use strict';
-
     return this._pool;
 };
 
@@ -2163,28 +2221,32 @@ SPE.Group.prototype.getPool = function() {
  * Add a pool of emitters to this particle group
  *
  * @param {Number} numEmitters      The number of emitters to add to the pool.
- * @param {EmitterOptions} emitterOptions  An object describing the options to pass to each emitter.
+ * @param {EmitterOptions|Array} emitterOptions  An object, or array of objects, describing the options to pass to each emitter.
  * @param {Boolean} createNew       Should a new emitter be created if the pool runs out?
  * @return {Group} This group instance.
  */
 SPE.Group.prototype.addPool = function( numEmitters, emitterOptions, createNew ) {
     'use strict';
 
-    var that = this,
-        emitter;
+    var emitter;
 
     // Save relevant settings and flags.
-    that._poolCreationSettings = emitterOptions;
-    that._createNewWhenPoolEmpty = !!createNew;
+    this._poolCreationSettings = emitterOptions;
+    this._createNewWhenPoolEmpty = !!createNew;
 
     // Create the emitters, add them to this group and the pool.
     for ( var i = 0; i < numEmitters; ++i ) {
-        emitter = new SPE.Emitter( emitterOptions );
-        that.addEmitter( emitter );
-        that.releaseIntoPool( emitter );
+        if ( Array.isArray( emitterOptions ) ) {
+            emitter = new SPE.Emitter( emitterOptions[ i ] );
+        }
+        else {
+            emitter = new SPE.Emitter( emitterOptions );
+        }
+        this.addEmitter( emitter );
+        this.releaseIntoPool( emitter );
     }
 
-    return that;
+    return this;
 };
 
 
@@ -2192,8 +2254,8 @@ SPE.Group.prototype.addPool = function( numEmitters, emitterOptions, createNew )
 SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
     'use strict';
 
-    var that = this,
-        emitter = that.getFromPool();
+    var emitter = this.getFromPool(),
+        self = this;
 
     if ( emitter === null ) {
         console.log( 'SPE.Group pool ran out.' );
@@ -2204,17 +2266,20 @@ SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
     // - Make sure buffers are update with thus new position.
     if ( pos instanceof THREE.Vector3 ) {
         emitter.position.value.copy( pos );
-        emitter.position.value = emitter.position.value; // Trigger the setter.
+
+        // Trigger the setter for this property to force an
+        // update to the emitter's position attribute.
+        emitter.position.value = emitter.position.value;
     }
 
     emitter.enable();
 
     setTimeout( function() {
         emitter.disable();
-        that.releaseIntoPool( emitter );
+        self.releaseIntoPool( emitter );
     }, emitter.maxAge.value + emitter.maxAge.spread );
 
-    return that;
+    return this;
 };
 
 
@@ -2229,18 +2294,16 @@ SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
 SPE.Group.prototype.triggerPoolEmitter = function( numEmitters, position ) {
     'use strict';
 
-    var that = this;
-
     if ( typeof numEmitters === 'number' && numEmitters > 1 ) {
         for ( var i = 0; i < numEmitters; ++i ) {
-            that._triggerSingleEmitter( position );
+            this._triggerSingleEmitter( position );
         }
     }
     else {
-        that._triggerSingleEmitter( position );
+        this._triggerSingleEmitter( position );
     }
 
-    return that;
+    return this;
 };
 
 
@@ -2291,25 +2354,80 @@ SPE.Group.prototype._updateBuffers = function( emitter ) {
  * attribute values along the way.
  * @param  {Number} [dt=Group's `fixedTimeStep` value] The number of seconds to simulate the group's emitters for (deltaTime)
  */
-SPE.Group.prototype.tick = function( dt ) {
+SPE.Group.prototype.tick = function( dt, force ) {
     'use strict';
 
     var emitters = this.emitters,
         numEmitters = emitters.length,
-        deltaTime = dt || this.fixedTimeStep;
+        deltaTime = dt || this.fixedTimeStep,
+        keys = this.attributeKeys,
+        i,
+        attrs = this.attributes;
 
-    if ( numEmitters === 0 ) {
+    // Update uniform values.
+    this._updateUniforms( deltaTime );
+
+    // Reset buffer update ranges on the shader attributes.
+    this._resetBufferRanges();
+
+
+    // If nothing needs updating, then stop here.
+    if (
+        numEmitters === 0 &&
+        this._attributesNeedRefresh === false &&
+        this._attributesNeedDynamicReset === false
+    ) {
         return;
     }
 
-    this._updateUniforms( deltaTime );
-    this._resetBufferRanges();
-
+    // Loop through each emitter in this group and
+    // simulate it, then update the shader attribute
+    // buffers.
     for ( var i = 0, emitter; i < numEmitters; ++i ) {
         emitter = emitters[ i ];
         emitter.tick( deltaTime );
         this._updateBuffers( emitter );
     }
+
+    // If the shader attributes have been refreshed,
+    // then the dynamic properties of each buffer
+    // attribute will need to be reset back to
+    // what they should be.
+    if ( this._attributesNeedDynamicReset === true ) {
+        i = this.attributeCount - 1;
+
+        for ( i; i >= 0; --i ) {
+            attrs[ keys[ i ] ].resetDynamic();
+        }
+
+        this._attributesNeedDynamicReset = false;
+    }
+
+    // If this group's shader attributes need a full refresh
+    // then mark each attribute's buffer attribute as
+    // needing so.
+    if ( this._attributesNeedRefresh === true ) {
+        i = this.attributeCount - 1;
+
+        for ( i; i >= 0; --i ) {
+            attrs[ keys[ i ] ].forceUpdateAll();
+        }
+
+        this._attributesNeedRefresh = false;
+        this._attributesNeedDynamicReset = true;
+    }
+};
+
+
+/**
+ * Dipose the geometry and material for the group.
+ *
+ * @return {Group} Group instance.
+ */
+SPE.Group.prototype.dispose = function() {
+    this.geometry.dispose();
+    this.material.dispose();
+    return this;
 };
 
 /**
@@ -2489,6 +2607,10 @@ SPE.Emitter = function( options ) {
     options.wiggle = utils.ensureTypedArg( options.wiggle, types.OBJECT, {} );
     options.maxAge = utils.ensureTypedArg( options.maxAge, types.OBJECT, {} );
 
+    if ( options.onParticleSpawn ) {
+        console.warn( 'onParticleSpawn has been removed. Please set properties directly to alter values at runtime.' );
+    }
+
     this.uuid = THREE.Math.generateUUID();
 
     this.type = utils.ensureTypedArg( options.type, types.NUMBER, SPE.distributions.BOX );
@@ -2599,6 +2721,10 @@ SPE.Emitter = function( options ) {
     // be marked as active on the next update cycle.
     this.activationIndex = 0;
 
+    // The offset in the typed arrays this emitter's
+    // particle's values will start at
+    this.attributeOffset = 0;
+
     // Whether this emitter is alive or not.
     this.alive = true;
 
@@ -2611,6 +2737,14 @@ SPE.Emitter = function( options ) {
     // Holds a reference to this emitter's group once
     // it's added to one.
     this.group = null;
+
+    // Holds a reference to this emitter's group's attributes object
+    // for easier access.
+    this.attributes = null;
+
+    // Holds a reference to the params attribute's typed array
+    // for quicker access.
+    this.paramsArray = null;
 
     // A set of flags to determine whether particular properties
     // should be re-randomised when a particle is reset.
@@ -2647,10 +2781,10 @@ SPE.Emitter = function( options ) {
     // which attribute.
     this.updateMap = {
         maxAge: 'params',
-        position: 'position', //
-        velocity: 'velocity', //
-        acceleration: 'acceleration', //
-        radius: 'position', //
+        position: 'position',
+        velocity: 'velocity',
+        acceleration: 'acceleration',
+        radius: 'position',
         drag: 'acceleration',
         wiggle: 'params',
         rotation: 'rotation',
@@ -2661,8 +2795,6 @@ SPE.Emitter = function( options ) {
     };
 
     for ( var i in this.updateMap ) {
-        // this.updateFlags[ i ] = false;
-        // this.updateCounts[ i ] = 0;
         if ( this.updateMap.hasOwnProperty( i ) ) {
             this._createGetterSetters( this[ i ], i );
         }
@@ -2763,8 +2895,6 @@ SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     else {
         this.particlesPerSecond = particleCount / groupMaxAge;
     }
-
-    // this.particlesPerSecond = Math.max( this.particlesPerSecond, 1 );
 };
 
 
@@ -2789,7 +2919,7 @@ SPE.Emitter.prototype._assignValue = function( prop, index ) {
 
         case 'size':
         case 'opacity':
-            this._assignLifetimeValue( index, prop );
+            this._assignAbsLifetimeValue( index, prop );
             break;
 
         case 'angle':
@@ -2819,7 +2949,8 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
         attr = this.attributes.position,
         value = prop._value,
         spread = prop._spread,
-        distribution = prop._distribution;
+        distribution = prop._distribution,
+        radius = this.radius;
 
     switch ( distribution ) {
         case distributions.BOX:
@@ -2827,11 +2958,11 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
             break;
 
         case distributions.SPHERE:
-            utils.randomVector3OnSphere( attr, index, value, this.radius._value, this.radius._spread, this.radius._scale, this.radius._spreadClamp );
+            utils.randomVector3OnSphere( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
             break;
 
         case distributions.DISC:
-            utils.randomVector3OnDisc( attr, index, value, this.radius._value, this.radius._spread, this.radius._scale, this.radius._spreadClamp );
+            utils.randomVector3OnDisc( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
             break;
     }
 };
@@ -2848,7 +2979,8 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
         pos,
         positionX,
         positionY,
-        positionZ;
+        positionZ,
+        i;
 
     switch ( distribution ) {
         case distributions.BOX:
@@ -2858,19 +2990,20 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
         case distributions.SPHERE:
         case distributions.DISC:
             pos = this.attributes.position.typedArray.array;
+            i = index * 3;
 
             // Ensure position values aren't zero, otherwise no force will be
             // applied.
-            positionX = utils.zeroToEpsilon( pos[ index * 3 ], true );
-            positionY = utils.zeroToEpsilon( pos[ index * 3 + 1 ], true );
-            positionZ = utils.zeroToEpsilon( pos[ index * 3 + 2 ], true );
+            positionX = utils.zeroToEpsilon( pos[ i ], true );
+            positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+            positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );
 
             utils.randomDirectionVector3OnSphere(
                 this.attributes[ attrName ], index,
                 positionX, positionY, positionZ,
                 this.position._value,
-                this[ attrName ]._value.x,
-                this[ attrName ]._spread.x
+                prop._value.x,
+                prop._spread.x
             );
             break;
     }
@@ -2881,7 +3014,7 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
     }
 };
 
-SPE.Emitter.prototype._assignLifetimeValue = function( index, propName ) {
+SPE.Emitter.prototype._assignAbsLifetimeValue = function( index, propName ) {
     'use strict';
 
     var array = this.attributes[ propName ].typedArray,
@@ -3004,23 +3137,17 @@ SPE.Emitter.prototype._resetBufferRanges = function() {
     }
 };
 
-// TODO:
-//  - Remove.
-SPE.Emitter.prototype._resetUpdateFlags = function() {
-    'use strict';
-
-    this.position.needsUpdate = false;
-    this.velocity.needsUpdate = false;
-    this.acceleration.needsUpdate = false;
-    this.radius.needsUpdate = false;
-    this.drag.needsUpdate = false;
-    this.wiggle.needsUpdate = false;
-    this.rotation.needsUpdate = false;
-    this.maxAge.needsUpdate = false;
-    this.color.needsUpdate = false;
-    this.opacity.needsUpdate = false;
-    this.size.needsUpdate = false;
-    this.angle.needsUpdate = false;
+SPE.Emitter.prototype._onRemove = function() {
+    // Reset any properties of the emitter that were set by
+    // a group when it was added.
+    this.particlesPerSecond = 0;
+    this.attributeOffset = 0;
+    this.activationIndex = 0;
+    this.activeParticleCount = 0;
+    this.group = null;
+    this.attributes = null;
+    this.paramsArray = null;
+    this.age = 0.0;
 };
 
 SPE.Emitter.prototype._decrementParticleCount = function() {
@@ -3039,6 +3166,63 @@ SPE.Emitter.prototype._incrementParticleCount = function() {
     //  - Trigger event if count === this.particleCount.
 };
 
+SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
+    for ( var i = end - 1, index, maxAge, age, alive; i >= start; --i ) {
+        index = i * 4;
+
+        alive = params[ index ];
+
+        if ( alive === 0.0 ) {
+            continue;
+        }
+
+        // Increment age
+        age = params[ index + 1 ];
+        maxAge = params[ index + 2 ];
+        age += dt;
+
+        // Mark particle as dead
+        if ( age >= maxAge ) {
+            age = 0.0;
+            alive = 0.0;
+
+            // Decrement the active particle count
+            this._decrementParticleCount();
+        }
+
+        params[ index ] = alive;
+        params[ index + 1 ] = age;
+
+        this._updateAttributeUpdateRange( 'params', i );
+    }
+};
+
+SPE.Emitter.prototype._activateParticles = function( activationStart, activationEnd, params, dtPerParticle ) {
+    for ( var i = activationStart, index; i < activationEnd; ++i ) {
+        index = i * 4;
+
+        // Increment the active particle count.
+        this._incrementParticleCount();
+
+        // Mark the particle as alive.
+        params[ index ] = 1.0;
+
+        // Reset the particle
+        this._resetParticle( i );
+
+        // Move each particle being activated to
+        // it's actual position in time.
+        //
+        // This stops particles being 'clumped' together
+        // when frame rates are on the lower side of 60fps
+        // or not constant (a very real possibility!)
+        params[ index + 1 ] = dtPerParticle * ( i - activationStart );
+
+        this._updateAttributeUpdateRange( 'params', i );
+
+    }
+};
+
 /**
  * Simulates one frame's worth of particles, updating particles
  * that are already alive, and marking ones that are currently dead
@@ -3055,46 +3239,22 @@ SPE.Emitter.prototype.tick = function( dt ) {
         return;
     }
 
+    if ( this.paramsArray === null ) {
+        this.paramsArray = this.attributes.params.typedArray.array
+    }
+
     var start = this.attributeOffset,
         end = start + this.particleCount,
-        params = this.attributes.params.typedArray.array, // vec3( alive, age, maxAge, wiggle )
+        params = this.paramsArray, // vec3( alive, age, maxAge, wiggle )
         ppsDt = this.particlesPerSecond * this.activeMultiplier * dt,
         activationIndex = this.activationIndex;
 
     // Reset the buffer update indices.
     this._resetBufferRanges();
 
-    // Reset update flags
-    this._resetUpdateFlags();
-
     // Increment age for those particles that are alive,
     // and kill off any particles whose age is over the limit.
-    for ( var i = end - 1, index, maxAge, age, alive; i >= start; --i ) {
-        index = i * 4;
-
-        alive = params[ index ];
-
-        // Increment age
-        if ( alive === 1.0 ) {
-            age = params[ index + 1 ];
-            maxAge = params[ index + 2 ];
-            age += dt;
-
-            // Mark particle as dead
-            if ( age >= maxAge ) {
-                age = 0.0;
-                alive = 0.0;
-
-                // Decrement the active particle count
-                this._decrementParticleCount();
-            }
-
-            params[ index ] = alive;
-            params[ index + 1 ] = age;
-
-            this._updateAttributeUpdateRange( 'params', i );
-        }
-    }
+    this._checkParticleAges( start, end, params, dt );
 
     // If the emitter is dead, reset the age of the emitter to zero,
     // ready to go again if required
@@ -3111,35 +3271,12 @@ SPE.Emitter.prototype.tick = function( dt ) {
     }
 
 
-    var activationStart = activationIndex | 0,
+    var activationStart = this.particleCount === 1 ? activationIndex : activationIndex | 0,
         activationEnd = activationStart + ppsDt,
-        activationCount = activationEnd - this.activationIndex + 1 | 0,
+        activationCount = activationEnd - this.activationIndex | 0,
         dtPerParticle = activationCount > 0 ? dt / activationCount : 0;
 
-    for ( var i = activationStart, index; i < activationEnd; ++i ) {
-        index = i * 4;
-
-        if ( params[ index ] === 0.0 ) {
-            // Increment the active particle count.
-            this._incrementParticleCount();
-
-            // Mark the particle as alive.
-            params[ index ] = 1.0;
-            // this.updateFlags.params = true;
-            this._resetParticle( i );
-
-            // Move each particle being activated to
-            // it's actual position in time.
-            //
-            // This stops particles being 'clumped' together
-            // when frame rates are on the lower side of 60fps
-            // or not constant (a very real possibility!)
-            params[ index + 1 ] = dtPerParticle * ( i - activationStart );
-            // params[ index + 1 ] = 0.0;
-
-            this._updateAttributeUpdateRange( 'params', i );
-        }
-    }
+    this._activateParticles( activationStart, activationEnd, params, dtPerParticle );
 
     // Move the activation window forward, soldier.
     this.activationIndex += ppsDt;
@@ -3170,7 +3307,7 @@ SPE.Emitter.prototype.reset = function( force ) {
     if ( force === true ) {
         var start = this.attributeOffset,
             end = start + this.particleCount,
-            array = this.attributes.params.typedArray.array,
+            array = this.paramsArray,
             attr = this.attributes.params.bufferAttribute;
 
         for ( var i = end - 1, index; i >= start; --i ) {

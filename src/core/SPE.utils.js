@@ -237,30 +237,24 @@ SPE.utils = {
         var epsilon = 0.00001,
             result = value;
 
-        if ( value === 0 ) {
-            result = randomise ? Math.random() * epsilon * 10 : epsilon;
+        result = randomise ? Math.random() * epsilon * 10 : epsilon;
+
+        if ( value < 0 && value > -epsilon ) {
+            result = -result;
         }
 
-        else if ( value > 0 && value < epsilon ) {
-            result = randomise ? Math.random() * epsilon * 10 : epsilon;
-        }
-        else if ( value < 0 && value > -epsilon ) {
-            result = -( randomise ? Math.random() * epsilon * 10 : epsilon );
-        }
+        // if ( value === 0 ) {
+        //     result = randomise ? Math.random() * epsilon * 10 : epsilon;
+        // }
+        // else if ( value > 0 && value < epsilon ) {
+        //     result = randomise ? Math.random() * epsilon * 10 : epsilon;
+        // }
+        // else if ( value < 0 && value > -epsilon ) {
+        //     result = -( randomise ? Math.random() * epsilon * 10 : epsilon );
+        // }
 
         return result;
     },
-
-    // Linearly interpolate two values.
-    //
-    // `start` and `end` values MUST be of the same type/instance
-    //
-    // Supported types/instances:
-    //  - Number
-    //  - THREE.Vector2
-    //  - THREE.Vector3
-    //  - THREE.Vector4
-    //  - THREE.Color
 
     /**
      * Linearly interpolates two values of various types. The given values
@@ -323,7 +317,6 @@ SPE.utils = {
      */
     lerp: function( start, end, delta ) {
         'use strict';
-
         return start + ( ( end - start ) * delta );
     },
 
@@ -337,11 +330,13 @@ SPE.utils = {
     roundToNearestMultiple: function( n, multiple ) {
         'use strict';
 
+        var remainder = 0;
+
         if ( multiple === 0 ) {
             return n;
         }
 
-        var remainder = Math.abs( n ) % multiple;
+        remainder = Math.abs( n ) % multiple;
 
         if ( remainder === 0 ) {
             return n;
@@ -402,7 +397,6 @@ SPE.utils = {
      */
     randomFloat: function( base, spread ) {
         'use strict';
-
         return base + spread * ( Math.random() - 0.5 );
     },
 
@@ -425,11 +419,16 @@ SPE.utils = {
             y = base.y + ( Math.random() * spread.y - ( spread.y * 0.5 ) ),
             z = base.z + ( Math.random() * spread.z - ( spread.z * 0.5 ) );
 
+        // var x = this.randomFloat( base.x, spread.x ),
+        // y = this.randomFloat( base.y, spread.y ),
+        // z = this.randomFloat( base.z, spread.z );
+
         if ( spreadClamp ) {
             x = -spreadClamp.x * 0.5 + this.roundToNearestMultiple( x, spreadClamp.x );
             y = -spreadClamp.y * 0.5 + this.roundToNearestMultiple( y, spreadClamp.y );
             z = -spreadClamp.z * 0.5 + this.roundToNearestMultiple( z, spreadClamp.z );
         }
+
         attribute.typedArray.setVec3Components( index, x, y, z );
     },
 
@@ -479,9 +478,9 @@ SPE.utils = {
 
                 workingColor.copy( base[ i ] );
 
-                workingColor.r += ( Math.random() * spreadVector.x ) - ( spreadVector.x / 2 );
-                workingColor.g += ( Math.random() * spreadVector.y ) - ( spreadVector.y / 2 );
-                workingColor.b += ( Math.random() * spreadVector.z ) - ( spreadVector.z / 2 );
+                workingColor.r += ( Math.random() * spreadVector.x ) - ( spreadVector.x * 0.5 );
+                workingColor.g += ( Math.random() * spreadVector.y ) - ( spreadVector.y * 0.5 );
+                workingColor.b += ( Math.random() * spreadVector.z ) - ( spreadVector.z * 0.5 );
 
                 workingColor.r = this.clamp( workingColor.r, 0, 1 );
                 workingColor.g = this.clamp( workingColor.g, 0, 1 );
@@ -643,6 +642,7 @@ SPE.utils = {
             v.normalize();
 
             c.setRGB( v.x, v.y, v.z );
+
             return c.getHex();
         };
     }() )

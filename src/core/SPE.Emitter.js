@@ -175,6 +175,10 @@ SPE.Emitter = function( options ) {
     options.wiggle = utils.ensureTypedArg( options.wiggle, types.OBJECT, {} );
     options.maxAge = utils.ensureTypedArg( options.maxAge, types.OBJECT, {} );
 
+    if ( options.onParticleSpawn ) {
+        console.warn( 'onParticleSpawn has been removed. Please set properties directly to alter values at runtime.' );
+    }
+
     this.uuid = THREE.Math.generateUUID();
 
     this.type = utils.ensureTypedArg( options.type, types.NUMBER, SPE.distributions.BOX );
@@ -285,6 +289,10 @@ SPE.Emitter = function( options ) {
     // be marked as active on the next update cycle.
     this.activationIndex = 0;
 
+    // The offset in the typed arrays this emitter's
+    // particle's values will start at
+    this.attributeOffset = 0;
+
     // Whether this emitter is alive or not.
     this.alive = true;
 
@@ -297,6 +305,14 @@ SPE.Emitter = function( options ) {
     // Holds a reference to this emitter's group once
     // it's added to one.
     this.group = null;
+
+    // Holds a reference to this emitter's group's attributes object
+    // for easier access.
+    this.attributes = null;
+
+    // Holds a reference to the params attribute's typed array
+    // for quicker access.
+    this.paramsArray = null;
 
     // A set of flags to determine whether particular properties
     // should be re-randomised when a particle is reset.
@@ -333,10 +349,10 @@ SPE.Emitter = function( options ) {
     // which attribute.
     this.updateMap = {
         maxAge: 'params',
-        position: 'position', //
-        velocity: 'velocity', //
-        acceleration: 'acceleration', //
-        radius: 'position', //
+        position: 'position',
+        velocity: 'velocity',
+        acceleration: 'acceleration',
+        radius: 'position',
         drag: 'acceleration',
         wiggle: 'params',
         rotation: 'rotation',
@@ -347,8 +363,6 @@ SPE.Emitter = function( options ) {
     };
 
     for ( var i in this.updateMap ) {
-        // this.updateFlags[ i ] = false;
-        // this.updateCounts[ i ] = 0;
         if ( this.updateMap.hasOwnProperty( i ) ) {
             this._createGetterSetters( this[ i ], i );
         }
@@ -449,8 +463,6 @@ SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     else {
         this.particlesPerSecond = particleCount / groupMaxAge;
     }
-
-    // this.particlesPerSecond = Math.max( this.particlesPerSecond, 1 );
 };
 
 
@@ -475,7 +487,7 @@ SPE.Emitter.prototype._assignValue = function( prop, index ) {
 
         case 'size':
         case 'opacity':
-            this._assignLifetimeValue( index, prop );
+            this._assignAbsLifetimeValue( index, prop );
             break;
 
         case 'angle':
@@ -505,7 +517,8 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
         attr = this.attributes.position,
         value = prop._value,
         spread = prop._spread,
-        distribution = prop._distribution;
+        distribution = prop._distribution,
+        radius = this.radius;
 
     switch ( distribution ) {
         case distributions.BOX:
@@ -513,11 +526,11 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
             break;
 
         case distributions.SPHERE:
-            utils.randomVector3OnSphere( attr, index, value, this.radius._value, this.radius._spread, this.radius._scale, this.radius._spreadClamp );
+            utils.randomVector3OnSphere( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
             break;
 
         case distributions.DISC:
-            utils.randomVector3OnDisc( attr, index, value, this.radius._value, this.radius._spread, this.radius._scale, this.radius._spreadClamp );
+            utils.randomVector3OnDisc( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
             break;
     }
 };
@@ -534,7 +547,8 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
         pos,
         positionX,
         positionY,
-        positionZ;
+        positionZ,
+        i;
 
     switch ( distribution ) {
         case distributions.BOX:
@@ -544,19 +558,20 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
         case distributions.SPHERE:
         case distributions.DISC:
             pos = this.attributes.position.typedArray.array;
+            i = index * 3;
 
             // Ensure position values aren't zero, otherwise no force will be
             // applied.
-            positionX = utils.zeroToEpsilon( pos[ index * 3 ], true );
-            positionY = utils.zeroToEpsilon( pos[ index * 3 + 1 ], true );
-            positionZ = utils.zeroToEpsilon( pos[ index * 3 + 2 ], true );
+            positionX = utils.zeroToEpsilon( pos[ i ], true );
+            positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+            positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );
 
             utils.randomDirectionVector3OnSphere(
                 this.attributes[ attrName ], index,
                 positionX, positionY, positionZ,
                 this.position._value,
-                this[ attrName ]._value.x,
-                this[ attrName ]._spread.x
+                prop._value.x,
+                prop._spread.x
             );
             break;
     }
@@ -567,7 +582,7 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
     }
 };
 
-SPE.Emitter.prototype._assignLifetimeValue = function( index, propName ) {
+SPE.Emitter.prototype._assignAbsLifetimeValue = function( index, propName ) {
     'use strict';
 
     var array = this.attributes[ propName ].typedArray,
@@ -690,23 +705,17 @@ SPE.Emitter.prototype._resetBufferRanges = function() {
     }
 };
 
-// TODO:
-//  - Remove.
-SPE.Emitter.prototype._resetUpdateFlags = function() {
-    'use strict';
-
-    this.position.needsUpdate = false;
-    this.velocity.needsUpdate = false;
-    this.acceleration.needsUpdate = false;
-    this.radius.needsUpdate = false;
-    this.drag.needsUpdate = false;
-    this.wiggle.needsUpdate = false;
-    this.rotation.needsUpdate = false;
-    this.maxAge.needsUpdate = false;
-    this.color.needsUpdate = false;
-    this.opacity.needsUpdate = false;
-    this.size.needsUpdate = false;
-    this.angle.needsUpdate = false;
+SPE.Emitter.prototype._onRemove = function() {
+    // Reset any properties of the emitter that were set by
+    // a group when it was added.
+    this.particlesPerSecond = 0;
+    this.attributeOffset = 0;
+    this.activationIndex = 0;
+    this.activeParticleCount = 0;
+    this.group = null;
+    this.attributes = null;
+    this.paramsArray = null;
+    this.age = 0.0;
 };
 
 SPE.Emitter.prototype._decrementParticleCount = function() {
@@ -725,6 +734,63 @@ SPE.Emitter.prototype._incrementParticleCount = function() {
     //  - Trigger event if count === this.particleCount.
 };
 
+SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
+    for ( var i = end - 1, index, maxAge, age, alive; i >= start; --i ) {
+        index = i * 4;
+
+        alive = params[ index ];
+
+        if ( alive === 0.0 ) {
+            continue;
+        }
+
+        // Increment age
+        age = params[ index + 1 ];
+        maxAge = params[ index + 2 ];
+        age += dt;
+
+        // Mark particle as dead
+        if ( age >= maxAge ) {
+            age = 0.0;
+            alive = 0.0;
+
+            // Decrement the active particle count
+            this._decrementParticleCount();
+        }
+
+        params[ index ] = alive;
+        params[ index + 1 ] = age;
+
+        this._updateAttributeUpdateRange( 'params', i );
+    }
+};
+
+SPE.Emitter.prototype._activateParticles = function( activationStart, activationEnd, params, dtPerParticle ) {
+    for ( var i = activationStart, index; i < activationEnd; ++i ) {
+        index = i * 4;
+
+        // Increment the active particle count.
+        this._incrementParticleCount();
+
+        // Mark the particle as alive.
+        params[ index ] = 1.0;
+
+        // Reset the particle
+        this._resetParticle( i );
+
+        // Move each particle being activated to
+        // it's actual position in time.
+        //
+        // This stops particles being 'clumped' together
+        // when frame rates are on the lower side of 60fps
+        // or not constant (a very real possibility!)
+        params[ index + 1 ] = dtPerParticle * ( i - activationStart );
+
+        this._updateAttributeUpdateRange( 'params', i );
+
+    }
+};
+
 /**
  * Simulates one frame's worth of particles, updating particles
  * that are already alive, and marking ones that are currently dead
@@ -741,46 +807,22 @@ SPE.Emitter.prototype.tick = function( dt ) {
         return;
     }
 
+    if ( this.paramsArray === null ) {
+        this.paramsArray = this.attributes.params.typedArray.array
+    }
+
     var start = this.attributeOffset,
         end = start + this.particleCount,
-        params = this.attributes.params.typedArray.array, // vec3( alive, age, maxAge, wiggle )
+        params = this.paramsArray, // vec3( alive, age, maxAge, wiggle )
         ppsDt = this.particlesPerSecond * this.activeMultiplier * dt,
         activationIndex = this.activationIndex;
 
     // Reset the buffer update indices.
     this._resetBufferRanges();
 
-    // Reset update flags
-    this._resetUpdateFlags();
-
     // Increment age for those particles that are alive,
     // and kill off any particles whose age is over the limit.
-    for ( var i = end - 1, index, maxAge, age, alive; i >= start; --i ) {
-        index = i * 4;
-
-        alive = params[ index ];
-
-        // Increment age
-        if ( alive === 1.0 ) {
-            age = params[ index + 1 ];
-            maxAge = params[ index + 2 ];
-            age += dt;
-
-            // Mark particle as dead
-            if ( age >= maxAge ) {
-                age = 0.0;
-                alive = 0.0;
-
-                // Decrement the active particle count
-                this._decrementParticleCount();
-            }
-
-            params[ index ] = alive;
-            params[ index + 1 ] = age;
-
-            this._updateAttributeUpdateRange( 'params', i );
-        }
-    }
+    this._checkParticleAges( start, end, params, dt );
 
     // If the emitter is dead, reset the age of the emitter to zero,
     // ready to go again if required
@@ -797,35 +839,12 @@ SPE.Emitter.prototype.tick = function( dt ) {
     }
 
 
-    var activationStart = activationIndex | 0,
+    var activationStart = this.particleCount === 1 ? activationIndex : activationIndex | 0,
         activationEnd = activationStart + ppsDt,
-        activationCount = activationEnd - this.activationIndex + 1 | 0,
+        activationCount = activationEnd - this.activationIndex | 0,
         dtPerParticle = activationCount > 0 ? dt / activationCount : 0;
 
-    for ( var i = activationStart, index; i < activationEnd; ++i ) {
-        index = i * 4;
-
-        if ( params[ index ] === 0.0 ) {
-            // Increment the active particle count.
-            this._incrementParticleCount();
-
-            // Mark the particle as alive.
-            params[ index ] = 1.0;
-            // this.updateFlags.params = true;
-            this._resetParticle( i );
-
-            // Move each particle being activated to
-            // it's actual position in time.
-            //
-            // This stops particles being 'clumped' together
-            // when frame rates are on the lower side of 60fps
-            // or not constant (a very real possibility!)
-            params[ index + 1 ] = dtPerParticle * ( i - activationStart );
-            // params[ index + 1 ] = 0.0;
-
-            this._updateAttributeUpdateRange( 'params', i );
-        }
-    }
+    this._activateParticles( activationStart, activationEnd, params, dtPerParticle );
 
     // Move the activation window forward, soldier.
     this.activationIndex += ppsDt;
@@ -856,7 +875,7 @@ SPE.Emitter.prototype.reset = function( force ) {
     if ( force === true ) {
         var start = this.attributeOffset,
             end = start + this.particleCount,
-            array = this.attributes.params.typedArray.array,
+            array = this.paramsArray,
             attr = this.attributes.params.bufferAttribute;
 
         for ( var i = end - 1, index; i >= start; --i ) {

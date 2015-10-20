@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="css/styles.css">
+	</head>
+	<body>
+		<script type="text/javascript" src="../examples/js/THREE-r72.js"></script>
+		<script type="text/javascript" src="../examples/js/Stats.min.js"></script>
+  		<script type="text/javascript" src="../build/SPE.min.js"></script>
+  		<script type="text/javascript" src="js/basicScene.js"></script>
+
+		<script type="text/javascript">
+			var group = new SPE.Group( {
+					texture: {
+						value: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' ),
+					}
+				} ),
+				emitter = new SPE.Emitter();
+
+			group.addEmitter( emitter );
+			scene.add( group.mesh );
+
+			camera.position.z = 50;
+			camera.lookAt( scene.position );
+
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			document.body.appendChild( stats.domElement );
+
+			console.log( group );
+			console.log( emitter );
+
+			animate();
+		</script>
+	</body>
+</html>

@@ -17,7 +17,8 @@
 						value: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' ),
 					},
 					depthTest: true,
-					scale: 600
+					scale: 600,
+					fog: true
 				} ),
 
 				emitter = new SPE.Emitter( {
@@ -56,17 +57,6 @@
 						distribution: SPE.distributions.DISC,
 						randomise: false
 					},
-
-					drag: {
-						value: 0,
-						spread: 0
-					},
-
-					wiggle: {
-						value: 0,
-						spread: 0
-					},
-
 					rotation: {
 						axis: new THREE.Vector3( 1, 1, 0 ),
 						axisSpread: new THREE.Vector3( 0, 0, 0 ),
@@ -101,6 +91,12 @@
 			camera.position.z = 50;
 			camera.lookAt( scene.position );
 
+			scene.fog = new THREE.Fog( 0x222222, 50, 100 );
+
+
+			function onAnimate() {
+				camera.position.z = Math.sin( Date.now() * 0.0005 ) * 50 + 100;
+			}
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );

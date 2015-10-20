@@ -56,32 +56,6 @@ SPE.TypedArrayHelper.prototype.setSize = function( size, noComponentMultiply ) {
 };
 
 /**
- * Perform a splice operation on this array's buffer.
- * @param  {Number} start The start index of the splice. Will be multiplied by the number of components for this attribute.
- * @param  {Number} end The end index of the splice. Will be multiplied by the number of components for this attribute.
- * @returns {Object} The SPE.TypedArrayHelper instance.
- */
-SPE.TypedArrayHelper.prototype.splice = function( start, end ) {
-    'use strict';
-    start *= this.componentSize;
-    end *= this.componentSize;
-
-    var data = [],
-        array = this.array,
-        size = array.length;
-
-    for ( var i = 0; i < size; ++i ) {
-        if ( i < start || i >= end ) {
-            data.push( array[ i ] );
-        }
-    }
-
-    this.setFromArray( 0, data );
-
-    return this;
-};
-
-/**
  * Shrinks the internal array.
  *
  * @param  {Number} size The new size of the typed array. Must be smaller than `this.array.length`.
@@ -109,6 +83,34 @@ SPE.TypedArrayHelper.prototype.grow = function( size ) {
     newArray.set( existingArray );
     this.array = newArray;
     this.size = size;
+
+    return this;
+};
+
+
+/**
+ * Perform a splice operation on this array's buffer.
+ * @param  {Number} start The start index of the splice. Will be multiplied by the number of components for this attribute.
+ * @param  {Number} end The end index of the splice. Will be multiplied by the number of components for this attribute.
+ * @returns {Object} The SPE.TypedArrayHelper instance.
+ */
+SPE.TypedArrayHelper.prototype.splice = function( start, end ) {
+    'use strict';
+    start *= this.componentSize;
+    end *= this.componentSize;
+
+    var data = [],
+        array = this.array,
+        size = array.length;
+
+    for ( var i = 0; i < size; ++i ) {
+        if ( i < start || i >= end ) {
+            data.push( array[ i ] );
+        }
+        // array[ i ] = 0;
+    }
+
+    this.setFromArray( 0, data );
 
     return this;
 };
