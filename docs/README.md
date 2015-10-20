@@ -1,5 +1,5 @@
-Shader Particle Engine ![](https://travis-ci.org/squarefeet/ShaderParticleEngine.svg?branch=dev)
-======================
+Shader Particle Engine v1.0.0 ![](https://travis-ci.org/squarefeet/ShaderParticleEngine.svg?branch=dev)
+=============================
 
 Contents
 --------
@@ -29,7 +29,9 @@ For more information on groups and emitters, see the docs below:
 
 Changelog
 ---------
-A full changelog can be seen [here](./docs/APIChangelog.md).
+A full changelog can be seen [here](./docs/ChangeLog.md).
+
+A migration log can be found [here](./docs/MigrationLog.md).
 
 
 
@@ -63,3 +65,5 @@ The output of grunt will sit in the `build` folder.
 Thanks
 ------
 Huge thanks to [Stemkoski](http://stemkoski.github.io/Three.js/) for the initial inspiration for this library. A lot has changed since the project first began, but it wouldn't have existed without his initial work and help. Big thanks to everyone involved in [THREE.js](https://github.com/mrdoob/three.js), too.
+
+Thanks to @giuliandrimba for the [bower.json PR](https://github.com/squarefeet/ShaderParticleEngine/pull/76).

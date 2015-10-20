@@ -963,25 +963,25 @@ SPE.shaders = {
 
         // Determine color and opacity for this particle
         '    #ifdef COLORIZE',
-        '    	vec3 c = isAlive * getColorOverLifetime(',
-        '    		positionInTime,',
-        '    		unpackColor( color.x ),',
-        '    		unpackColor( color.y ),',
-        '    		unpackColor( color.z ),',
-        '    		unpackColor( color.w )',
-        '    	);',
+        '       vec3 c = isAlive * getColorOverLifetime(',
+        '           positionInTime,',
+        '           unpackColor( color.x ),',
+        '           unpackColor( color.y ),',
+        '           unpackColor( color.z ),',
+        '           unpackColor( color.w )',
+        '       );',
         '    #else',
-        '    	vec3 c = vec3(1.0);',
-        '	 #endif',
+        '       vec3 c = vec3(1.0);',
+        '    #endif',
 
         '    float o = isAlive * getFloatOverLifetime( positionInTime, opacity );',
 
         // Assign color to vColor varying.
-        '	 vColor = vec4( c, o );',
+        '    vColor = vec4( c, o );',
 
         // Determine angle
         '    #ifdef SHOULD_ROTATE_TEXTURE',
-        '	     vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
+        '        vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
         '    #endif',
 
         // If this particle is using a sprite-sheet as a texture, we'll have to figure out
@@ -1010,8 +1010,8 @@ SPE.shaders = {
         //
 
         // Set PointSize according to size at current point in time.
-        '	 gl_PointSize = pointSizePerspective;',
-        '	 gl_Position = projectionMatrix * mvPos;',
+        '    gl_PointSize = pointSizePerspective;',
+        '    gl_Position = projectionMatrix * mvPos;',
 
         THREE.ShaderChunk.logdepthbuf_vertex,
 

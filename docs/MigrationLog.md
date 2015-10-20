@@ -1,4 +1,4 @@
-API Changelog
+Migration Log
 =============
 
 #### Emitter types are now "constants" and reside in SPE.distributions:
@@ -24,7 +24,7 @@ var emitter = new SPE.Emitter( {
 #### MaxAge property is now part of `SPE.Emitter` properties
 
 `SPE.Group` no longer takes a `maxAge` property. Maximum ages for particles
-is calculated on a per-particle basis.
+are calculated on a per-particle basis.
 
 **Example**
 ```
