@@ -370,7 +370,7 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
 
     // Loop through each particle this emitter wants to have, and create the attributes values,
     // storing them in the TypedArrays that each attribute holds.
-    for ( var i = start, relativeIndex, particleStartTime; i < end; ++i ) {
+    for ( var i = start; i < end; ++i ) {
         emitter._assignPositionValue( i );
         emitter._assignForceValue( i, 'velocity' );
         emitter._assignForceValue( i, 'acceleration' );
@@ -660,7 +660,7 @@ SPE.Group.prototype._updateBuffers = function( emitter ) {
  * attribute values along the way.
  * @param  {Number} [dt=Group's `fixedTimeStep` value] The number of seconds to simulate the group's emitters for (deltaTime)
  */
-SPE.Group.prototype.tick = function( dt, force ) {
+SPE.Group.prototype.tick = function( dt ) {
     'use strict';
 
     var emitters = this.emitters,
@@ -731,6 +731,7 @@ SPE.Group.prototype.tick = function( dt, force ) {
  * @return {Group} Group instance.
  */
 SPE.Group.prototype.dispose = function() {
+    'use strict';
     this.geometry.dispose();
     this.material.dispose();
     return this;

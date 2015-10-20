@@ -706,6 +706,7 @@ SPE.Emitter.prototype._resetBufferRanges = function() {
 };
 
 SPE.Emitter.prototype._onRemove = function() {
+    'use strict';
     // Reset any properties of the emitter that were set by
     // a group when it was added.
     this.particlesPerSecond = 0;
@@ -735,6 +736,7 @@ SPE.Emitter.prototype._incrementParticleCount = function() {
 };
 
 SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
+    'use strict';
     for ( var i = end - 1, index, maxAge, age, alive; i >= start; --i ) {
         index = i * 4;
 
@@ -766,6 +768,7 @@ SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
 };
 
 SPE.Emitter.prototype._activateParticles = function( activationStart, activationEnd, params, dtPerParticle ) {
+    'use strict';
     for ( var i = activationStart, index; i < activationEnd; ++i ) {
         index = i * 4;
 
@@ -808,7 +811,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
     }
 
     if ( this.paramsArray === null ) {
-        this.paramsArray = this.attributes.params.typedArray.array
+        this.paramsArray = this.attributes.params.typedArray.array;
     }
 
     var start = this.attributeOffset,

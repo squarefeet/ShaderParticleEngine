@@ -32,7 +32,7 @@
             
             <div class="content"><div class='highlight'><pre><span class="hljs-comment">/* Shader-Particle-Engine 1.0.0
  * 
- * (c) 2015 Luke Moody (http://www.github.com/squarefeet) &amp; Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
+ * (c) 2015 Luke Moody (http://www.github.com/squarefeet)
  *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
  *
  * Shader-Particle-Engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
@@ -609,6 +609,7 @@ SPE.ShaderAttribute.prototype.resetUpdateRange = <span class="hljs-function"><sp
 };
 
 SPE.ShaderAttribute.prototype.resetDynamic = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
     <span class="hljs-keyword">this</span>.bufferAttribute.dynamic = <span class="hljs-keyword">this</span>.dynamicBuffer;
 };
 
@@ -640,6 +641,8 @@ since it has probably changed.</p>
 };
 
 SPE.ShaderAttribute.prototype.forceUpdateAll = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
+
     <span class="hljs-keyword">this</span>.bufferAttribute.array = <span class="hljs-keyword">this</span>.typedArray.array;
     <span class="hljs-keyword">this</span>.bufferAttribute.updateRange.offset = <span class="hljs-number">0</span>;
     <span class="hljs-keyword">this</span>.bufferAttribute.updateRange.count = -<span class="hljs-number">1</span>;
@@ -3130,7 +3133,7 @@ storing them in the TypedArrays that each attribute holds.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = start, relativeIndex, particleStartTime; i &lt; end; ++i ) {
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = start; i &lt; end; ++i ) {
         emitter._assignPositionValue( i );
         emitter._assignForceValue( i, <span class="hljs-string">'velocity'</span> );
         emitter._assignForceValue( i, <span class="hljs-string">'acceleration'</span> );
@@ -3637,7 +3640,7 @@ SPE.Group.prototype._updateBuffers = <span class="hljs-function"><span class="hl
  * attribute values along the way.
  * @param  {Number} [dt=Group's `fixedTimeStep` value] The number of seconds to simulate the group's emitters for (deltaTime)
  */</span>
-SPE.Group.prototype.tick = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> dt, force </span>) </span>{
+SPE.Group.prototype.tick = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> dt </span>) </span>{
 <span class="hljs-pi">    'use strict'</span>;
 
     <span class="hljs-keyword">var</span> emitters = <span class="hljs-keyword">this</span>.emitters,
@@ -3779,6 +3782,7 @@ needing so.</p>
  * @return {Group} Group instance.
  */</span>
 SPE.Group.prototype.dispose = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
     <span class="hljs-keyword">this</span>.geometry.dispose();
     <span class="hljs-keyword">this</span>.material.dispose();
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
@@ -4721,7 +4725,8 @@ SPE.Emitter.prototype._resetBufferRanges = <span class="hljs-function"><span cla
     }
 };
 
-SPE.Emitter.prototype._onRemove = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{</pre></div></div>
+SPE.Emitter.prototype._onRemove = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;</pre></div></div>
             
         </li>
         
@@ -4792,6 +4797,7 @@ SPE.Emitter.prototype._incrementParticleCount = <span class="hljs-function"><spa
             <div class="content"><div class='highlight'><pre>};
 
 SPE.Emitter.prototype._checkParticleAges = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> start, end, params, dt </span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
     <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = end - <span class="hljs-number">1</span>, index, maxAge, age, alive; i &gt;= start; --i ) {
         index = i * <span class="hljs-number">4</span>;
 
@@ -4859,6 +4865,7 @@ SPE.Emitter.prototype._checkParticleAges = <span class="hljs-function"><span cla
 };
 
 SPE.Emitter.prototype._activateParticles = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> activationStart, activationEnd, params, dtPerParticle </span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
     <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = activationStart, index; i &lt; activationEnd; ++i ) {
         index = i * <span class="hljs-number">4</span>;</pre></div></div>
             
@@ -4948,7 +4955,7 @@ SPE.Emitter.prototype.tick = <span class="hljs-function"><span class="hljs-keywo
     }
 
     <span class="hljs-keyword">if</span> ( <span class="hljs-keyword">this</span>.paramsArray === <span class="hljs-literal">null</span> ) {
-        <span class="hljs-keyword">this</span>.paramsArray = <span class="hljs-keyword">this</span>.attributes.params.typedArray.array
+        <span class="hljs-keyword">this</span>.paramsArray = <span class="hljs-keyword">this</span>.attributes.params.typedArray.array;
     }
 
     <span class="hljs-keyword">var</span> start = <span class="hljs-keyword">this</span>.attributeOffset,

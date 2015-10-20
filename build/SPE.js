@@ -1,6 +1,6 @@
 /* Shader-Particle-Engine 1.0.0
  * 
- * (c) 2015 Luke Moody (http://www.github.com/squarefeet) & Lee Stemkoski (http://www.adelphi.edu/~stemkoski/)
+ * (c) 2015 Luke Moody (http://www.github.com/squarefeet)
  *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
  *
  * Shader-Particle-Engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
@@ -539,6 +539,7 @@ SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
 };
 
 SPE.ShaderAttribute.prototype.resetDynamic = function() {
+    'use strict';
     this.bufferAttribute.dynamic = this.dynamicBuffer;
 };
 
@@ -558,6 +559,8 @@ SPE.ShaderAttribute.prototype.splice = function( start, end ) {
 };
 
 SPE.ShaderAttribute.prototype.forceUpdateAll = function() {
+    'use strict';
+
     this.bufferAttribute.array = this.typedArray.array;
     this.bufferAttribute.updateRange.offset = 0;
     this.bufferAttribute.updateRange.count = -1;
@@ -2064,7 +2067,7 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
 
     // Loop through each particle this emitter wants to have, and create the attributes values,
     // storing them in the TypedArrays that each attribute holds.
-    for ( var i = start, relativeIndex, particleStartTime; i < end; ++i ) {
+    for ( var i = start; i < end; ++i ) {
         emitter._assignPositionValue( i );
         emitter._assignForceValue( i, 'velocity' );
         emitter._assignForceValue( i, 'acceleration' );
@@ -2354,7 +2357,7 @@ SPE.Group.prototype._updateBuffers = function( emitter ) {
  * attribute values along the way.
  * @param  {Number} [dt=Group's `fixedTimeStep` value] The number of seconds to simulate the group's emitters for (deltaTime)
  */
-SPE.Group.prototype.tick = function( dt, force ) {
+SPE.Group.prototype.tick = function( dt ) {
     'use strict';
 
     var emitters = this.emitters,
@@ -2425,6 +2428,7 @@ SPE.Group.prototype.tick = function( dt, force ) {
  * @return {Group} Group instance.
  */
 SPE.Group.prototype.dispose = function() {
+    'use strict';
     this.geometry.dispose();
     this.material.dispose();
     return this;
@@ -3138,6 +3142,7 @@ SPE.Emitter.prototype._resetBufferRanges = function() {
 };
 
 SPE.Emitter.prototype._onRemove = function() {
+    'use strict';
     // Reset any properties of the emitter that were set by
     // a group when it was added.
     this.particlesPerSecond = 0;
@@ -3167,6 +3172,7 @@ SPE.Emitter.prototype._incrementParticleCount = function() {
 };
 
 SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
+    'use strict';
     for ( var i = end - 1, index, maxAge, age, alive; i >= start; --i ) {
         index = i * 4;
 
@@ -3198,6 +3204,7 @@ SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
 };
 
 SPE.Emitter.prototype._activateParticles = function( activationStart, activationEnd, params, dtPerParticle ) {
+    'use strict';
     for ( var i = activationStart, index; i < activationEnd; ++i ) {
         index = i * 4;
 
@@ -3240,7 +3247,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
     }
 
     if ( this.paramsArray === null ) {
-        this.paramsArray = this.attributes.params.typedArray.array
+        this.paramsArray = this.attributes.params.typedArray.array;
     }
 
     var start = this.attributeOffset,

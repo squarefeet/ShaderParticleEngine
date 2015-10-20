@@ -117,6 +117,7 @@ SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
 };
 
 SPE.ShaderAttribute.prototype.resetDynamic = function() {
+    'use strict';
     this.bufferAttribute.dynamic = this.dynamicBuffer;
 };
 
@@ -136,6 +137,8 @@ SPE.ShaderAttribute.prototype.splice = function( start, end ) {
 };
 
 SPE.ShaderAttribute.prototype.forceUpdateAll = function() {
+    'use strict';
+
     this.bufferAttribute.array = this.typedArray.array;
     this.bufferAttribute.updateRange.offset = 0;
     this.bufferAttribute.updateRange.count = -1;
