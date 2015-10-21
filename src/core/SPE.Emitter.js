@@ -420,6 +420,8 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
                             self.updateCounts[ mapName ] = 0.0;
                         }
 
+                        self.group._updateDefines();
+
                         this[ prop ] = value;
 
                         // If the previous value was an array, then make

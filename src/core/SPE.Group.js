@@ -222,28 +222,39 @@ SPE.Group = function( options ) {
 SPE.Group.constructor = SPE.Group;
 
 
-SPE.Group.prototype._updateDefines = function( emitter ) {
+SPE.Group.prototype._updateDefines = function() {
     'use strict';
 
-    // Only do angle calculation if there's no spritesheet defined.
-    //
-    // Saves calculations being done and then overwritten in the shaders.
-    if ( !this.defines.SHOULD_CALCULATE_SPRITE ) {
-        this.defines.SHOULD_ROTATE_TEXTURE = this.defines.SHOULD_ROTATE_TEXTURE || !!Math.max(
-            Math.max.apply( null, emitter.angle.value ),
-            Math.max.apply( null, emitter.angle.spread )
+    var emitters = this.emitters,
+        i = emitters.length - 1,
+        emitter,
+        defines = this.defines;
+
+    for ( i; i >= 0; --i ) {
+        emitter = emitters[ i ];
+
+        // Only do angle calculation if there's no spritesheet defined.
+        //
+        // Saves calculations being done and then overwritten in the shaders.
+        if ( !defines.SHOULD_CALCULATE_SPRITE ) {
+            defines.SHOULD_ROTATE_TEXTURE = defines.SHOULD_ROTATE_TEXTURE || !!Math.max(
+                Math.max.apply( null, emitter.angle.value ),
+                Math.max.apply( null, emitter.angle.spread )
+            );
+        }
+
+        defines.SHOULD_ROTATE_PARTICLES = defines.SHOULD_ROTATE_PARTICLES || !!Math.max(
+            emitter.rotation.angle,
+            emitter.rotation.angleSpread
+        );
+
+        defines.SHOULD_WIGGLE_PARTICLES = defines.SHOULD_WIGGLE_PARTICLES || !!Math.max(
+            emitter.wiggle.value,
+            emitter.wiggle.spread
         );
     }
 
-    this.defines.SHOULD_ROTATE_PARTICLES = this.defines.SHOULD_ROTATE_PARTICLES || !!Math.max(
-        emitter.rotation.angle,
-        emitter.rotation.angleSpread
-    );
-
-    this.defines.SHOULD_WIGGLE_PARTICLES = this.defines.SHOULD_WIGGLE_PARTICLES || !!Math.max(
-        emitter.wiggle.value,
-        emitter.wiggle.spread
-    );
+    this.material.needsUpdate = true;
 };
 
 SPE.Group.prototype._applyAttributesToGeometry = function() {
