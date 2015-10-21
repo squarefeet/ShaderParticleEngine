@@ -6,8 +6,7 @@ Contents
 * [Overview](#overview)
 * [Dependencies](#dependencies)
 * [Changelog](#changelog)
-* [API Documentation](#api-documentation)
-* [Annotated Source](#annotated-source)
+* [Documentation](#documentation)
 * [Building](#building)
 * [Thanks](#thanks)
 
@@ -27,8 +26,9 @@ For more information on groups and emitters, see the docs below:
 * [Emitter documentation](./docs/SPE.Emitter.md)
 
 
+
 Dependencies
-============
+------------
 * THREE.js r72
 
 
@@ -41,15 +41,14 @@ A migration log can be found [here](./docs/MigrationLog.md).
 
 
 
-API Documentation
---------------------
-Full api documentation (created using the wonderful [JSDoc](http://usejsdoc.org/)) is available [here](https://squarefeet.github.io/ShaderParticleEngine/docs/api/).
+Documentation
+-------------
+A massive improvement over the previous versions of this library is _actual documentation!_ I'll be working on making some tutorials, and adding presets and more examples in the very near future.
 
+* Full api documentation (created using the wonderful [JSDoc](http://usejsdoc.org/)) is available [here](https://squarefeet.github.io/ShaderParticleEngine/docs/api/).
 
+* An annotated version of the library (created using the equally wonderful [Docco](https://jashkenas.github.io/docco/)) can be found [here](https://squarefeet.github.io/ShaderParticleEngine/docs/source/SPE.html).
 
-Annotated Source
---------------------
-An annotated version of the library (created using the equally wonderful [Docco](https://jashkenas.github.io/docco/)) can be found [here](https://squarefeet.github.io/ShaderParticleEngine/docs/source/SPE.html).
 
 
 
