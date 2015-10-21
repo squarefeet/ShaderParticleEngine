@@ -64,7 +64,7 @@
 			function onAnimate() {
 				date.setTime( Date.now() );
 				var seconds = date.getSeconds();
-				emitter.rotation.angle = (seconds / 60) * Math.PI;
+				emitter.rotation.angle = (seconds / 60) * Math.PI * 2;
 			}
 
 			animate();
