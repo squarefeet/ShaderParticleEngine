@@ -352,8 +352,7 @@ SPE.Group.prototype.addEmitter = function( emitter ) {
     emitter._setBufferUpdateRanges( this.attributeKeys );
 
     // Store the offset value in the TypedArray attributes for this emitter.
-    emitter.attributeOffset = start;
-    emitter.activationIndex = start;
+    emitter._setAttributeOffset( start );
 
     // Save a reference to this group on the emitter so it knows
     // where it belongs.
@@ -594,7 +593,7 @@ SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
     setTimeout( function() {
         emitter.disable();
         self.releaseIntoPool( emitter );
-    }, emitter.maxAge.value + emitter.maxAge.spread );
+    }, ( emitter.maxAge.value + emitter.maxAge.spread ) * 1000 );
 
     return this;
 };

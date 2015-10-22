@@ -237,7 +237,7 @@ SPE.Emitter = function( options ) {
         _angle: utils.ensureTypedArg( options.rotation.angle, types.NUMBER, 0 ),
         _angleSpread: utils.ensureTypedArg( options.rotation.angleSpread, types.NUMBER, 0 ),
         _static: utils.ensureTypedArg( options.rotation.static, types.BOOLEAN, false ),
-        _center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, this.position._value ),
+        _center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, this.position._value.clone() ),
         _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
@@ -282,6 +282,8 @@ SPE.Emitter = function( options ) {
     this.isStatic = utils.ensureTypedArg( options.isStatic, types.BOOLEAN, false );
     this.activeMultiplier = utils.ensureTypedArg( options.activeMultiplier, types.NUMBER, 1 );
 
+    // Whether this emitter is alive or not.
+    this.alive = utils.ensureTypedArg( options.alive, types.BOOLEAN, true );
 
 
     // The following properties are set internally and are not
@@ -296,8 +298,10 @@ SPE.Emitter = function( options ) {
     // particle's values will start at
     this.attributeOffset = 0;
 
-    // Whether this emitter is alive or not.
-    this.alive = true;
+    // The end of the range in the attribute buffers
+    this.attributeEnd = 0;
+
+
 
     // Holds the time the emitter has been alive for.
     this.age = 0.0;
@@ -386,8 +390,6 @@ SPE.Emitter = function( options ) {
     utils.ensureValueOverLifetimeCompliance( this.opacity, lifetimeLength, lifetimeLength );
     utils.ensureValueOverLifetimeCompliance( this.size, lifetimeLength, lifetimeLength );
     utils.ensureValueOverLifetimeCompliance( this.angle, lifetimeLength, lifetimeLength );
-
-    console.log( this.color._value );
 };
 
 SPE.Emitter.constructor = SPE.Emitter;
@@ -472,6 +474,12 @@ SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     else {
         this.particlesPerSecond = particleCount / groupMaxAge;
     }
+};
+
+SPE.Emitter.prototype._setAttributeOffset = function( startIndex ) {
+    this.attributeOffset = startIndex;
+    this.activationIndex = startIndex;
+    this.activationEnd = startIndex + this.particleCount;
 };
 
 
@@ -865,7 +873,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
 
 
     var activationStart = this.particleCount === 1 ? activationIndex : ( activationIndex | 0 ),
-        activationEnd = activationStart + ppsDt,
+        activationEnd = Math.min( activationStart + ppsDt, this.activationEnd ),
         activationCount = activationEnd - this.activationIndex | 0,
         dtPerParticle = activationCount > 0 ? dt / activationCount : 0;
 
@@ -926,7 +934,6 @@ SPE.Emitter.prototype.reset = function( force ) {
  */
 SPE.Emitter.prototype.enable = function() {
     'use strict';
-
     this.alive = true;
     return this;
 };
