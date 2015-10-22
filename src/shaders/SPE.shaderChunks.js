@@ -190,14 +190,14 @@ SPE.shaderChunks = {
         '      vec3 translated;',
         '      mat4 rotationMatrix;',
 
-        '      pos *= -1.0;',
+        // '      pos *= -1.0;',
 
         '      float angle = 0.0;',
         '      angle += when_eq( rotation.z, 0.0 ) * rotation.y;',
         '      angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime );',
-        '      translated = rotationCenter - pos;',
+        '      translated = pos - rotationCenter;',
         '      rotationMatrix = getRotationMatrix( axis, angle );',
-        '      return center + vec3( rotationMatrix * vec4( translated, 1.0 ) );',
+        '      return vec3( rotationMatrix * vec4( translated, 0.0 ) ) - center;',
         '   }',
         '#endif'
     ].join( '\n' ),
