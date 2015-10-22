@@ -1,23 +1,15 @@
-<!-- A seperate test file to play around with whilst doing updates/bug fixes -->
 <html>
 <head>
-	<title>Basic Shader Particles</title>
-	<link rel="stylesheet" type="text/css" href="./css/style.css">
+    <title>SPE: Emitter pooling</title>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
 </head>
 <body>
 	<p class="numParticles">Click mouse or press any key to trigger an explosion.</p>
 
-    <!-- THREE.min.js r71 and FPS stats -->
-    <script type="text/javascript" src="./js/THREE-r71.min.js"></script>
-	<script type="text/javascript" src="./js/Stats.min.js"></script>
-
-    <!-- The Object Pool constructor -->
-    <script type="text/javascript" src="./js/Pool.js"></script>
-
-	<!-- ShaderParticles -->
-    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
-	<script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
-    <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
+    <script type="text/javascript" src="./js/THREE-r72.js"></script>
+    <script type="text/javascript" src="./js/Stats.min.js"></script>
+    <script type="text/javascript" src="../build/SPE.min.js"></script>
 
 
 	<script type="text/javascript">
@@ -28,21 +20,29 @@
 		var emitter, particleGroup, pool,
             pos = new THREE.Vector3(),
             emitterSettings = {
-                type: 'sphere',
-                positionSpread: new THREE.Vector3(10, 10, 10),
-                radius: 1,
-                speed: 100,
-                sizeStart: 30,
-                sizeStartSpread: 30,
-                sizeEnd: 0,
-                opacityStart: 1,
-                opacityEnd: 0,
-                colorStart: new THREE.Color('yellow'),
-                colorStartSpread: new THREE.Vector3(0, 10, 0),
-                colorEnd: new THREE.Color('red'),
-                particleCount: 1000,
-                alive: 0,
-                duration: 0.05
+                type: SPE.distributions.SPHERE,
+                position: {
+                    spread: new THREE.Vector3(10),
+                    radius: 1,
+                },
+                velocity: {
+                    value: new THREE.Vector3( 100 )
+                },
+                size: {
+                    value: [ 30, 0 ]
+                },
+                opacity: {
+                    value: [1, 0]
+                },
+                color: {
+                    value: [new THREE.Color('yellow'),new THREE.Color('red')]
+                },
+                particleCount: 100,
+                alive: true,
+                duration: 0.05,
+                maxAge: {
+                    value: 0.5
+                }
             };
 
 		// Setup the scene
@@ -81,8 +81,9 @@
         // Create particle group and emitter
         function initParticles() {
         	particleGroup = new SPE.Group({
-        		texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-        		maxAge: 0.5,
+        		texture: {
+                    value: THREE.ImageUtils.loadTexture('./img/smokeparticle.png')
+                },
                 blending: THREE.AdditiveBlending
         	});
 

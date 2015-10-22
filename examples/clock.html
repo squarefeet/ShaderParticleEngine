@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title></title>
+		<title>SPE: Clock</title>
 		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 		<link rel="stylesheet" type="text/css" href="css/style.css">
 	</head>
@@ -46,7 +46,8 @@
 						angle: 0,
 						static: false,
 						center: new THREE.Vector3()
-					}
+					},
+					direction: -1
 				}),
 				minuteHand = new SPE.Emitter({
 					particleCount: 500,
@@ -70,7 +71,8 @@
 						angle: 0,
 						static: false,
 						center: new THREE.Vector3()
-					}
+					},
+					direction: -1
 				}),
 				hourHand = new SPE.Emitter({
 					particleCount: 500,
@@ -94,7 +96,8 @@
 						angle: 0,
 						static: false,
 						center: new THREE.Vector3()
-					}
+					},
+					direction: -1
 				});
 
 			group.addEmitter( secondHand );
@@ -151,8 +154,6 @@
 
 			preRender();
 			animate();
-
-
 		</script>
 	</body>
 </html>

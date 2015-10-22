@@ -603,6 +603,44 @@
 
         <tr>
             
+                <td class="name"><code>direction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    1
+                
+                </td>
+            
+
+            <td class="description last">The direction of the emitter. If value is `1`, emitter will start at beginning of particle's lifecycle.
+                                  If value is `-1`, emitter will start at end of particle's lifecycle and work it's way backwards.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>maxAge</code></td>
             
 
@@ -918,6 +956,80 @@
 
         <tr>
             
+                <td class="name"><code>radius</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    10
+                
+                </td>
+            
+
+            <td class="description last">This emitter's base radius.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>radiusScale</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    new THREE.Vector3()
+                
+                </td>
+            
+
+            <td class="description last">A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>distribution</code></td>
             
 
@@ -948,7 +1060,7 @@
                 </td>
             
 
-            <td class="description last">A specific distribution to use when positioning particles. Overrides the `type` option.</td>
+            <td class="description last">A specific distribution to use when radiusing particles. Overrides the `type` option.</td>
         </tr>
 
     
@@ -1418,294 +1530,6 @@
             
 
             <td class="description last">When a particle is re-spawned, whether it's acceleration should be re-randomised or not. Can incur a performance hit.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>radius</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    {}
-                
-                </td>
-            
-
-            <td class="description last">An object describing this emitter's radius. Only used when using SPHERE or DISC distribution type.
-                <h6>Properties</h6>
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>value</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    10
-                
-                </td>
-            
-
-            <td class="description last">This emitter's base radius.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>spread</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    0
-                
-                </td>
-            
-
-            <td class="description last">This emitter's radius variance on a per-particle basis.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>spreadClamp</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    0
-                
-                </td>
-            
-
-            <td class="description last">The numeric multiples the particle's should be spread out over.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>scale</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    new THREE.Vector3()
-                
-                </td>
-            
-
-            <td class="description last">A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>distribution</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#distribution">distribution</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    value of the `type` option.
-                
-                </td>
-            
-
-            <td class="description last">A specific distribution to use when radiusing particles. Overrides the `type` option.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>randomise</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">When a particle is re-spawned, whether it's radius should be re-randomised or not. Can incur a performance hit.</td>
         </tr>
 
     
@@ -3769,7 +3593,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Tue Oct 20 2015 23:56:46 GMT+0100 (BST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Thu Oct 22 2015 23:41:24 GMT+0100 (BST)
 </footer>
 
 <script> prettyPrint(); </script>

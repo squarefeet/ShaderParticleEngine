@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SPE: Explosion</title>
+		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body>
+		<script type="text/javascript" src="../examples/js/THREE-r72.js"></script>
+		<script type="text/javascript" src="../examples/js/Stats.min.js"></script>
+		<script type="text/javascript" src="../build/SPE.min.js"></script>
+
+		<script type="text/javascript">
+			var scene = new THREE.Scene(),
+			    camera = new THREE.PerspectiveCamera( 64, window.innerWidth / window.innerHeight, 0.1, 10000 ),
+			    renderer = new THREE.WebGLRenderer( {
+			        antialias: true
+			    } ),
+			    stats = new Stats(),
+			    clock = new THREE.Clock();
+
+
+			function animate() {
+			    requestAnimationFrame( animate );
+			    stats.update();
+
+			    if ( typeof onAnimate === 'function' ) {
+			        onAnimate();
+			    }
+
+			    render();
+			}
+
+			function render() {
+				var dt = clock.getDelta();
+			    group.tick(  );
+			    shockwaveGroup.tick(  );
+			    renderer.render( scene, camera );
+			}
+
+			clock.getDelta();
+			var group = new SPE.Group( {
+					texture: {
+						value: THREE.ImageUtils.loadTexture( '../../examples/img/sprite-explosion2.png' ),
+						frames: new THREE.Vector2( 5, 5 ),
+						loop: 1
+					},
+					depthTest: true,
+					depthWrite: false,
+					blending: THREE.AdditiveBlending,
+					scale: 600
+				} ),
+				shockwaveGroup = new SPE.Group( {
+					texture: {
+						value: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' ),
+					},
+					depthTest: false,
+					depthWrite: true,
+					blending: THREE.NormalBlending,
+				} ),
+				shockwave = new SPE.Emitter( {
+					particleCount: 200,
+					type: SPE.distributions.DISC,
+					position: {
+						radius: 5,
+						spread: new THREE.Vector3( 5 )
+					},
+					maxAge: {
+						value: 2,
+						spread: 0
+					},
+					// duration: 1,
+					activeMultiplier: 2000,
+
+					velocity: {
+						value: new THREE.Vector3( 40 )
+					},
+					rotation: {
+						axis: new THREE.Vector3( 1, 0, 0 ),
+						angle: Math.PI * 0.5,
+						static: true
+					},
+					size: { value: 2 },
+					color: {
+						value: [
+							new THREE.Color( 0.4, 0.2, 0.1 ),
+							new THREE.Color( 0.2, 0.2, 0.2 )
+						]
+					},
+					opacity: { value: [0.5, 0.2, 0] }
+				}),
+				debris = new SPE.Emitter( {
+					particleCount: 100,
+					type: SPE.distributions.SPHERE,
+					position: {
+						radius: 0.1,
+					},
+					maxAge: {
+						value: 2
+					},
+					// duration: 2,
+					activeMultiplier: 40,
+
+					velocity: {
+						value: new THREE.Vector3( 100 )
+					},
+					acceleration: {
+						value: new THREE.Vector3( 0, -20, 0 ),
+						distribution: SPE.distributions.BOX
+					},
+					size: { value: 2 },
+					drag: {
+						value: 1
+					},
+					color: {
+						value: [
+							new THREE.Color( 1, 1, 1 ),
+							new THREE.Color( 1, 1, 0 ),
+							new THREE.Color( 1, 0, 0 ),
+							new THREE.Color( 0.4, 0.2, 0.1 )
+						]
+					},
+					opacity: { value: [0.4, 0] }
+				}),
+				fireball = new SPE.Emitter( {
+					particleCount: 20,
+					type: SPE.distributions.SPHERE,
+					position: {
+						radius: 1
+					},
+					maxAge: { value: 2 },
+					// duration: 1,
+					activeMultiplier: 20,
+					velocity: {
+						value: new THREE.Vector3( 10 )
+					},
+					size: { value: [20, 100] },
+					color: {
+						value: [
+							new THREE.Color( 0.5, 0.1, 0.05 ),
+							new THREE.Color( 0.2, 0.2, 0.2 )
+						]
+					},
+					opacity: { value: [0.5, 0.35, 0.1, 0] }
+				}),
+				mist = new SPE.Emitter( {
+					particleCount: 50,
+					position: {
+						spread: new THREE.Vector3( 10, 10, 10 ),
+						distribution: SPE.distributions.SPHERE
+					},
+					maxAge: { value: 2 },
+					// duration: 1,
+					activeMultiplier: 2000,
+					velocity: {
+						value: new THREE.Vector3( 8, 3, 10 ),
+						distribution: SPE.distributions.SPHERE
+					},
+					size: { value: 40 },
+					color: {
+						value: new THREE.Color( 0.2, 0.2, 0.2 )
+					},
+					opacity: { value: [0, 0, 0.2, 0] }
+				}),
+				flash = new SPE.Emitter( {
+					particleCount: 50,
+					position: { spread: new THREE.Vector3( 5, 5, 5 ) },
+					velocity: {
+						spread: new THREE.Vector3( 30 ),
+						distribution: SPE.distributions.SPHERE
+					},
+					size: { value: [2, 20, 20, 20] },
+					maxAge: { value: 2 },
+					activeMultiplier: 2000,
+					opacity: { value: [0.5, 0.25, 0, 0] }
+				} );
+
+			group.addEmitter( fireball ).addEmitter( flash );
+			shockwaveGroup.addEmitter( debris ).addEmitter( mist );
+			scene.add( shockwaveGroup.mesh );
+			scene.add( group.mesh );
+
+			camera.position.y = 40;
+			camera.position.z = 100;
+			camera.lookAt( scene.position );
+
+
+			var floor = new THREE.Mesh(
+				new THREE.PlaneGeometry( 1000, 1000, 1, 1 ),
+				new THREE.MeshPhongMaterial( {
+					color: 0x555555
+				} )
+			);
+
+			floor.position.y = -10;
+			floor.rotation.x = Math.PI * -0.5;
+			scene.add( floor );
+
+			var light = new THREE.PointLight( 0xffffff, 1, 100 );
+			light.position.set( 0, 20, 0 );
+			scene.add( light );
+
+			// renderer.setClearColor( 0x333333, 1 );
+
+			function onAnimate() {
+				var now = Date.now() * 0.001;
+				camera.position.x = Math.sin( now ) * 100;
+				camera.position.z = Math.cos( now ) * 100;
+				camera.lookAt( scene.position );
+			}
+
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			document.body.appendChild( stats.domElement );
+
+			setTimeout( animate, 0 );
+		</script>
+	</body>
+</html>

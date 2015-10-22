@@ -15,4 +15,4 @@ v1.0.0
 * Emitter types are now known as `distributions`, and are "constants". See Migration log for more.
 * `maxAge` property is no longer part of `SPE.Group` and has been moved to `SPE.Emitter`.
 * `alive` property of `SPE.Emitter` is now a boolean no longer controls percentage of particles emitted. `activeMultiplier` property of `SPE.Emitter` replaces this functionalty.
-
+* Added `direction` property to `SPE.Emitter`. Allows control over direction of the emitter (forwards, or backwards).

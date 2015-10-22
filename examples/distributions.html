@@ -1,0 +1,245 @@
+<html>
+<head>
+	<title>SPE: Distribution types</title>
+	<link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+<body>
+
+	<script type="text/javascript" src="./js/THREE-r72.js"></script>
+	<script type="text/javascript" src="./js/Stats.min.js"></script>
+
+    <script type="text/javascript" src="../build/SPE.min.js"></script>
+
+
+	<script type="text/javascript">
+		// variables used in init()
+        var scene, camera, renderer, stats, stats2, clock;
+
+        // Used in initParticles()
+		var particleGroup;
+
+		// Setup the scene
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.lookAt( scene.position );
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000);
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+        // Create particle group and emitter
+        function initParticles() {
+        	particleGroup = new SPE.Group({
+        		texture: {
+                    value: THREE.ImageUtils.loadTexture('./img/smokeparticle.png')
+                }
+        	});
+
+            // General distributions.
+            for( var i = 1; i < 4; ++i ) {
+            	var emitter = new SPE.Emitter({
+                    type: i,
+                    maxAge: {
+                        value: 1
+                    },
+            		position: {
+                        value: new THREE.Vector3(-50 + (i * 25), 40, 0),
+                        radius: 5,
+                        spread: new THREE.Vector3( 3, 3, 3 )
+                    },
+
+                    color: {
+                        value: [ new THREE.Color('white'), new THREE.Color('red') ]
+                    },
+
+                    size: {
+                        value: 1
+                    },
+                    isStatic: true,
+            		particleCount: 250
+            	});
+
+            	particleGroup.addEmitter( emitter );
+            }
+
+            // Spread clamping.
+            for( var i = 1; i < 4; ++i ) {
+                var emitter = new SPE.Emitter({
+                    type: i,
+                    maxAge: {
+                        value: 1
+                    },
+                    position: {
+                        value: new THREE.Vector3(-50 + (i * 25), 20, 0),
+                        radius: 4,
+                        spread: new THREE.Vector3( 5, 5, 5 ),
+                        spreadClamp: new THREE.Vector3( 2, 2, 2 )
+                    },
+
+                    color: {
+                        value: [ new THREE.Color('white'), new THREE.Color('red') ]
+                    },
+
+                    size: {
+                        value: 1
+                    },
+                    isStatic: true,
+
+                    particleCount: 500
+                });
+
+                particleGroup.addEmitter( emitter );
+            }
+
+            // Spherical velocity distributions.
+            for( var i = 1; i < 4; ++i ) {
+                var emitter = new SPE.Emitter({
+                    type: i,
+                    maxAge: {
+                        value: 1
+                    },
+                    position: {
+                        value: new THREE.Vector3(-50 + (i * 25), 0, 0),
+                        radius: 5,
+                        spread: i === 1 ? new THREE.Vector3( 3, 3, 3 ) : undefined
+                    },
+
+                    velocity: {
+                        value: new THREE.Vector3( 3, 3, 3 ),
+                        distribution: SPE.distributions.SPHERE
+                    },
+
+                    color: {
+                        value: [ new THREE.Color('white'), new THREE.Color('red') ]
+                    },
+
+                    size: {
+                        value: 1
+                    },
+
+                    particleCount: 250
+                });
+
+                particleGroup.addEmitter( emitter );
+            }
+
+
+            // Disc velocity distributions.
+            for( var i = 1; i < 4; ++i ) {
+                var emitter = new SPE.Emitter({
+                    type: i,
+                    maxAge: {
+                        value: 1
+                    },
+                    position: {
+                        value: new THREE.Vector3(-50 + (i * 25), -20, 0),
+                        radius: 5,
+                        spread: i === 1 ? new THREE.Vector3( 3, 3, 3 ) : undefined
+                    },
+
+                    velocity: {
+                        value: new THREE.Vector3( 3, 3, 3 ),
+                        distribution: SPE.distributions.DISC
+                    },
+
+                    color: {
+                        value: [ new THREE.Color('white'), new THREE.Color('red') ]
+                    },
+
+                    size: {
+                        value: 1
+                    },
+
+                    particleCount: 250
+                });
+
+                particleGroup.addEmitter( emitter );
+            }
+
+
+            // Box velocity distributions.
+            for( var i = 1; i < 4; ++i ) {
+                var emitter = new SPE.Emitter({
+                    type: i,
+                    maxAge: {
+                        value: 1
+                    },
+                    position: {
+                        value: new THREE.Vector3(-50 + (i * 25), -40, 0),
+                        radius: 5,
+                        spread: i === 1 ? new THREE.Vector3( 3, 3, 3 ) : undefined
+                    },
+
+                    velocity: {
+                        value: new THREE.Vector3( 3, 3, 3 ),
+                        distribution: SPE.distributions.BOX
+                    },
+
+                    color: {
+                        value: [ new THREE.Color('white'), new THREE.Color('red') ]
+                    },
+
+                    size: {
+                        value: 1
+                    },
+
+                    particleCount: 250
+                });
+
+                particleGroup.addEmitter( emitter );
+            }
+
+        	scene.add( particleGroup.mesh );
+        }
+
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+
+            var now = Date.now() * 0.001;
+            camera.position.x = Math.sin( now ) * 75;
+            camera.position.z = Math.cos( now ) * 75;
+            camera.lookAt( scene.position );
+
+            render( clock.getDelta() );
+            stats.update();
+        }
+
+
+        function render( dt ) {
+            particleGroup.tick( dt );
+            renderer.render( scene, camera );
+        }
+
+
+        window.addEventListener( 'resize', function() {
+        	var w = window.innerWidth,
+        		h = window.innerHeight;
+
+        	camera.aspect = w / h;
+        	camera.updateProjectionMatrix();
+
+        	renderer.setSize( w, h );
+        }, false );
+
+        init();
+        initParticles();
+
+        setTimeout(animate, 0);
+
+	</script>
+
+</body>
+</html>

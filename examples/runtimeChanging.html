@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title></title>
+        <title>SPE: Dynamic properties</title>
         <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
         <style type="text/css">
             body {
@@ -38,15 +38,7 @@
                         loop: 2
                     },
 
-                    // fixedTimeStep: 0.016,
-                    // blending: THREE.NormalBlending,
-                    // colorize: true,
-                    // hasPerspective: true,
-                    // transparent: true,
-                    // alphaTest: 0.5,
-                    // depthWrite: false,
                     depthTest: true,
-                    // fog: true
                     scale: window.innerHeight / 2.0
                 } ),
 
@@ -101,19 +93,13 @@
                         value: 20,
                         spread: 0
                     },
-                    color: {
-                        // value: new THREE.Color( 1, 1, 1 )
-                    },
                     opacity: {
                         value: 0.02
                     },
                     angle: {
                         value: 0,
                         spread: 0
-                    },
-                    // duration: 5,
-                    // activeMultiplier: 1,
-                    // isStatic: true
+                    }
                 });
 
             group.addEmitter( emitter );
@@ -201,6 +187,8 @@
                         emitter.position.spreadClamp = emitter.position.spreadClamp;
                     } );
                 }
+
+                positionFolder.add( emitter.position, 'radius', 0, 50 ).listen();
                 positionFolder.add( emitter.position, 'randomise' ).listen();
 
                 var velocityFolder = gui.addFolder( 'Velocity' );
@@ -231,20 +219,6 @@
                 }
 
                 accelerationFolder.add( emitter.acceleration, 'randomise' ).listen();
-
-
-                var radiusFolder = gui.addFolder( 'Radius' );
-                radiusFolder.add( emitter.radius, 'value', -50, 50 ).listen();
-                radiusFolder.add( emitter.radius, 'spread', -50, 50 ).listen();
-                radiusFolder.add( emitter.radius, 'spreadClamp', -50, 50 ).listen();
-
-                for( i = 0; i < vec3Components.length; ++i ) {
-                    radiusFolder.add( emitter.radius.scale, vec3Components[ i ], 0, 1, 0.1 ).listen().onChange( function() {
-                        emitter.radius.scale = emitter.radius.scale;
-                    } );
-                }
-                radiusFolder.add( emitter.radius, 'randomise' ).listen();
-
 
 
                 var colors = {

@@ -1,17 +1,15 @@
 <html>
 <head>
-	<title>Basic Shader Particles</title>
+	<title>SPE: Multiple Emitters</title>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 	<link rel="stylesheet" type="text/css" href="./css/style.css">
 </head>
 <body>
 	<p class="numParticles"></p>
 
-    <!-- THREE.min.js r71 and FPS stats -->
     <script type="text/javascript" src="./js/THREE-r72.js"></script>
-	<script type="text/javascript" src="./js/Stats.min.js"></script>
-
-	<!-- ShaderParticles -->
-	<script type="text/javascript" src="../build/SPE.min.js"></script>
+    <script type="text/javascript" src="./js/Stats.min.js"></script>
+    <script type="text/javascript" src="../build/SPE.min.js"></script>
 
 
 	<script type="text/javascript">
@@ -62,36 +60,62 @@
 
             for( var i = 0; i < numEmitters; ++i ) {
             	emitter = new SPE.Emitter({
-                    maxAge: 2,
+                    maxAge: 5,
+                    type: Math.random() * 4 | 0,
             		position: {
                         value: new THREE.Vector3(
-                            getRandomNumber(window.innerWidth/5),
-                            getRandomNumber(window.innerHeight/5),
+                            getRandomNumber(200),
+                            getRandomNumber(200),
                             getRandomNumber(200)
                         )
                     },
 
             		acceleration:{
-                        spread: new THREE.Vector3(
-                            getRandomNumber(-10),
-                            getRandomNumber(-10),
-                            getRandomNumber(-10)
+                        value: new THREE.Vector3(
+                            getRandomNumber(-2),
+                            getRandomNumber(-2),
+                            getRandomNumber(-2)
                         )
                     },
 
                     velocity: {
-                        spread: new THREE.Vector3(
-                            getRandomNumber(20),
-                            getRandomNumber(20),
-                            getRandomNumber(20)
+                        value: new THREE.Vector3(
+                            getRandomNumber(5),
+                            getRandomNumber(5),
+                            getRandomNumber(5)
                         )
+                    },
+
+                    rotation: {
+                        axis: new THREE.Vector3(
+                            getRandomNumber(1),
+                            getRandomNumber(1),
+                            getRandomNumber(1)
+                        ),
+                        angle: Math.random() * Math.PI,
+                        center: new THREE.Vector3(
+                            getRandomNumber(100),
+                            getRandomNumber(100),
+                            getRandomNumber(100)
+                        )
+                    },
+
+                    wiggle: {
+                        value: Math.random() * 20
+                    },
+
+                    drag: {
+                        value: Math.random()
                     },
 
                     color: {
                         value: [ getRandomColor(), getRandomColor() ]
                     },
+                    size: {
+                        value: [0, 2+ Math.random() * 10, 0]
+                    },
 
-            		particleCount: 500,
+            		particleCount: 100,
 
                     opacity: [0, 1, 0]
             	});
@@ -102,7 +126,7 @@
         	scene.add( particleGroup.mesh );
 
         	document.querySelector('.numParticles').textContent =
-        		'Total particles: ' + (emitter.particleCount * numEmitters);
+        		'Total particles: ' + particleGroup.particleCount;
         }
 
 
@@ -118,8 +142,8 @@
 
         function updateCamera() {
             var now = Date.now() * 0.0005;
-            camera.position.x = Math.sin( now ) * 200;
-            camera.position.z = Math.cos( now ) * 200;
+            camera.position.x = Math.sin( now ) * 500;
+            camera.position.z = Math.cos( now ) * 500;
             camera.lookAt( scene.position );
         }
 

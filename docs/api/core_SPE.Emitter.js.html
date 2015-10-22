@@ -60,6 +60,8 @@
  *                                          Values greater than 1 will emulate a burst of particles, causing the emitter to run out of particles
  *                                          before it's next activation cycle.
  *
+ * @property {Boolean} [direction=1] The direction of the emitter. If value is `1`, emitter will start at beginning of particle's lifecycle.
+ *                                   If value is `-1`, emitter will start at end of particle's lifecycle and work it's way backwards.
  *
  * @property {Object} [maxAge={}] An object describing the particle's maximum age in seconds.
  * @property {Number} [maxAge.value=2] A number between 0 and 1 describing the amount of maxAge to apply to all particles.
@@ -75,7 +77,9 @@
  *                                                               be spread out over.
  *                                                               Note that when using a SPHERE or DISC distribution, only the x-component
  *                                                               of this vector is used.
- * @property {distribution} [position.distribution=value of the `type` option.] A specific distribution to use when positioning particles. Overrides the `type` option.
+ * @property {Number} [position.radius=10] This emitter's base radius.
+ * @property {Object} [position.radiusScale=new THREE.Vector3()] A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.
+ * @property {distribution} [position.distribution=value of the `type` option.] A specific distribution to use when radiusing particles. Overrides the `type` option.
  * @property {Boolean} [position.randomise=false] When a particle is re-spawned, whether it's position should be re-randomised or not. Can incur a performance hit.
  *
  *
@@ -95,15 +99,6 @@
  *                           of this vector is used.
  * @property {distribution} [acceleration.distribution=value of the `type` option.] A specific distribution to use when calculating a particle's acceleration. Overrides the `type` option.
  * @property {Boolean} [acceleration.randomise=false] When a particle is re-spawned, whether it's acceleration should be re-randomised or not. Can incur a performance hit.
- *
- *
- * @property {Object} [radius={}] An object describing this emitter's radius. Only used when using SPHERE or DISC distribution type.
- * @property {Number} [radius.value=10] This emitter's base radius.
- * @property {Number} [radius.spread=0] This emitter's radius variance on a per-particle basis.
- * @property {Number} [radius.spreadClamp=0] The numeric multiples the particle's should be spread out over.
- * @property {Object} [radius.scale=new THREE.Vector3()] A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.
- * @property {distribution} [radius.distribution=value of the `type` option.] A specific distribution to use when radiusing particles. Overrides the `type` option.
- * @property {Boolean} [radius.randomise=false] When a particle is re-spawned, whether it's radius should be re-randomised or not. Can incur a performance hit.
  *
  *
  * @property {Object} [drag={}] An object describing this particle drag. Drag is applied to both velocity and acceleration values.
@@ -220,7 +215,10 @@ SPE.Emitter = function( options ) {
         _spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() ),
         _spreadClamp: utils.ensureInstanceOf( options.position.spreadClamp, THREE.Vector3, new THREE.Vector3() ),
         _distribution: utils.ensureTypedArg( options.position.distribution, types.NUMBER, this.type ),
-        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false ),
+        _radius: utils.ensureTypedArg( options.position.radius, types.NUMBER, 10 ),
+        _radiusScale: utils.ensureInstanceOf( options.position.scale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) ),
+        _distributionClamp: utils.ensureTypedArg( options.position.distributionClamp, types.NUMBER, 0 ),
     };
 
     this.velocity = {
@@ -234,14 +232,6 @@ SPE.Emitter = function( options ) {
         _value: utils.ensureInstanceOf( options.acceleration.value, THREE.Vector3, new THREE.Vector3() ),
         _spread: utils.ensureInstanceOf( options.acceleration.spread, THREE.Vector3, new THREE.Vector3() ),
         _distribution: utils.ensureTypedArg( options.acceleration.distribution, types.NUMBER, this.type ),
-        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
-    };
-
-    this.radius = {
-        _value: utils.ensureTypedArg( options.radius.value, types.NUMBER, 10 ),
-        _spread: utils.ensureTypedArg( options.radius.spread, types.NUMBER, 0 ),
-        _spreadClamp: utils.ensureTypedArg( options.radius.spreadClamp, types.NUMBER, 0 ),
-        _scale: utils.ensureInstanceOf( options.radius.scale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) ),
         _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
@@ -262,7 +252,7 @@ SPE.Emitter = function( options ) {
         _angle: utils.ensureTypedArg( options.rotation.angle, types.NUMBER, 0 ),
         _angleSpread: utils.ensureTypedArg( options.rotation.angleSpread, types.NUMBER, 0 ),
         _static: utils.ensureTypedArg( options.rotation.static, types.BOOLEAN, false ),
-        _center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, this.position._value ),
+        _center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, this.position._value.clone() ),
         _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
     };
 
@@ -306,7 +296,10 @@ SPE.Emitter = function( options ) {
     this.duration = utils.ensureTypedArg( options.duration, types.NUMBER, null );
     this.isStatic = utils.ensureTypedArg( options.isStatic, types.BOOLEAN, false );
     this.activeMultiplier = utils.ensureTypedArg( options.activeMultiplier, types.NUMBER, 1 );
+    this.direction = utils.ensureTypedArg( options.direction, types.NUMBER, 1 );
 
+    // Whether this emitter is alive or not.
+    this.alive = utils.ensureTypedArg( options.alive, types.BOOLEAN, true );
 
 
     // The following properties are set internally and are not
@@ -321,8 +314,10 @@ SPE.Emitter = function( options ) {
     // particle's values will start at
     this.attributeOffset = 0;
 
-    // Whether this emitter is alive or not.
-    this.alive = true;
+    // The end of the range in the attribute buffers
+    this.attributeEnd = 0;
+
+
 
     // Holds the time the emitter has been alive for.
     this.age = 0.0;
@@ -380,7 +375,6 @@ SPE.Emitter = function( options ) {
         position: 'position',
         velocity: 'velocity',
         acceleration: 'acceleration',
-        radius: 'position',
         drag: 'acceleration',
         wiggle: 'params',
         rotation: 'rotation',
@@ -392,6 +386,8 @@ SPE.Emitter = function( options ) {
 
     for ( var i in this.updateMap ) {
         if ( this.updateMap.hasOwnProperty( i ) ) {
+            this.updateCounts[ this.updateMap[ i ] ] = 0.0;
+            this.updateFlags[ this.updateMap[ i ] ] = false;
             this._createGetterSetters( this[ i ], i );
         }
     }
@@ -448,6 +444,8 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
                             self.updateCounts[ mapName ] = 0.0;
                         }
 
+                        self.group._updateDefines();
+
                         this[ prop ] = value;
 
                         // If the previous value was an array, then make
@@ -493,6 +491,12 @@ SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     }
 };
 
+SPE.Emitter.prototype._setAttributeOffset = function( startIndex ) {
+    this.attributeOffset = startIndex;
+    this.activationIndex = startIndex;
+    this.activationEnd = startIndex + this.particleCount;
+};
+
 
 SPE.Emitter.prototype._assignValue = function( prop, index ) {
     'use strict';
@@ -500,12 +504,6 @@ SPE.Emitter.prototype._assignValue = function( prop, index ) {
     switch ( prop ) {
         case 'position':
             this._assignPositionValue( index );
-            break;
-
-        case 'radius':
-            if ( this.position._distribution !== SPE.distributions.BOX ) {
-                this._assignPositionValue( index );
-            }
             break;
 
         case 'velocity':
@@ -545,8 +543,7 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
         attr = this.attributes.position,
         value = prop._value,
         spread = prop._spread,
-        distribution = prop._distribution,
-        radius = this.radius;
+        distribution = prop._distribution;
 
     switch ( distribution ) {
         case distributions.BOX:
@@ -554,11 +551,11 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
             break;
 
         case distributions.SPHERE:
-            utils.randomVector3OnSphere( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
+            utils.randomVector3OnSphere( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x, prop._distributionClamp || this.particleCount );
             break;
 
         case distributions.DISC:
-            utils.randomVector3OnDisc( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
+            utils.randomVector3OnDisc( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x );
             break;
     }
 };
@@ -584,17 +581,41 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
             break;
 
         case distributions.SPHERE:
+            pos = this.attributes.position.typedArray.array;
+            i = index * 3;
+
+            // Ensure position values aren't zero, otherwise no force will be
+            // applied.
+            // positionX = utils.zeroToEpsilon( pos[ i ], true );
+            // positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+            // positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );
+            positionX = pos[ i ];
+            positionY = pos[ i + 1 ];
+            positionZ = pos[ i + 2 ];
+
+            utils.randomDirectionVector3OnSphere(
+                this.attributes[ attrName ], index,
+                positionX, positionY, positionZ,
+                this.position._value,
+                prop._value.x,
+                prop._spread.x
+            );
+            break;
+
         case distributions.DISC:
             pos = this.attributes.position.typedArray.array;
             i = index * 3;
 
             // Ensure position values aren't zero, otherwise no force will be
             // applied.
-            positionX = utils.zeroToEpsilon( pos[ i ], true );
-            positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
-            positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );
+            // positionX = utils.zeroToEpsilon( pos[ i ], true );
+            // positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+            // positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );
+            positionX = pos[ i ];
+            positionY = pos[ i + 1 ];
+            positionZ = pos[ i + 2 ];
 
-            utils.randomDirectionVector3OnSphere(
+            utils.randomDirectionVector3OnDisc(
                 this.attributes[ attrName ], index,
                 positionX, positionY, positionZ,
                 this.position._value,
@@ -679,7 +700,6 @@ SPE.Emitter.prototype._assignRotationValue = function( index ) {
 
 SPE.Emitter.prototype._assignColorValue = function( index ) {
     'use strict';
-
     SPE.utils.randomColorAsHex( this.attributes.color, index, this.color._value, this.color._spread );
 };
 
@@ -697,13 +717,16 @@ SPE.Emitter.prototype._resetParticle = function( index ) {
         key = keys[ i ];
         updateFlag = updateFlags[ key ];
 
-        if ( resetFlags[ key ] || updateFlag ) {
+        if ( resetFlags[ key ] === true || updateFlag === true ) {
             this._assignValue( key, index );
             this._updateAttributeUpdateRange( key, index );
 
-            if ( updateFlag === true &amp;&amp; ( ++updateCounts[ key ] ) === this.particleCount ) {
+            if ( updateFlag === true &amp;&amp; updateCounts[ key ] === this.particleCount ) {
                 updateFlags[ key ] = false;
                 updateCounts[ key ] = 0.0;
+            }
+            else if ( updateFlag == true ) {
+                ++updateCounts[ key ];
             }
         }
     }
@@ -777,15 +800,24 @@ SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
         // Increment age
         age = params[ index + 1 ];
         maxAge = params[ index + 2 ];
-        age += dt;
 
-        // Mark particle as dead
-        if ( age >= maxAge ) {
-            age = 0.0;
-            alive = 0.0;
+        if ( this.direction === 1 ) {
+            age += dt;
 
-            // Decrement the active particle count
-            this._decrementParticleCount();
+            if ( age >= maxAge ) {
+                age = 0.0;
+                alive = 0.0;
+                this._decrementParticleCount();
+            }
+        }
+        else {
+            age -= dt;
+
+            if ( age &lt;= 0.0 ) {
+                age = maxAge;
+                alive = 0.0;
+                this._decrementParticleCount();
+            }
         }
 
         params[ index ] = alive;
@@ -797,8 +829,19 @@ SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
 
 SPE.Emitter.prototype._activateParticles = function( activationStart, activationEnd, params, dtPerParticle ) {
     'use strict';
-    for ( var i = activationStart, index; i &lt; activationEnd; ++i ) {
+    var direction = this.direction;
+
+    for ( var i = activationStart, index, dtValue; i &lt; activationEnd; ++i ) {
         index = i * 4;
+
+        // Don't re-activate particles that aren't dead yet.
+        // if ( params[ index ] !== 0.0 &amp;&amp; ( this.particleCount !== 1 || this.activeMultiplier !== 1 ) ) {
+        //     continue;
+        // }
+
+        if ( params[ index ] != 0.0 &amp;&amp; this.particleCount !== 1 ) {
+            continue;
+        }
 
         // Increment the active particle count.
         this._incrementParticleCount();
@@ -815,10 +858,10 @@ SPE.Emitter.prototype._activateParticles = function( activationStart, activation
         // This stops particles being 'clumped' together
         // when frame rates are on the lower side of 60fps
         // or not constant (a very real possibility!)
-        params[ index + 1 ] = dtPerParticle * ( i - activationStart );
+        dtValue = dtPerParticle * ( i - activationStart )
+        params[ index + 1 ] = direction === -1 ? params[ index + 2 ] - dtValue : dtValue;
 
         this._updateAttributeUpdateRange( 'params', i );
-
     }
 };
 
@@ -867,11 +910,12 @@ SPE.Emitter.prototype.tick = function( dt ) {
     if ( this.duration !== null &amp;&amp; this.age > this.duration ) {
         this.alive = false;
         this.age = 0.0;
+        return;
     }
 
 
-    var activationStart = this.particleCount === 1 ? activationIndex : activationIndex | 0,
-        activationEnd = activationStart + ppsDt,
+    var activationStart = this.particleCount === 1 ? activationIndex : ( activationIndex | 0 ),
+        activationEnd = Math.min( activationStart + ppsDt, this.activationEnd ),
         activationCount = activationEnd - this.activationIndex | 0,
         dtPerParticle = activationCount > 0 ? dt / activationCount : 0;
 
@@ -932,7 +976,6 @@ SPE.Emitter.prototype.reset = function( force ) {
  */
 SPE.Emitter.prototype.enable = function() {
     'use strict';
-
     this.alive = true;
     return this;
 };
@@ -989,7 +1032,7 @@ SPE.Emitter.prototype.remove = function() {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Tue Oct 20 2015 23:56:46 GMT+0100 (BST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Thu Oct 22 2015 23:41:24 GMT+0100 (BST)
 </footer>
 
 <script> prettyPrint(); </script>

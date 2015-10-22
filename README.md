@@ -1,15 +1,6 @@
 Shader Particle Engine v1.0.0 ![](https://travis-ci.org/squarefeet/ShaderParticleEngine.svg?branch=dev)
 =============================
 
-Contents
---------
-* [Overview](#overview)
-* [Dependencies](#dependencies)
-* [Changelog](#changelog)
-* [Documentation](#documentation)
-* [Building](#building)
-* [Thanks](#thanks)
-
 
 Overview
 --------
@@ -24,6 +15,9 @@ For more information on groups and emitters, see the docs below:
 
 * [Group documentation](./docs/SPE.Group.md)
 * [Emitter documentation](./docs/SPE.Emitter.md)
+
+
+Examples can be found [here](https://squarefeet.github.io/ShaderParticleEngine/)
 
 
 
