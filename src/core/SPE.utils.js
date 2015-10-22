@@ -560,46 +560,7 @@ SPE.utils = {
         return x - ( x | 0 );
     },
 
-    randomVector3OnSphereFibonnaci: function(
-        attribute, index, base, radius, radiusSpread, radiusScale, radiusSpreadClamp, distributionClamp
-    ) {
-        'use strict';
 
-
-        var value = ( index % distributionClamp ) + 1;
-
-        var depth = 2 * Math.abs( this.seededRandom( value ) ) - 1,
-            t = 6.2832 * this.seededRandom( value * 0.25 ),
-            r = Math.sqrt( 1 - depth * depth ),
-            rand = this.randomFloat( radius, radiusSpread ),
-            x = 0,
-            y = 0,
-            z = 0;
-
-        if ( radiusSpreadClamp ) {
-            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
-        }
-
-
-
-        // Set position on sphere
-        x = r * Math.cos( t ) * rand;
-        y = r * Math.sin( t ) * rand;
-        z = depth * rand;
-
-        // Apply radius scale to this position
-        x *= radiusScale.x;
-        y *= radiusScale.y;
-        z *= radiusScale.z;
-
-        // Translate to the base position.
-        x += base.x;
-        y += base.y;
-        z += base.z;
-
-        // Set the values in the typed array.
-        attribute.typedArray.setVec3Components( index, x, y, z );
-    },
 
     /**
      * Assigns a random vector 3 value to an SPE.ShaderAttribute instance, projecting the
@@ -671,6 +632,38 @@ SPE.utils = {
             v.normalize().multiplyScalar( -this.randomFloat( speed, speedSpread ) );
 
             attribute.typedArray.setVec3Components( index, v.x, v.y, v.z );
+        };
+    }() ),
+
+
+    randomDirectionVector3OnDisc: ( function() {
+        'use strict';
+
+        var v = new THREE.Vector3();
+
+        /**
+         * Given an SPE.ShaderAttribute instance, create a direction vector from the given
+         * position, using `speed` as the magnitude. Values are saved to the attribute.
+         *
+         * @param  {Object} attribute       The instance of SPE.ShaderAttribute to save the result to.
+         * @param  {Number} index           The offset in the attribute's TypedArray to save the result from.
+         * @param  {Number} posX            The particle's x coordinate.
+         * @param  {Number} posY            The particle's y coordinate.
+         * @param  {Number} posZ            The particle's z coordinate.
+         * @param  {Object} emitterPosition THREE.Vector3 instance describing the emitter's base position.
+         * @param  {Number} speed           The magnitude to apply to the vector.
+         * @param  {Number} speedSpread     The amount of randomness to apply to the magnitude.
+         */
+        return function( attribute, index, posX, posY, posZ, emitterPosition, speed, speedSpread ) {
+            v.copy( emitterPosition );
+
+            v.x -= posX;
+            v.y -= posY;
+            v.z -= posZ;
+
+            v.normalize().multiplyScalar( -this.randomFloat( speed, speedSpread ) );
+
+            attribute.typedArray.setVec3Components( index, v.x, v.y, 0 );
         };
     }() ),
 
