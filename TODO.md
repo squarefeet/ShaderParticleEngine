@@ -1,7 +1,7 @@
 SPE Dev Todo List
 =================
 
-* General optimization.
+* ~~General optimization.~~
 * ~~Add Browserify support (see [here](https://github.com/squarefeet/ShaderParticleEngine/pull/62))~~.
 * ~~Add Bower support (see [here](https://github.com/squarefeet/ShaderParticleEngine/pull/76)).~~
 	* ~~Credit @giuliandrimba for bower.json.~~
