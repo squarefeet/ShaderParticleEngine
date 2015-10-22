@@ -14,4 +14,9 @@ SPE Dev Todo List
 * Angle velocity (see [here](https://github.com/squarefeet/ShaderParticleEngine/pull/25)).
 * Look into adding proper angleAlignVelocity support.
 * [Publish to NPM](https://gist.github.com/coolaj86/1318304)
+
 * Custom distribution type?
+* Indexed points on sphere (num points, use particle index as counter)
+* Use of texture maps (more than one texture per image)
+	* Emitter can control offset, size.
+	* How to work this in with spritesheet support?

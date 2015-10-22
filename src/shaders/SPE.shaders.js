@@ -27,7 +27,7 @@ SPE.shaders = {
         '    highp float alive = getAlive();',
         '    highp float maxAge = getMaxAge();',
         '    highp float positionInTime = (age / maxAge);',
-        '    highp float isAlive = when_eq( alive, 1.0 );',
+        '    highp float isAlive = when_gt( alive, 0.0 );',
 
         '    #ifdef SHOULD_WIGGLE_PARTICLES',
         '        float wiggleAmount = positionInTime * getWiggle();',
@@ -72,7 +72,7 @@ SPE.shaders = {
         '    vec4 mvPos = modelViewMatrix * vec4( pos, 1.0 );',
 
         // Determine point size.
-        '    float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;',
+        '    highp float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;',
 
         // Determine perspective
         '    #ifdef HAS_PERSPECTIVE',

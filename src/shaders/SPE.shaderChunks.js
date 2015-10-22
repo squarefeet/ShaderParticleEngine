@@ -100,7 +100,7 @@ SPE.shaderChunks = {
 
     floatOverLifetime: [
         'float getFloatOverLifetime( in float positionInTime, in vec4 attr ) {',
-        '    float value = 0.0;',
+        '    highp float value = 0.0;',
         '    float deltaAge = positionInTime * float( VALUE_OVER_LIFETIME_LENGTH - 1 );',
         '    float fIndex = 0.0;',
         '    float shouldApplyValue = 0.0;',
@@ -111,11 +111,16 @@ SPE.shaderChunks = {
         // Take a look at the branch-avoidance functions defined above,
         // and be sure to check out The Orange Duck site where I got this
         // from (link above).
+
+        // Fix for static emitters (age is always zero).
+        '    value += attr[ 0 ] * when_eq( deltaAge, 0.0 );',
+        '',
         '    for( int i = 0; i < VALUE_OVER_LIFETIME_LENGTH - 1; ++i ) {',
         '       fIndex = float( i );',
-        '       shouldApplyValue = and( when_ge( deltaAge, fIndex ), when_lt( deltaAge, fIndex + 1.0 ) );',
+        '       shouldApplyValue = and( when_gt( deltaAge, fIndex ), when_le( deltaAge, fIndex + 1.0 ) );',
         '       value += shouldApplyValue * mix( attr[ i ], attr[ i + 1 ], deltaAge - fIndex );',
         '    }',
+        '',
         '    return value;',
         '}',
     ].join( '\n' ),

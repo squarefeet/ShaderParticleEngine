@@ -4,7 +4,8 @@ var scene = new THREE.Scene(),
         antialias: true
     } ),
     stats = new Stats(),
-    clock = new THREE.Clock();
+    clock = new THREE.Clock(),
+    fixedTimeStep = false;
 
 
 function animate() {
@@ -19,6 +20,6 @@ function animate() {
 }
 
 function render() {
-    group.tick( clock.getDelta() );
+    group.tick( !fixedTimeStep ? clock.getDelta() : undefined );
     renderer.render( scene, camera );
 }

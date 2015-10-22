@@ -192,7 +192,10 @@ SPE.Emitter = function( options ) {
         _spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, new THREE.Vector3() ),
         _spreadClamp: utils.ensureInstanceOf( options.position.spreadClamp, THREE.Vector3, new THREE.Vector3() ),
         _distribution: utils.ensureTypedArg( options.position.distribution, types.NUMBER, this.type ),
-        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false )
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false ),
+        _radius: utils.ensureTypedArg( options.position.radius, types.NUMBER, 10 ),
+        _radiusScale: utils.ensureInstanceOf( options.position.scale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) ),
+        _distributionClamp: utils.ensureTypedArg( options.position.distributionClamp, types.NUMBER, 0 ),
     };
 
     this.velocity = {
@@ -364,6 +367,8 @@ SPE.Emitter = function( options ) {
 
     for ( var i in this.updateMap ) {
         if ( this.updateMap.hasOwnProperty( i ) ) {
+            this.updateCounts[ this.updateMap[ i ] ] = 0.0;
+            this.updateFlags[ this.updateMap[ i ] ] = false;
             this._createGetterSetters( this[ i ], i );
         }
     }
@@ -381,6 +386,8 @@ SPE.Emitter = function( options ) {
     utils.ensureValueOverLifetimeCompliance( this.opacity, lifetimeLength, lifetimeLength );
     utils.ensureValueOverLifetimeCompliance( this.size, lifetimeLength, lifetimeLength );
     utils.ensureValueOverLifetimeCompliance( this.angle, lifetimeLength, lifetimeLength );
+
+    console.log( this.color._value );
 };
 
 SPE.Emitter.constructor = SPE.Emitter;
@@ -519,8 +526,7 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
         attr = this.attributes.position,
         value = prop._value,
         spread = prop._spread,
-        distribution = prop._distribution,
-        radius = this.radius;
+        distribution = prop._distribution;
 
     switch ( distribution ) {
         case distributions.BOX:
@@ -528,11 +534,11 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
             break;
 
         case distributions.SPHERE:
-            utils.randomVector3OnSphere( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
+            utils.randomVector3OnSphere( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x, prop._distributionClamp || this.particleCount );
             break;
 
         case distributions.DISC:
-            utils.randomVector3OnDisc( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
+            utils.randomVector3OnDisc( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x );
             break;
     }
 };
@@ -564,9 +570,12 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
 
             // Ensure position values aren't zero, otherwise no force will be
             // applied.
-            positionX = utils.zeroToEpsilon( pos[ i ], true );
-            positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
-            positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );
+            // positionX = utils.zeroToEpsilon( pos[ i ], true );
+            // positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+            // positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );
+            positionX = pos[ i ];
+            positionY = pos[ i + 1 ];
+            positionZ = pos[ i + 2 ];
 
             utils.randomDirectionVector3OnSphere(
                 this.attributes[ attrName ], index,
@@ -653,7 +662,6 @@ SPE.Emitter.prototype._assignRotationValue = function( index ) {
 
 SPE.Emitter.prototype._assignColorValue = function( index ) {
     'use strict';
-
     SPE.utils.randomColorAsHex( this.attributes.color, index, this.color._value, this.color._spread );
 };
 
@@ -671,13 +679,16 @@ SPE.Emitter.prototype._resetParticle = function( index ) {
         key = keys[ i ];
         updateFlag = updateFlags[ key ];
 
-        if ( resetFlags[ key ] || updateFlag ) {
+        if ( resetFlags[ key ] === true || updateFlag === true ) {
             this._assignValue( key, index );
             this._updateAttributeUpdateRange( key, index );
 
-            if ( updateFlag === true && ( ++updateCounts[ key ] ) === this.particleCount ) {
+            if ( updateFlag === true && updateCounts[ key ] === this.particleCount ) {
                 updateFlags[ key ] = false;
                 updateCounts[ key ] = 0.0;
+            }
+            else if ( updateFlag == true ) {
+                ++updateCounts[ key ];
             }
         }
     }
@@ -774,6 +785,15 @@ SPE.Emitter.prototype._activateParticles = function( activationStart, activation
     for ( var i = activationStart, index; i < activationEnd; ++i ) {
         index = i * 4;
 
+        // Don't re-activate particles that aren't dead yet.
+        // if ( params[ index ] !== 0.0 && ( this.particleCount !== 1 || this.activeMultiplier !== 1 ) ) {
+        //     continue;
+        // }
+
+        if ( params[ index ] != 0.0 && this.particleCount !== 1 ) {
+            continue;
+        }
+
         // Increment the active particle count.
         this._incrementParticleCount();
 
@@ -792,7 +812,6 @@ SPE.Emitter.prototype._activateParticles = function( activationStart, activation
         params[ index + 1 ] = dtPerParticle * ( i - activationStart );
 
         this._updateAttributeUpdateRange( 'params', i );
-
     }
 };
 
@@ -841,10 +860,11 @@ SPE.Emitter.prototype.tick = function( dt ) {
     if ( this.duration !== null && this.age > this.duration ) {
         this.alive = false;
         this.age = 0.0;
+        return;
     }
 
 
-    var activationStart = this.particleCount === 1 ? activationIndex : activationIndex | 0,
+    var activationStart = this.particleCount === 1 ? activationIndex : ( activationIndex | 0 ),
         activationEnd = activationStart + ppsDt,
         activationCount = activationEnd - this.activationIndex | 0,
         dtPerParticle = activationCount > 0 ? dt / activationCount : 0;

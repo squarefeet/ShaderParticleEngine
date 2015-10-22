@@ -173,8 +173,13 @@ SPE.utils = {
             spreadLength = this.clamp( property._spread.length, minLength, maxLength ),
             desiredLength = Math.max( valueLength, spreadLength );
 
-        property._value = this.interpolateArray( property._value, desiredLength );
-        property._spread = this.interpolateArray( property._spread, desiredLength );
+        if ( property._value.length !== desiredLength ) {
+            property._value = this.interpolateArray( property._value, desiredLength );
+        }
+
+        if ( property._spread.length !== desiredLength ) {
+            property._spread = this.interpolateArray( property._spread, desiredLength );
+        }
     },
 
     /**
@@ -192,8 +197,10 @@ SPE.utils = {
     interpolateArray: function( srcArray, newLength ) {
         'use strict';
 
-        var newArray = [ srcArray[ 0 ] ],
-            factor = ( srcArray.length - 1 ) / ( newLength - 1 );
+        var sourceLength = srcArray.length,
+            newArray = [ typeof srcArray[ 0 ].clone === 'function' ? srcArray[ 0 ].clone() : srcArray[ 0 ] ],
+            factor = ( sourceLength - 1 ) / ( newLength - 1 );
+
 
         for ( var i = 1; i < newLength - 1; ++i ) {
             var f = i * factor,
@@ -204,7 +211,11 @@ SPE.utils = {
             newArray[ i ] = this.lerpTypeAgnostic( srcArray[ before ], srcArray[ after ], delta );
         }
 
-        newArray.push( srcArray[ srcArray.length - 1 ] );
+        newArray.push(
+            typeof srcArray[ sourceLength - 1 ].clone === 'function' ?
+            srcArray[ sourceLength - 1 ].clone() :
+            srcArray[ sourceLength - 1 ]
+        );
 
         return newArray;
     },
@@ -505,7 +516,9 @@ SPE.utils = {
      * @param  {Object} radiusScale       THREE.Vector3 instance describing the scale of each axis of the sphere.
      * @param  {Number} radiusSpreadClamp What numeric multiple the projected value should be clamped to.
      */
-    randomVector3OnSphere: function( attribute, index, base, radius, radiusSpread, radiusScale, radiusSpreadClamp ) {
+    randomVector3OnSphere: function(
+        attribute, index, base, radius, radiusSpread, radiusScale, radiusSpreadClamp, distributionClamp
+    ) {
         'use strict';
 
         var depth = 2 * Math.random() - 1,
@@ -516,9 +529,58 @@ SPE.utils = {
             y = 0,
             z = 0;
 
+
         if ( radiusSpreadClamp ) {
             rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
         }
+
+
+
+        // Set position on sphere
+        x = r * Math.cos( t ) * rand;
+        y = r * Math.sin( t ) * rand;
+        z = depth * rand;
+
+        // Apply radius scale to this position
+        x *= radiusScale.x;
+        y *= radiusScale.y;
+        z *= radiusScale.z;
+
+        // Translate to the base position.
+        x += base.x;
+        y += base.y;
+        z += base.z;
+
+        // Set the values in the typed array.
+        attribute.typedArray.setVec3Components( index, x, y, z );
+    },
+
+    seededRandom: function( seed ) {
+        var x = Math.sin( seed ) * 10000;
+        return x - ( x | 0 );
+    },
+
+    randomVector3OnSphereFibonnaci: function(
+        attribute, index, base, radius, radiusSpread, radiusScale, radiusSpreadClamp, distributionClamp
+    ) {
+        'use strict';
+
+
+        var value = ( index % distributionClamp ) + 1;
+
+        var depth = 2 * Math.abs( this.seededRandom( value ) ) - 1,
+            t = 6.2832 * this.seededRandom( value * 0.25 ),
+            r = Math.sqrt( 1 - depth * depth ),
+            rand = this.randomFloat( radius, radiusSpread ),
+            x = 0,
+            y = 0,
+            z = 0;
+
+        if ( radiusSpreadClamp ) {
+            rand = Math.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
+        }
+
+
 
         // Set position on sphere
         x = r * Math.cos( t ) * rand;

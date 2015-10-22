@@ -8,7 +8,6 @@
 	<body>
 		<script type="text/javascript" src="../examples/js/THREE-r72.js"></script>
 		<script type="text/javascript" src="../examples/js/Stats.min.js"></script>
-
 		<script type="text/javascript" src="../src/SPE.js"></script>
 		<script type="text/javascript" src="../src/helpers/SPE.TypedArrayHelper.js"></script>
         <script type="text/javascript" src="../src/helpers/SPE.ShaderAttribute.js"></script>
@@ -25,17 +24,16 @@
 						value: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' ),
 					}
 				} ),
-				emitter = new SPE.Emitter({
-					particleCount: 1000,
+				secondHand = new SPE.Emitter({
+					particleCount: 500,
 					maxAge: {
-						value: 3
+						value: 2
 					},
-					velocity: {
-						value: new THREE.Vector3( 0, -5, 0 ),
-						spread: new THREE.Vector3( 0.1, 0, 0.1 )
+					position: {
+						value: new THREE.Vector3( 0, 5, 0 )
 					},
 					size: {
-						value: [2, 2, 1, 0]
+						value: [0, 1]
 					},
 					color: {
 						value: [new THREE.Color(0, 0, 1), new THREE.Color(1, 1, 0), new THREE.Color(1, 0, 0)]
@@ -43,17 +41,65 @@
 					opacity: {
 						value: 1
 					},
-					drag: {
-						value: 0
+					rotation: {
+						axis: new THREE.Vector3( 0, 0, 1 ),
+						angle: 0,
+						static: false,
+						center: new THREE.Vector3()
+					}
+				}),
+				minuteHand = new SPE.Emitter({
+					particleCount: 500,
+					maxAge: {
+						value: 2
+					},
+					position: {
+						value: new THREE.Vector3( 0, 7.5, 0 )
+					},
+					size: {
+						value: [0, 2]
+					},
+					color: {
+						value: [new THREE.Color(0, 0, 1), new THREE.Color(0, 1, 0), new THREE.Color(0, 1, 1)]
+					},
+					opacity: {
+						value: 1
 					},
 					rotation: {
 						axis: new THREE.Vector3( 0, 0, 1 ),
-						angle: 0, // BUG: Rotation define is only set if angle != 0
-						static: true
+						angle: 0,
+						static: false,
+						center: new THREE.Vector3()
+					}
+				}),
+				hourHand = new SPE.Emitter({
+					particleCount: 500,
+					maxAge: {
+						value: 2
+					},
+					position: {
+						value: new THREE.Vector3( 0, 10, 0 )
+					},
+					size: {
+						value: [0, 4]
+					},
+					color: {
+						value: new THREE.Color(0.5, 0.25, 0.9)
+					},
+					opacity: {
+						value: 1
+					},
+					rotation: {
+						axis: new THREE.Vector3( 0, 0, 1 ),
+						angle: 0,
+						static: false,
+						center: new THREE.Vector3()
 					}
 				});
 
-			group.addEmitter( emitter );
+			group.addEmitter( secondHand );
+			group.addEmitter( minuteHand );
+			group.addEmitter( hourHand );
 			scene.add( group.mesh );
 
 			camera.position.z = 40;
@@ -64,18 +110,49 @@
 			document.body.appendChild( renderer.domElement );
 			document.body.appendChild( stats.domElement );
 
-			console.log( group );
-			console.log( emitter );
+			var date = new Date( Date.now() );
 
-			var date = new Date();
+
+			function preRender() {
+				var catchUpSeconds = date.getSeconds(),
+					catchUpMinutes = date.getMinutes(),
+					catchUpHours = date.getHours() % 12;
+
+				secondHand.rotation.angle = (catchUpSeconds / 60) * Math.PI * 2;
+				minuteHand.rotation.angle = (catchUpMinutes / 60) * Math.PI * 2;
+				hourHand.rotation.angle = (catchUpHours / 12) * Math.PI * 2;
+			}
 
 			function onAnimate() {
 				date.setTime( Date.now() );
-				var seconds = date.getSeconds();
-				emitter.rotation.angle = (seconds / 60) * Math.PI * 2;
+
+				var seconds = date.getSeconds(),
+					minutes = date.getMinutes(),
+					hours = date.getHours() % 12,
+					fullRotation = Math.PI * 2,
+					secondAngle = (seconds / 60) * fullRotation,
+					minuteAngle = (minutes / 60) * fullRotation,
+					hourAngle = (hours / 12) * fullRotation;
+
+				if( secondAngle !== secondHand.rotation.angle ) {
+					secondHand.rotation.angle = secondAngle;
+				}
+
+				if( minuteAngle !== minuteHand.rotation.angle ) {
+					minuteHand.rotation.angle = minuteAngle;
+				}
+
+				if( hourAngle !== hourHand.rotation.angle ) {
+					hourHand.rotation.angle = hourAngle;
+				}
 			}
 
+			fixedTimeStep = true;
+
+			preRender();
 			animate();
+
+
 		</script>
 	</body>
 </html>

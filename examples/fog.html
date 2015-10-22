@@ -6,14 +6,17 @@
 <body>
     <p class="numParticles"></p>
 
-    <!-- THREE.min.js r60 and FPS stats -->
-    <script type="text/javascript" src="./js/THREE-r71.min.js"></script>
+    <script type="text/javascript" src="./js/THREE-r72.js"></script>
     <script type="text/javascript" src="./js/Stats.min.js"></script>
-
-    <!-- ShaderParticles -->
-    <script type="text/javascript" src="../src/ShaderParticleUtils.js"></script>
-    <script type="text/javascript" src="../src/ShaderParticleGroup.js"></script>
-    <script type="text/javascript" src="../src/ShaderParticleEmitter.js"></script>
+    <!-- <script type="text/javascript" src="../build/SPE.min.js"></script> -->
+        <script type="text/javascript" src="../src/SPE.js"></script>
+        <script type="text/javascript" src="../src/helpers/SPE.TypedArrayHelper.js"></script>
+        <script type="text/javascript" src="../src/helpers/SPE.ShaderAttribute.js"></script>
+        <script type="text/javascript" src="../src/shaders/SPE.shaderChunks.js"></script>
+        <script type="text/javascript" src="../src/shaders/SPE.shaders.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.utils.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.Group.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.Emitter.js"></script>
 
 
     <script type="text/javascript">
@@ -56,18 +59,19 @@
         // Create particle group and emitter
         function initParticles() {
             particleGroup = new SPE.Group({
-                texture: THREE.ImageUtils.loadTexture('./img/smokeparticle.png'),
-                maxAge: 2,
-                hasPerspective: true,
-                colorize: true,
+                texture: {
+                    value: THREE.ImageUtils.loadTexture('./img/smokeparticle.png')
+                },
                 fog: true
             });
 
             emitter = new SPE.Emitter({
-                type: 'cube',
-                position: new THREE.Vector3(0, 0, 0),
-                positionSpread: new THREE.Vector3( 20, 20, 20 ),
-
+                type: SPE.distributions.BOX,
+                maxAge: 2,
+                position: {
+                    value: new THREE.Vector3(0, 0, 0),
+                    spread: new THREE.Vector3( 20, 20, 20 )
+                },
                 particleCount: 20000,
                 isStatic: true
             });
@@ -82,18 +86,15 @@
 
 
         function animate() {
-            requestAnimationFrame( animate );
-
             var now = Date.now() * 0.0005;
+            requestAnimationFrame( animate );
 
             camera.position.x = Math.cos( now ) * 50;
             camera.position.y = Math.sin( now ) * 45;
             camera.position.z = Math.sin( now ) * 50;
             camera.lookAt( scene.position );
 
-            // Use a fixed time-step here to avoid gaps
             render( clock.getDelta() );
-
             stats.update();
         }
 
