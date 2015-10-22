@@ -6,6 +6,8 @@
 body {
     color: white;
     font-family: sans-serif;
+    overflow: hidden;
+    margin: 0;
 }
 
 p {
@@ -29,10 +31,16 @@ p.small {
     top: 2em;
     width: 25em;
     left: 50%;
-    margin-left: -12.5em;   
+    margin-left: -12.5em;
     text-align: center;
     padding: 1em;
     background-color: rgba( 255, 255, 255, 0.15 );
     border-radius: 1em;
     border: 1px solid rgba( 255, 255, 255, 0.3 );
+}
+
+#stats {
+    position: absolute;
+    top: 0;
+    z-index: 2;
 }

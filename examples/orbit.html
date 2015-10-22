@@ -1,0 +1,129 @@
+<html>
+<head>
+	<title>SPE: Distribution types</title>
+	<link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+<body>
+
+	<script type="text/javascript" src="./js/THREE-r72.js"></script>
+	<script type="text/javascript" src="./js/Stats.min.js"></script>
+
+    <script type="text/javascript" src="../src/SPE.js"></script>
+    <script type="text/javascript" src="../src/helpers/SPE.TypedArrayHelper.js"></script>
+    <script type="text/javascript" src="../src/helpers/SPE.ShaderAttribute.js"></script>
+    <script type="text/javascript" src="../src/shaders/SPE.shaderChunks.js"></script>
+    <script type="text/javascript" src="../src/shaders/SPE.shaders.js"></script>
+    <script type="text/javascript" src="../src/core/SPE.utils.js"></script>
+    <script type="text/javascript" src="../src/core/SPE.Group.js"></script>
+    <script type="text/javascript" src="../src/core/SPE.Emitter.js"></script>
+
+
+	<script type="text/javascript">
+		// variables used in init()
+        var scene, camera, renderer, stats, stats2, clock;
+
+        // Used in initParticles()
+		var particleGroup;
+
+		// Setup the scene
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 50;
+            camera.lookAt( scene.position );
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000);
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+        // Create particle group and emitter
+        function initParticles() {
+        	particleGroup = new SPE.Group({
+        		texture: {
+                    value: THREE.ImageUtils.loadTexture('./img/smokeparticle.png')
+                }
+        	});
+
+            // General distributions.
+        	var emitter = new SPE.Emitter({
+                maxAge: {
+                    value: 5
+                },
+        		position: {
+                    value: new THREE.Vector3(5, -20, 0),
+                },
+
+                velocity: {
+                    value: new THREE.Vector3( 0, 5, 0 )
+                },
+
+                acceleration: {
+                    spread: new THREE.Vector3( 1, 0, 0 )
+                },
+
+                color: {
+                    value: [ new THREE.Color('white'), new THREE.Color('red') ]
+                },
+
+                size: {
+                    value: 1
+                },
+
+                rotation: {
+                    axis: new THREE.Vector3( 0, 1, 0 ),
+                    angle: Math.PI * 10,
+                    center: new THREE.Vector3( 0, 0, 0 )
+                },
+        		particleCount: 1000,
+                direction: -1
+        	});
+
+        	particleGroup.addEmitter( emitter );
+
+        	scene.add( particleGroup.mesh );
+        }
+
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+
+            render( clock.getDelta() );
+            stats.update();
+        }
+
+
+        function render( dt ) {
+            particleGroup.tick( dt );
+            renderer.render( scene, camera );
+        }
+
+
+        window.addEventListener( 'resize', function() {
+        	var w = window.innerWidth,
+        		h = window.innerHeight;
+
+        	camera.aspect = w / h;
+        	camera.updateProjectionMatrix();
+
+        	renderer.setSize( w, h );
+        }, false );
+
+        init();
+        initParticles();
+
+        setTimeout(animate, 0);
+	</script>
+
+</body>
+</html>

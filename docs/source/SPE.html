@@ -970,7 +970,11 @@ SPE.shaderChunks = {</pre></div></div>
 
     floatOverLifetime: [
         <span class="hljs-string">'float getFloatOverLifetime( in float positionInTime, in vec4 attr ) {'</span>,
+<<<<<<< HEAD
         <span class="hljs-string">'    float value = 0.0;'</span>,
+=======
+        <span class="hljs-string">'    highp float value = 0.0;'</span>,
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         <span class="hljs-string">'    float deltaAge = positionInTime * float( VALUE_OVER_LIFETIME_LENGTH - 1 );'</span>,
         <span class="hljs-string">'    float fIndex = 0.0;'</span>,
         <span class="hljs-string">'    float shouldApplyValue = 0.0;'</span>,</pre></div></div>
@@ -992,11 +996,35 @@ from (link above).</p>
 
             </div>
             
+<<<<<<< HEAD
             <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'    for( int i = 0; i &lt; VALUE_OVER_LIFETIME_LENGTH - 1; ++i ) {'</span>,
         <span class="hljs-string">'       fIndex = float( i );'</span>,
         <span class="hljs-string">'       shouldApplyValue = and( when_ge( deltaAge, fIndex ), when_lt( deltaAge, fIndex + 1.0 ) );'</span>,
         <span class="hljs-string">'       value += shouldApplyValue * mix( attr[ i ], attr[ i + 1 ], deltaAge - fIndex );'</span>,
         <span class="hljs-string">'    }'</span>,
+=======
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Fix for static emitters (age is always zero).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'    value += attr[ 0 ] * when_eq( deltaAge, 0.0 );'</span>,
+        <span class="hljs-string">''</span>,
+        <span class="hljs-string">'    for( int i = 0; i &lt; VALUE_OVER_LIFETIME_LENGTH - 1; ++i ) {'</span>,
+        <span class="hljs-string">'       fIndex = float( i );'</span>,
+        <span class="hljs-string">'       shouldApplyValue = and( when_gt( deltaAge, fIndex ), when_le( deltaAge, fIndex + 1.0 ) );'</span>,
+        <span class="hljs-string">'       value += shouldApplyValue * mix( attr[ i ], attr[ i + 1 ], deltaAge - fIndex );'</span>,
+        <span class="hljs-string">'    }'</span>,
+        <span class="hljs-string">''</span>,
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         <span class="hljs-string">'    return value;'</span>,
         <span class="hljs-string">'}'</span>,
     ].join( <span class="hljs-string">'\n'</span> ),
@@ -1049,11 +1077,19 @@ from (link above).</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
+=======
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Huge thanks to:</p>
 <ul>
@@ -1079,6 +1115,7 @@ from (link above).</p>
         <span class="hljs-string">'      vec3 axis = unpackColor( rotation.x );'</span>,
         <span class="hljs-string">'      vec3 center = rotationCenter;'</span>,
         <span class="hljs-string">'      vec3 translated;'</span>,
+<<<<<<< HEAD
         <span class="hljs-string">'      mat4 rotationMatrix;'</span>,
 
         <span class="hljs-string">'      pos *= -1.0;'</span>,
@@ -1089,6 +1126,30 @@ from (link above).</p>
         <span class="hljs-string">'      translated = rotationCenter - pos;'</span>,
         <span class="hljs-string">'      rotationMatrix = getRotationMatrix( axis, angle );'</span>,
         <span class="hljs-string">'      return center + vec3( rotationMatrix * vec4( translated, 1.0 ) );'</span>,
+=======
+        <span class="hljs-string">'      mat4 rotationMatrix;'</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>‘      pos *= -1.0;’,</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+        <span class="hljs-string">'      float angle = 0.0;'</span>,
+        <span class="hljs-string">'      angle += when_eq( rotation.z, 0.0 ) * rotation.y;'</span>,
+        <span class="hljs-string">'      angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime );'</span>,
+        <span class="hljs-string">'      translated = pos - rotationCenter;'</span>,
+        <span class="hljs-string">'      rotationMatrix = getRotationMatrix( axis, angle );'</span>,
+        <span class="hljs-string">'      return vec3( rotationMatrix * vec4( translated, 0.0 ) ) - center;'</span>,
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         <span class="hljs-string">'   }'</span>,
         <span class="hljs-string">'#endif'</span>
     ].join( <span class="hljs-string">'\n'</span> ),</pre></div></div>
@@ -1096,11 +1157,19 @@ from (link above).</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
+=======
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Fragment chunks</p>
 
@@ -1122,11 +1191,19 @@ from (link above).</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
+=======
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Spritesheets overwrite angle calculations.</p>
 
@@ -1171,11 +1248,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-22">&#182;</a>
+=======
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Setup…</p>
 
@@ -1185,7 +1270,11 @@ SPE.shaders = {
         <span class="hljs-string">'    highp float alive = getAlive();'</span>,
         <span class="hljs-string">'    highp float maxAge = getMaxAge();'</span>,
         <span class="hljs-string">'    highp float positionInTime = (age / maxAge);'</span>,
+<<<<<<< HEAD
         <span class="hljs-string">'    highp float isAlive = when_eq( alive, 1.0 );'</span>,
+=======
+        <span class="hljs-string">'    highp float isAlive = when_gt( alive, 0.0 );'</span>,
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
         <span class="hljs-string">'    #ifdef SHOULD_WIGGLE_PARTICLES'</span>,
         <span class="hljs-string">'        float wiggleAmount = positionInTime * getWiggle();'</span>,
@@ -1196,11 +1285,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-23">&#182;</a>
+=======
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Forces</p>
 
@@ -1209,11 +1306,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-24">&#182;</a>
+=======
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Get forces &amp; position</p>
 
@@ -1227,11 +1332,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-25">&#182;</a>
+=======
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Calculate the required drag to apply to the forces.</p>
 
@@ -1242,11 +1355,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
+=======
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Integrate forces…</p>
 
@@ -1260,11 +1381,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-27">&#182;</a>
+=======
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Wiggly wiggly wiggle!</p>
 
@@ -1279,11 +1408,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-28">&#182;</a>
+=======
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Rotate the emitter around it’s central point</p>
 
@@ -1296,11 +1433,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
+=======
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Convert pos to a world-space value</p>
 
@@ -1311,26 +1456,46 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-30">&#182;</a>
+=======
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Determine point size.</p>
 
             </div>
             
+<<<<<<< HEAD
             <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'    float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;'</span>,</pre></div></div>
+=======
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'    highp float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;'</span>,</pre></div></div>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-31">&#182;</a>
+=======
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Determine perspective</p>
 
@@ -1345,11 +1510,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-32">&#182;</a>
+=======
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Apply perpective to pointSize value</p>
 
@@ -1360,11 +1533,19 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-33">&#182;</a>
+=======
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Appearance</p>
 
@@ -1373,17 +1554,26 @@ SPE.shaders = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-34">&#182;</a>
+=======
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Determine color and opacity for this particle</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'    #ifdef COLORIZE'</span>,
+<<<<<<< HEAD
         <span class="hljs-string">'    	vec3 c = isAlive * getColorOverLifetime('</span>,
         <span class="hljs-string">'    		positionInTime,'</span>,
         <span class="hljs-string">'    		unpackColor( color.x ),'</span>,
@@ -1394,49 +1584,93 @@ SPE.shaders = {
         <span class="hljs-string">'    #else'</span>,
         <span class="hljs-string">'    	vec3 c = vec3(1.0);'</span>,
         <span class="hljs-string">'	 #endif'</span>,
+=======
+        <span class="hljs-string">'       vec3 c = isAlive * getColorOverLifetime('</span>,
+        <span class="hljs-string">'           positionInTime,'</span>,
+        <span class="hljs-string">'           unpackColor( color.x ),'</span>,
+        <span class="hljs-string">'           unpackColor( color.y ),'</span>,
+        <span class="hljs-string">'           unpackColor( color.z ),'</span>,
+        <span class="hljs-string">'           unpackColor( color.w )'</span>,
+        <span class="hljs-string">'       );'</span>,
+        <span class="hljs-string">'    #else'</span>,
+        <span class="hljs-string">'       vec3 c = vec3(1.0);'</span>,
+        <span class="hljs-string">'    #endif'</span>,
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
         <span class="hljs-string">'    float o = isAlive * getFloatOverLifetime( positionInTime, opacity );'</span>,</pre></div></div>
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-35">&#182;</a>
+=======
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Assign color to vColor varying.</p>
 
             </div>
             
+<<<<<<< HEAD
             <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'	 vColor = vec4( c, o );'</span>,</pre></div></div>
+=======
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'    vColor = vec4( c, o );'</span>,</pre></div></div>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-36">&#182;</a>
+=======
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Determine angle</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'    #ifdef SHOULD_ROTATE_TEXTURE'</span>,
+<<<<<<< HEAD
         <span class="hljs-string">'	     vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );'</span>,
+=======
+        <span class="hljs-string">'        vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );'</span>,
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         <span class="hljs-string">'    #endif'</span>,</pre></div></div>
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-37">&#182;</a>
+=======
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If this particle is using a sprite-sheet as a texture, we’ll have to figure out
 what frame of the texture the particle is using at it’s current position in time.</p>
@@ -1465,11 +1699,19 @@ what frame of the texture the particle is using at it’s current position in ti
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-38">&#182;</a>
+=======
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Write values</p>
 
@@ -1478,18 +1720,31 @@ what frame of the texture the particle is using at it’s current position in ti
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-39">&#182;</a>
+=======
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set PointSize according to size at current point in time.</p>
 
             </div>
             
+<<<<<<< HEAD
             <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'	 gl_PointSize = pointSizePerspective;'</span>,
         <span class="hljs-string">'	 gl_Position = projectionMatrix * mvPos;'</span>,
+=======
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-string">'    gl_PointSize = pointSizePerspective;'</span>,
+        <span class="hljs-string">'    gl_Position = projectionMatrix * mvPos;'</span>,
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
         THREE.ShaderChunk.logdepthbuf_vertex,
 
@@ -1600,11 +1855,19 @@ SPE.utils = {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-40">&#182;</a>
+=======
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the argument being checked is an array, loop through
 it and ensure all the values are of the correct type,
@@ -1625,11 +1888,19 @@ falling back to the defaultValue if any aren’t.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-41">&#182;</a>
+=======
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the arg isn’t an array then just fallback to
 checking the type.</p>
@@ -1676,11 +1947,19 @@ checking the type.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-42">&#182;</a>
+=======
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the argument being checked is an array, loop through
 it and ensure all the values are of the correct type,
@@ -1701,11 +1980,19 @@ falling back to the defaultValue if any aren’t.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-43">&#182;</a>
+=======
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the arg isn’t an array then just fallback to
 checking the type.</p>
@@ -1736,11 +2023,19 @@ checking the type.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-44">&#182;</a>
+=======
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>First, ensure both properties are arrays.</p>
 
@@ -1758,8 +2053,18 @@ checking the type.</p>
             spreadLength = <span class="hljs-keyword">this</span>.clamp( property._spread.length, minLength, maxLength ),
             desiredLength = <span class="hljs-built_in">Math</span>.max( valueLength, spreadLength );
 
+<<<<<<< HEAD
         property._value = <span class="hljs-keyword">this</span>.interpolateArray( property._value, desiredLength );
         property._spread = <span class="hljs-keyword">this</span>.interpolateArray( property._spread, desiredLength );
+=======
+        <span class="hljs-keyword">if</span> ( property._value.length !== desiredLength ) {
+            property._value = <span class="hljs-keyword">this</span>.interpolateArray( property._value, desiredLength );
+        }
+
+        <span class="hljs-keyword">if</span> ( property._spread.length !== desiredLength ) {
+            property._spread = <span class="hljs-keyword">this</span>.interpolateArray( property._spread, desiredLength );
+        }
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     },
 
     <span class="hljs-comment">/**
@@ -1777,8 +2082,15 @@ checking the type.</p>
     interpolateArray: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> srcArray, newLength </span>) </span>{
 <span class="hljs-pi">        'use strict'</span>;
 
+<<<<<<< HEAD
         <span class="hljs-keyword">var</span> newArray = [ srcArray[ <span class="hljs-number">0</span> ] ],
             factor = ( srcArray.length - <span class="hljs-number">1</span> ) / ( newLength - <span class="hljs-number">1</span> );
+=======
+        <span class="hljs-keyword">var</span> sourceLength = srcArray.length,
+            newArray = [ <span class="hljs-keyword">typeof</span> srcArray[ <span class="hljs-number">0</span> ].clone === <span class="hljs-string">'function'</span> ? srcArray[ <span class="hljs-number">0</span> ].clone() : srcArray[ <span class="hljs-number">0</span> ] ],
+            factor = ( sourceLength - <span class="hljs-number">1</span> ) / ( newLength - <span class="hljs-number">1</span> );
+
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
         <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = <span class="hljs-number">1</span>; i &lt; newLength - <span class="hljs-number">1</span>; ++i ) {
             <span class="hljs-keyword">var</span> f = i * factor,
@@ -1789,7 +2101,15 @@ checking the type.</p>
             newArray[ i ] = <span class="hljs-keyword">this</span>.lerpTypeAgnostic( srcArray[ before ], srcArray[ after ], delta );
         }
 
+<<<<<<< HEAD
         newArray.push( srcArray[ srcArray.length - <span class="hljs-number">1</span> ] );
+=======
+        newArray.push(
+            <span class="hljs-keyword">typeof</span> srcArray[ sourceLength - <span class="hljs-number">1</span> ].clone === <span class="hljs-string">'function'</span> ?
+            srcArray[ sourceLength - <span class="hljs-number">1</span> ].clone() :
+            srcArray[ sourceLength - <span class="hljs-number">1</span> ]
+        );
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
         <span class="hljs-keyword">return</span> newArray;
     },
@@ -1831,11 +2151,19 @@ checking the type.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-45">&#182;</a>
+=======
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>if ( value === 0 ) {
     result = randomise ? Math.random() <em> epsilon </em> 10 : epsilon;
@@ -1967,11 +2295,19 @@ else if ( value &lt; 0 &amp;&amp; value &gt; -epsilon ) {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-46">&#182;</a>
+=======
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>colorsAreEqual: function() {
     var colors = Array.prototype.slice.call( arguments ),
@@ -1982,11 +2318,19 @@ else if ( value &lt; 0 &amp;&amp; value &gt; -epsilon ) {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-47">&#182;</a>
+=======
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <pre><code><span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>, color1, color2; i &lt; numColors - <span class="hljs-number">1</span>; ++i ) {
     color1 = colors[ i ];
@@ -1997,11 +2341,19 @@ else if ( value &lt; 0 &amp;&amp; value &gt; -epsilon ) {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-48">&#182;</a>
+=======
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <pre><code>    <span class="hljs-keyword">if</span> (
         color1.r !== color2.r ||
@@ -2017,11 +2369,19 @@ else if ( value &lt; 0 &amp;&amp; value &gt; -epsilon ) {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-49">&#182;</a>
+=======
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <pre><code><span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
 </code></pre><p>},</p>
@@ -2064,11 +2424,19 @@ else if ( value &lt; 0 &amp;&amp; value &gt; -epsilon ) {
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-50">&#182;</a>
+=======
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>var x = this.randomFloat( base.x, spread.x ),
 y = this.randomFloat( base.y, spread.y ),
@@ -2159,7 +2527,13 @@ z = this.randomFloat( base.z, spread.z );</p>
      * @param  {Object} radiusScale       THREE.Vector3 instance describing the scale of each axis of the sphere.
      * @param  {Number} radiusSpreadClamp What numeric multiple the projected value should be clamped to.
      */</span>
+<<<<<<< HEAD
     randomVector3OnSphere: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> attribute, index, base, radius, radiusSpread, radiusScale, radiusSpreadClamp </span>) </span>{
+=======
+    randomVector3OnSphere: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">
+        attribute, index, base, radius, radiusSpread, radiusScale, radiusSpreadClamp, distributionClamp
+    </span>) </span>{
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 <span class="hljs-pi">        'use strict'</span>;
 
         <span class="hljs-keyword">var</span> depth = <span class="hljs-number">2</span> * <span class="hljs-built_in">Math</span>.random() - <span class="hljs-number">1</span>,
@@ -2170,6 +2544,10 @@ z = this.randomFloat( base.z, spread.z );</p>
             y = <span class="hljs-number">0</span>,
             z = <span class="hljs-number">0</span>;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         <span class="hljs-keyword">if</span> ( radiusSpreadClamp ) {
             rand = <span class="hljs-built_in">Math</span>.round( rand / radiusSpreadClamp ) * radiusSpreadClamp;
         }</pre></div></div>
@@ -2177,11 +2555,19 @@ z = this.randomFloat( base.z, spread.z );</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-51">&#182;</a>
+=======
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set position on sphere</p>
 
@@ -2194,11 +2580,19 @@ z = this.randomFloat( base.z, spread.z );</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-52">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-52">&#182;</a>
+=======
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Apply radius scale to this position</p>
 
@@ -2211,11 +2605,19 @@ z = this.randomFloat( base.z, spread.z );</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-53">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-53">&#182;</a>
+=======
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Translate to the base position.</p>
 
@@ -2228,11 +2630,19 @@ z = this.randomFloat( base.z, spread.z );</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-54">&#182;</a>
+=======
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set the values in the typed array.</p>
 
@@ -2241,6 +2651,16 @@ z = this.randomFloat( base.z, spread.z );</p>
             <div class="content"><div class='highlight'><pre>        attribute.typedArray.setVec3Components( index, x, y, z );
     },
 
+<<<<<<< HEAD
+=======
+    seededRandom: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> seed </span>) </span>{
+        <span class="hljs-keyword">var</span> x = <span class="hljs-built_in">Math</span>.sin( seed ) * <span class="hljs-number">10000</span>;
+        <span class="hljs-keyword">return</span> x - ( x | <span class="hljs-number">0</span> );
+    },
+
+
+
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     <span class="hljs-comment">/**
      * Assigns a random vector 3 value to an SPE.ShaderAttribute instance, projecting the
      * given values onto a 2d-disc.
@@ -2269,11 +2689,19 @@ z = this.randomFloat( base.z, spread.z );</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-55">&#182;</a>
+=======
+        <li id="section-57">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-57">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set position on sphere</p>
 
@@ -2285,11 +2713,19 @@ z = this.randomFloat( base.z, spread.z );</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-56">&#182;</a>
+=======
+        <li id="section-58">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-58">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Apply radius scale to this position</p>
 
@@ -2301,11 +2737,19 @@ z = this.randomFloat( base.z, spread.z );</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-57">&#182;</a>
+=======
+        <li id="section-59">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-59">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Translate to the base position.</p>
 
@@ -2318,11 +2762,19 @@ z = this.randomFloat( base.z, spread.z );</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-58">&#182;</a>
+=======
+        <li id="section-60">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-60">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set the values in the typed array.</p>
 
@@ -2362,6 +2814,41 @@ z = this.randomFloat( base.z, spread.z );</p>
         };
     }() ),
 
+<<<<<<< HEAD
+=======
+
+    randomDirectionVector3OnDisc: ( <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">        'use strict'</span>;
+
+        <span class="hljs-keyword">var</span> v = <span class="hljs-keyword">new</span> THREE.Vector3();
+
+        <span class="hljs-comment">/**
+         * Given an SPE.ShaderAttribute instance, create a direction vector from the given
+         * position, using `speed` as the magnitude. Values are saved to the attribute.
+         *
+         * @param  {Object} attribute       The instance of SPE.ShaderAttribute to save the result to.
+         * @param  {Number} index           The offset in the attribute's TypedArray to save the result from.
+         * @param  {Number} posX            The particle's x coordinate.
+         * @param  {Number} posY            The particle's y coordinate.
+         * @param  {Number} posZ            The particle's z coordinate.
+         * @param  {Object} emitterPosition THREE.Vector3 instance describing the emitter's base position.
+         * @param  {Number} speed           The magnitude to apply to the vector.
+         * @param  {Number} speedSpread     The amount of randomness to apply to the magnitude.
+         */</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> attribute, index, posX, posY, posZ, emitterPosition, speed, speedSpread </span>) </span>{
+            v.copy( emitterPosition );
+
+            v.x -= posX;
+            v.y -= posY;
+            v.z -= posZ;
+
+            v.normalize().multiplyScalar( -<span class="hljs-keyword">this</span>.randomFloat( speed, speedSpread ) );
+
+            attribute.typedArray.setVec3Components( index, v.x, v.y, <span class="hljs-number">0</span> );
+        };
+    }() ),
+
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     getPackedRotationAxis: ( <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
 <span class="hljs-pi">        'use strict'</span>;
 
@@ -2466,11 +2953,19 @@ SPE.Group = <span class="hljs-function"><span class="hljs-keyword">function</spa
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-59">&#182;</a>
+=======
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Ensure we have a map of options to play with</p>
 
@@ -2482,11 +2977,19 @@ SPE.Group = <span class="hljs-function"><span class="hljs-keyword">function</spa
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-60">&#182;</a>
+=======
+        <li id="section-62">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-62">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Assign a UUID to this instance</p>
 
@@ -2497,11 +3000,19 @@ SPE.Group = <span class="hljs-function"><span class="hljs-keyword">function</spa
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-61">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-61">&#182;</a>
+=======
+        <li id="section-63">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-63">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If no <code>deltaTime</code> value is passed to the <code>SPE.Group.tick</code> function,
 the value of this property will be used to advance the simulation.</p>
@@ -2513,11 +3024,19 @@ the value of this property will be used to advance the simulation.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-62">&#182;</a>
+=======
+        <li id="section-64">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-64">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set properties used in the uniforms map, starting with the
 texture stuff.</p>
@@ -2538,11 +3057,19 @@ texture stuff.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-63">&#182;</a>
+=======
+        <li id="section-65">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-65">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set properties used to define the ShaderMaterial’s appearance.</p>
 
@@ -2559,11 +3086,19 @@ texture stuff.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-64">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-64">&#182;</a>
+=======
+        <li id="section-66">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-66">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Where emitter’s go to curl up in a warm blanket and live
 out their days.</p>
@@ -2576,11 +3111,19 @@ out their days.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-65">&#182;</a>
+=======
+        <li id="section-67">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-67">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Create properties for use by the emitter pooling functions.</p>
 
@@ -2593,11 +3136,19 @@ out their days.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-66">&#182;</a>
+=======
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Whether all attributes should be forced to updated
 their entire buffer contents on the next tick.</p>
@@ -2613,11 +3164,19 @@ their entire buffer contents on the next tick.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-67">&#182;</a>
+=======
+        <li id="section-69">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-69">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Map of uniforms to be applied to the ShaderMaterial instance.</p>
 
@@ -2670,11 +3229,19 @@ their entire buffer contents on the next tick.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-68">&#182;</a>
+=======
+        <li id="section-70">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-70">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Add some defines into the mix…</p>
 
@@ -2695,11 +3262,19 @@ their entire buffer contents on the next tick.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-69">&#182;</a>
+=======
+        <li id="section-71">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-71">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Map of all attributes to be applied to the particles.</p>
 <p>See SPE.ShaderAttribute for a bit more info on this bit.</p>
@@ -2725,11 +3300,19 @@ their entire buffer contents on the next tick.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-70">&#182;</a>
+=======
+        <li id="section-72">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-72">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Create the ShaderMaterial instance that’ll help render the
 particles.</p>
@@ -2752,11 +3335,19 @@ particles.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-71">&#182;</a>
+=======
+        <li id="section-73">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-73">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Create the BufferGeometry and Points instances, ensuring
 the geometry and material are given to the latter.</p>
@@ -2774,23 +3365,45 @@ the geometry and material are given to the latter.</p>
 SPE.Group.constructor = SPE.Group;
 
 
+<<<<<<< HEAD
 SPE.Group.prototype._updateDefines = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> emitter </span>) </span>{
 <span class="hljs-pi">    'use strict'</span>;</pre></div></div>
+=======
+SPE.Group.prototype._updateDefines = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-pi">    'use strict'</span>;
+
+    <span class="hljs-keyword">var</span> emitters = <span class="hljs-keyword">this</span>.emitters,
+        i = emitters.length - <span class="hljs-number">1</span>,
+        emitter,
+        defines = <span class="hljs-keyword">this</span>.defines;
+
+    <span class="hljs-keyword">for</span> ( i; i &gt;= <span class="hljs-number">0</span>; --i ) {
+        emitter = emitters[ i ];</pre></div></div>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-72">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-72">&#182;</a>
+=======
+        <li id="section-74">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-74">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Only do angle calculation if there’s no spritesheet defined.</p>
 <p>Saves calculations being done and then overwritten in the shaders.</p>
 
             </div>
             
+<<<<<<< HEAD
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> ( !<span class="hljs-keyword">this</span>.defines.SHOULD_CALCULATE_SPRITE ) {
         <span class="hljs-keyword">this</span>.defines.SHOULD_ROTATE_TEXTURE = <span class="hljs-keyword">this</span>.defines.SHOULD_ROTATE_TEXTURE || !!<span class="hljs-built_in">Math</span>.max(
             <span class="hljs-built_in">Math</span>.max.apply( <span class="hljs-literal">null</span>, emitter.angle.value ),
@@ -2807,6 +3420,27 @@ SPE.Group.prototype._updateDefines = <span class="hljs-function"><span class="hl
         emitter.wiggle.value,
         emitter.wiggle.spread
     );
+=======
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> ( !defines.SHOULD_CALCULATE_SPRITE ) {
+            defines.SHOULD_ROTATE_TEXTURE = defines.SHOULD_ROTATE_TEXTURE || !!<span class="hljs-built_in">Math</span>.max(
+                <span class="hljs-built_in">Math</span>.max.apply( <span class="hljs-literal">null</span>, emitter.angle.value ),
+                <span class="hljs-built_in">Math</span>.max.apply( <span class="hljs-literal">null</span>, emitter.angle.spread )
+            );
+        }
+
+        defines.SHOULD_ROTATE_PARTICLES = defines.SHOULD_ROTATE_PARTICLES || !!<span class="hljs-built_in">Math</span>.max(
+            emitter.rotation.angle,
+            emitter.rotation.angleSpread
+        );
+
+        defines.SHOULD_WIGGLE_PARTICLES = defines.SHOULD_WIGGLE_PARTICLES || !!<span class="hljs-built_in">Math</span>.max(
+            emitter.wiggle.value,
+            emitter.wiggle.spread
+        );
+    }
+
+    <span class="hljs-keyword">this</span>.material.needsUpdate = <span class="hljs-literal">true</span>;
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 };
 
 SPE.Group.prototype._applyAttributesToGeometry = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
@@ -2821,11 +3455,19 @@ SPE.Group.prototype._applyAttributesToGeometry = <span class="hljs-function"><sp
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-73">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-73">&#182;</a>
+=======
+        <li id="section-75">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-75">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Loop through all the shader attributes and assign (or re-assign)
 typed array buffers to each one.</p>
@@ -2840,11 +3482,19 @@ typed array buffers to each one.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-74">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-74">&#182;</a>
+=======
+        <li id="section-76">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-76">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Update the array if this attribute exists on the geometry.</p>
 <p>This needs to be done because the attribute’s typed array might have
@@ -2860,11 +3510,19 @@ different ArrayBuffer, so reference needs updating.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-75">&#182;</a>
+=======
+        <li id="section-77">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-77">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>// Add the attribute to the geometry if it doesn’t already exist.</p>
 
@@ -2877,11 +3535,19 @@ different ArrayBuffer, so reference needs updating.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-76">&#182;</a>
+=======
+        <li id="section-78">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-78">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Mark the attribute as needing an update the next time a frame is rendered.</p>
 
@@ -2894,11 +3560,19 @@ different ArrayBuffer, so reference needs updating.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-77">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-77">&#182;</a>
+=======
+        <li id="section-79">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-79">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Mark the draw range on the geometry. This will ensure
 only the values in the attribute buffers that are
@@ -2922,11 +3596,19 @@ SPE.Group.prototype.addEmitter = <span class="hljs-function"><span class="hljs-k
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-78">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-78">&#182;</a>
+=======
+        <li id="section-80">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-80">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Ensure an actual emitter instance is passed here.</p>
 <p>Decided not to throw here, just in case a scene’s
@@ -2943,11 +3625,19 @@ of stopping execution if exceptions aren’t caught.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-79">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-79">&#182;</a>
+=======
+        <li id="section-81">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-81">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the emitter already exists as a member of this group, then
 stop here, we don’t want to add it again.</p>
@@ -2962,11 +3652,19 @@ stop here, we don’t want to add it again.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-80">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-80">&#182;</a>
+=======
+        <li id="section-82">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-82">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>And finally, if the emitter is a member of another group,
 don’t add it to this group.</p>
@@ -2985,11 +3683,19 @@ don’t add it to this group.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-81">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-81">&#182;</a>
+=======
+        <li id="section-83">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-83">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Update this group’s particle count.</p>
 
@@ -3000,11 +3706,19 @@ don’t add it to this group.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-82">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-82">&#182;</a>
+=======
+        <li id="section-84">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-84">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Emit a warning if the emitter being added will exceed the buffer sizes specified.</p>
 
@@ -3017,11 +3731,19 @@ don’t add it to this group.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-83">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-83">&#182;</a>
+=======
+        <li id="section-85">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-85">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set the <code>particlesPerSecond</code> value (PPS) on the emitter.
 It’s used to determine how many particles to release
@@ -3035,27 +3757,47 @@ on a per-frame basis.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-84">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-84">&#182;</a>
+=======
+        <li id="section-86">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-86">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Store the offset value in the TypedArray attributes for this emitter.</p>
 
             </div>
             
+<<<<<<< HEAD
             <div class="content"><div class='highlight'><pre>    emitter.attributeOffset = start;
     emitter.activationIndex = start;</pre></div></div>
+=======
+            <div class="content"><div class='highlight'><pre>    emitter._setAttributeOffset( start );</pre></div></div>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-85">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-85">&#182;</a>
+=======
+        <li id="section-87">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-87">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Save a reference to this group on the emitter so it knows
 where it belongs.</p>
@@ -3067,11 +3809,19 @@ where it belongs.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-86">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-86">&#182;</a>
+=======
+        <li id="section-88">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-88">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Store reference to the attributes on the emitter for
 easier access during the emitter’s tick function.</p>
@@ -3083,11 +3833,19 @@ easier access during the emitter’s tick function.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-87">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-87">&#182;</a>
+=======
+        <li id="section-89">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-89">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Ensure the attributes and their BufferAttributes exist, and their
 TypedArrays are of the correct size.</p>
@@ -3100,11 +3858,19 @@ TypedArrays are of the correct size.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-88">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-88">&#182;</a>
+=======
+        <li id="section-90">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-90">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>When creating a buffer, pass through the maxParticle count
 if one is specified.</p>
@@ -3122,11 +3888,19 @@ if one is specified.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-89">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-89">&#182;</a>
+=======
+        <li id="section-91">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-91">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Loop through each particle this emitter wants to have, and create the attributes values,
 storing them in the TypedArrays that each attribute holds.</p>
@@ -3148,11 +3922,19 @@ storing them in the TypedArrays that each attribute holds.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-90">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-90">&#182;</a>
+=======
+        <li id="section-92">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-92">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Update the geometry and make sure the attributes are referencing
 the typed arrays properly.</p>
@@ -3164,11 +3946,19 @@ the typed arrays properly.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-91">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-91">&#182;</a>
+=======
+        <li id="section-93">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-93">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Store this emitter in this group’s emitter’s store.</p>
 
@@ -3180,11 +3970,19 @@ the typed arrays properly.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-92">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-92">&#182;</a>
+=======
+        <li id="section-94">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-94">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Update certain flags to enable shader calculations only if they’re necessary.</p>
 
@@ -3195,11 +3993,19 @@ the typed arrays properly.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-93">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-93">&#182;</a>
+=======
+        <li id="section-95">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-95">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Update the material since defines might have changed</p>
 
@@ -3212,11 +4018,19 @@ the typed arrays properly.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-94">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-94">&#182;</a>
+=======
+        <li id="section-96">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-96">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Return the group to enable chaining.</p>
 
@@ -3240,11 +4054,19 @@ SPE.Group.prototype.removeEmitter = <span class="hljs-function"><span class="hlj
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-95">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-95">&#182;</a>
+=======
+        <li id="section-97">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-97">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Ensure an actual emitter instance is passed here.</p>
 <p>Decided not to throw here, just in case a scene’s
@@ -3261,11 +4083,19 @@ of stopping execution if exceptions aren’t caught.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-96">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-96">&#182;</a>
+=======
+        <li id="section-98">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-98">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Issue an error if the emitter isn’t a member of this group.</p>
 
@@ -3279,11 +4109,19 @@ of stopping execution if exceptions aren’t caught.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-97">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-97">&#182;</a>
+=======
+        <li id="section-99">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-99">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Kill all particles by marking them as dead
 and their age as 0.</p>
@@ -3297,11 +4135,19 @@ and their age as 0.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-98">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-98">&#182;</a>
+=======
+        <li id="section-100">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-100">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set alive and age to zero.</p>
 
@@ -3315,11 +4161,19 @@ and their age as 0.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-99">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-99">&#182;</a>
+=======
+        <li id="section-101">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-101">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Remove the emitter from this group’s “store”.</p>
 
@@ -3331,11 +4185,19 @@ and their age as 0.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-100">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-100">&#182;</a>
+=======
+        <li id="section-102">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-102">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Remove this emitter’s attribute values from all shader attributes.
 The <code>.splice()</code> call here also marks each attribute’s buffer
@@ -3352,11 +4214,19 @@ as needing to update it’s entire contents.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-101">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-101">&#182;</a>
+=======
+        <li id="section-103">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-103">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Ensure this group’s particle count is correct.</p>
 
@@ -3367,11 +4237,19 @@ as needing to update it’s entire contents.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-102">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-102">&#182;</a>
+=======
+        <li id="section-104">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-104">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Call the emitter’s remove method.</p>
 
@@ -3382,11 +4260,19 @@ as needing to update it’s entire contents.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-103">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-103">&#182;</a>
+=======
+        <li id="section-105">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-105">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Set a flag to indicate that the attribute buffers should
 be updated in their entirety on the next frame.</p>
@@ -3469,11 +4355,19 @@ SPE.Group.prototype.addPool = <span class="hljs-function"><span class="hljs-keyw
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-104">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-104">&#182;</a>
+=======
+        <li id="section-106">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-106">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Save relevant settings and flags.</p>
 
@@ -3485,11 +4379,19 @@ SPE.Group.prototype.addPool = <span class="hljs-function"><span class="hljs-keyw
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-105">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-105">&#182;</a>
+=======
+        <li id="section-107">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-107">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Create the emitters, add them to this group and the pool.</p>
 
@@ -3525,11 +4427,19 @@ SPE.Group.prototype._triggerSingleEmitter = <span class="hljs-function"><span cl
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-106">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-106">&#182;</a>
+=======
+        <li id="section-108">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-108">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>TODO:</p>
 <ul>
@@ -3544,11 +4454,19 @@ SPE.Group.prototype._triggerSingleEmitter = <span class="hljs-function"><span cl
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-107">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-107">&#182;</a>
+=======
+        <li id="section-109">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-109">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Trigger the setter for this property to force an
 update to the emitter’s position attribute.</p>
@@ -3563,7 +4481,11 @@ update to the emitter’s position attribute.</p>
     setTimeout( <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
         emitter.disable();
         self.releaseIntoPool( emitter );
+<<<<<<< HEAD
     }, emitter.maxAge.value + emitter.maxAge.spread );
+=======
+    }, ( emitter.maxAge.value + emitter.maxAge.spread ) * <span class="hljs-number">1000</span> );
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
 };
@@ -3653,11 +4575,19 @@ SPE.Group.prototype.tick = <span class="hljs-function"><span class="hljs-keyword
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-108">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-108">&#182;</a>
+=======
+        <li id="section-110">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-110">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Update uniform values.</p>
 
@@ -3668,11 +4598,19 @@ SPE.Group.prototype.tick = <span class="hljs-function"><span class="hljs-keyword
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-109">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-109">&#182;</a>
+=======
+        <li id="section-111">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-111">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Reset buffer update ranges on the shader attributes.</p>
 
@@ -3683,11 +4621,19 @@ SPE.Group.prototype.tick = <span class="hljs-function"><span class="hljs-keyword
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-110">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-110">&#182;</a>
+=======
+        <li id="section-112">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-112">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If nothing needs updating, then stop here.</p>
 
@@ -3704,11 +4650,19 @@ SPE.Group.prototype.tick = <span class="hljs-function"><span class="hljs-keyword
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-111">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-111">&#182;</a>
+=======
+        <li id="section-113">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-113">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Loop through each emitter in this group and
 simulate it, then update the shader attribute
@@ -3725,11 +4679,19 @@ buffers.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-112">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-112">&#182;</a>
+=======
+        <li id="section-114">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-114">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the shader attributes have been refreshed,
 then the dynamic properties of each buffer
@@ -3751,11 +4713,19 @@ what they should be.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-113">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-113">&#182;</a>
+=======
+        <li id="section-115">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-115">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If this group’s shader attributes need a full refresh
 then mark each attribute’s buffer attribute as
@@ -3822,6 +4792,11 @@ SPE.Group.prototype.dispose = <span class="hljs-function"><span class="hljs-keyw
  *                                          Values greater than 1 will emulate a burst of particles, causing the emitter to run out of particles
  *                                          before it's next activation cycle.
  *
+<<<<<<< HEAD
+=======
+ * @property {Boolean} [direction=1] The direction of the emitter. If value is `1`, emitter will start at beginning of particle's lifecycle.
+ *                                   If value is `-1`, emitter will start at end of particle's lifecycle and work it's way backwards.
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
  *
  * @property {Object} [maxAge={}] An object describing the particle's maximum age in seconds.
  * @property {Number} [maxAge.value=2] A number between 0 and 1 describing the amount of maxAge to apply to all particles.
@@ -3837,7 +4812,13 @@ SPE.Group.prototype.dispose = <span class="hljs-function"><span class="hljs-keyw
  *                                                               be spread out over.
  *                                                               Note that when using a SPHERE or DISC distribution, only the x-component
  *                                                               of this vector is used.
+<<<<<<< HEAD
  * @property {distribution} [position.distribution=value of the `type` option.] A specific distribution to use when positioning particles. Overrides the `type` option.
+=======
+ * @property {Number} [position.radius=10] This emitter's base radius.
+ * @property {Object} [position.radiusScale=new THREE.Vector3()] A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.
+ * @property {distribution} [position.distribution=value of the `type` option.] A specific distribution to use when radiusing particles. Overrides the `type` option.
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
  * @property {Boolean} [position.randomise=false] When a particle is re-spawned, whether it's position should be re-randomised or not. Can incur a performance hit.
  *
  *
@@ -3859,6 +4840,7 @@ SPE.Group.prototype.dispose = <span class="hljs-function"><span class="hljs-keyw
  * @property {Boolean} [acceleration.randomise=false] When a particle is re-spawned, whether it's acceleration should be re-randomised or not. Can incur a performance hit.
  *
  *
+<<<<<<< HEAD
  * @property {Object} [radius={}] An object describing this emitter's radius. Only used when using SPHERE or DISC distribution type.
  * @property {Number} [radius.value=10] This emitter's base radius.
  * @property {Number} [radius.spread=0] This emitter's radius variance on a per-particle basis.
@@ -3868,6 +4850,8 @@ SPE.Group.prototype.dispose = <span class="hljs-function"><span class="hljs-keyw
  * @property {Boolean} [radius.randomise=false] When a particle is re-spawned, whether it's radius should be re-randomised or not. Can incur a performance hit.
  *
  *
+=======
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
  * @property {Object} [drag={}] An object describing this particle drag. Drag is applied to both velocity and acceleration values.
  * @property {Number} [drag.value=0] A number between 0 and 1 describing the amount of drag to apply to all particles.
  * @property {Number} [drag.spread=0] A number describing the drag variance on a per-particle basis.
@@ -3952,11 +4936,19 @@ SPE.Emitter = <span class="hljs-function"><span class="hljs-keyword">function</s
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-114">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-114">&#182;</a>
+=======
+        <li id="section-116">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-116">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Ensure we have a map of options to play with,
 and that each option is in the correct format.</p>
@@ -3988,11 +4980,19 @@ and that each option is in the correct format.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-115">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-115">&#182;</a>
+=======
+        <li id="section-117">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-117">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Start assigning properties…kicking it off with props that DON’T support values over
 lifetimes.</p>
@@ -4005,7 +5005,14 @@ lifetimes.</p>
         _spread: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
         _spreadClamp: utils.ensureInstanceOf( options.position.spreadClamp, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
         _distribution: utils.ensureTypedArg( options.position.distribution, types.NUMBER, <span class="hljs-keyword">this</span>.type ),
+<<<<<<< HEAD
         _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, <span class="hljs-literal">false</span> )
+=======
+        _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, <span class="hljs-literal">false</span> ),
+        _radius: utils.ensureTypedArg( options.position.radius, types.NUMBER, <span class="hljs-number">10</span> ),
+        _radiusScale: utils.ensureInstanceOf( options.position.scale, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3( <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span> ) ),
+        _distributionClamp: utils.ensureTypedArg( options.position.distributionClamp, types.NUMBER, <span class="hljs-number">0</span> ),
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     };
 
     <span class="hljs-keyword">this</span>.velocity = {
@@ -4022,6 +5029,7 @@ lifetimes.</p>
         _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, <span class="hljs-literal">false</span> )
     };
 
+<<<<<<< HEAD
     <span class="hljs-keyword">this</span>.radius = {
         _value: utils.ensureTypedArg( options.radius.value, types.NUMBER, <span class="hljs-number">10</span> ),
         _spread: utils.ensureTypedArg( options.radius.spread, types.NUMBER, <span class="hljs-number">0</span> ),
@@ -4030,6 +5038,8 @@ lifetimes.</p>
         _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, <span class="hljs-literal">false</span> )
     };
 
+=======
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     <span class="hljs-keyword">this</span>.drag = {
         _value: utils.ensureTypedArg( options.drag.value, types.NUMBER, <span class="hljs-number">0</span> ),
         _spread: utils.ensureTypedArg( options.drag.spread, types.NUMBER, <span class="hljs-number">0</span> ),
@@ -4047,7 +5057,11 @@ lifetimes.</p>
         _angle: utils.ensureTypedArg( options.rotation.angle, types.NUMBER, <span class="hljs-number">0</span> ),
         _angleSpread: utils.ensureTypedArg( options.rotation.angleSpread, types.NUMBER, <span class="hljs-number">0</span> ),
         _static: utils.ensureTypedArg( options.rotation.static, types.BOOLEAN, <span class="hljs-literal">false</span> ),
+<<<<<<< HEAD
         _center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, <span class="hljs-keyword">this</span>.position._value ),
+=======
+        _center: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, <span class="hljs-keyword">this</span>.position._value.clone() ),
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, <span class="hljs-literal">false</span> )
     };
 
@@ -4060,11 +5074,19 @@ lifetimes.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-116">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-116">&#182;</a>
+=======
+        <li id="section-118">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-118">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>The following properties can support either single values, or an array of values that change
 the property over a particle’s lifetime (value over lifetime).</p>
@@ -4098,11 +5120,19 @@ the property over a particle’s lifetime (value over lifetime).</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-117">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-117">&#182;</a>
+=======
+        <li id="section-119">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-119">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Assign renaining option values.</p>
 
@@ -4111,16 +5141,44 @@ the property over a particle’s lifetime (value over lifetime).</p>
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.particleCount = utils.ensureTypedArg( options.particleCount, types.NUMBER, <span class="hljs-number">100</span> );
     <span class="hljs-keyword">this</span>.duration = utils.ensureTypedArg( options.duration, types.NUMBER, <span class="hljs-literal">null</span> );
     <span class="hljs-keyword">this</span>.isStatic = utils.ensureTypedArg( options.isStatic, types.BOOLEAN, <span class="hljs-literal">false</span> );
+<<<<<<< HEAD
     <span class="hljs-keyword">this</span>.activeMultiplier = utils.ensureTypedArg( options.activeMultiplier, types.NUMBER, <span class="hljs-number">1</span> );</pre></div></div>
+=======
+    <span class="hljs-keyword">this</span>.activeMultiplier = utils.ensureTypedArg( options.activeMultiplier, types.NUMBER, <span class="hljs-number">1</span> );
+    <span class="hljs-keyword">this</span>.direction = utils.ensureTypedArg( options.direction, types.NUMBER, <span class="hljs-number">1</span> );</pre></div></div>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-118">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-118">&#182;</a>
+=======
+        <li id="section-120">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-120">&#182;</a>
+              </div>
+              <p>Whether this emitter is alive or not.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.alive = utils.ensureTypedArg( options.alive, types.BOOLEAN, <span class="hljs-literal">true</span> );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-121">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-121">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>The following properties are set internally and are not
 user-controllable.</p>
@@ -4132,11 +5190,19 @@ user-controllable.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-119">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-119">&#182;</a>
+=======
+        <li id="section-122">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-122">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>The current particle index for which particles should
 be marked as active on the next update cycle.</p>
@@ -4148,11 +5214,19 @@ be marked as active on the next update cycle.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-120">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-120">&#182;</a>
+=======
+        <li id="section-123">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-123">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>The offset in the typed arrays this emitter’s
 particle’s values will start at</p>
@@ -4164,6 +5238,7 @@ particle’s values will start at</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-121">
             <div class="annotation">
               
@@ -4175,15 +5250,36 @@ particle’s values will start at</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.alive = <span class="hljs-literal">true</span>;</pre></div></div>
+=======
+        <li id="section-124">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-124">&#182;</a>
+              </div>
+              <p>The end of the range in the attribute buffers</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.attributeEnd = <span class="hljs-number">0</span>;</pre></div></div>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-122">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-122">&#182;</a>
+=======
+        <li id="section-125">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-125">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Holds the time the emitter has been alive for.</p>
 
@@ -4194,11 +5290,19 @@ particle’s values will start at</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-123">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-123">&#182;</a>
+=======
+        <li id="section-126">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-126">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Holds the number of currently-alive particles</p>
 
@@ -4209,11 +5313,19 @@ particle’s values will start at</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-124">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-124">&#182;</a>
+=======
+        <li id="section-127">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-127">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Holds a reference to this emitter’s group once
 it’s added to one.</p>
@@ -4225,11 +5337,19 @@ it’s added to one.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-125">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-125">&#182;</a>
+=======
+        <li id="section-128">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-128">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Holds a reference to this emitter’s group’s attributes object
 for easier access.</p>
@@ -4241,11 +5361,19 @@ for easier access.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-126">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-126">&#182;</a>
+=======
+        <li id="section-129">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-129">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Holds a reference to the params attribute’s typed array
 for quicker access.</p>
@@ -4257,11 +5385,19 @@ for quicker access.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-127">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-127">&#182;</a>
+=======
+        <li id="section-130">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-130">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>A set of flags to determine whether particular properties
 should be re-randomised when a particle is reset.</p>
@@ -4281,11 +5417,19 @@ except the <code>params</code> attribute would have changed).</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-128">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-128">&#182;</a>
+=======
+        <li id="section-131">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-131">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>params: utils.ensureTypedArg( options.maxAge.randomise, types.BOOLEAN, !!options.maxAge.spread ) ||
     utils.ensureTypedArg( options.wiggle.randomise, types.BOOLEAN, !!options.wiggle.spread ),</p>
@@ -4311,11 +5455,19 @@ except the <code>params</code> attribute would have changed).</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-129">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-129">&#182;</a>
+=======
+        <li id="section-132">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-132">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>A map to indicate which emitter parameters should update
 which attribute.</p>
@@ -4327,7 +5479,10 @@ which attribute.</p>
         position: <span class="hljs-string">'position'</span>,
         velocity: <span class="hljs-string">'velocity'</span>,
         acceleration: <span class="hljs-string">'acceleration'</span>,
+<<<<<<< HEAD
         radius: <span class="hljs-string">'position'</span>,
+=======
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         drag: <span class="hljs-string">'acceleration'</span>,
         wiggle: <span class="hljs-string">'params'</span>,
         rotation: <span class="hljs-string">'rotation'</span>,
@@ -4339,6 +5494,11 @@ which attribute.</p>
 
     <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>.updateMap ) {
         <span class="hljs-keyword">if</span> ( <span class="hljs-keyword">this</span>.updateMap.hasOwnProperty( i ) ) {
+<<<<<<< HEAD
+=======
+            <span class="hljs-keyword">this</span>.updateCounts[ <span class="hljs-keyword">this</span>.updateMap[ i ] ] = <span class="hljs-number">0.0</span>;
+            <span class="hljs-keyword">this</span>.updateFlags[ <span class="hljs-keyword">this</span>.updateMap[ i ] ] = <span class="hljs-literal">false</span>;
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             <span class="hljs-keyword">this</span>._createGetterSetters( <span class="hljs-keyword">this</span>[ i ], i );
         }
     }
@@ -4350,11 +5510,19 @@ which attribute.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-130">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-130">&#182;</a>
+=======
+        <li id="section-133">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-133">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Ensure that the value-over-lifetime property objects above
 have value and spread properties that are of the same length.</p>
@@ -4405,16 +5573,29 @@ SPE.Emitter.prototype._createGetterSetters = <span class="hljs-function"><span c
                             self.updateCounts[ mapName ] = <span class="hljs-number">0.0</span>;
                         }
 
+<<<<<<< HEAD
+=======
+                        self.group._updateDefines();
+
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
                         <span class="hljs-keyword">this</span>[ prop ] = value;</pre></div></div>
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-131">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-131">&#182;</a>
+=======
+        <li id="section-134">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-134">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the previous value was an array, then make
 sure the provided value is interpolated correctly.</p>
@@ -4453,11 +5634,19 @@ SPE.Emitter.prototype._calculatePPSValue = <span class="hljs-function"><span cla
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-132">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-132">&#182;</a>
+=======
+        <li id="section-135">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-135">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Calculate the <code>particlesPerSecond</code> value for this emitter. It’s used
 when determining which particles should die and which should live to
@@ -4473,6 +5662,15 @@ see another day. Or be born, for that matter. The “God” property.</p>
     }
 };
 
+<<<<<<< HEAD
+=======
+SPE.Emitter.prototype._setAttributeOffset = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> startIndex </span>) </span>{
+    <span class="hljs-keyword">this</span>.attributeOffset = startIndex;
+    <span class="hljs-keyword">this</span>.activationIndex = startIndex;
+    <span class="hljs-keyword">this</span>.activationEnd = startIndex + <span class="hljs-keyword">this</span>.particleCount;
+};
+
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
 SPE.Emitter.prototype._assignValue = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> prop, index </span>) </span>{
 <span class="hljs-pi">    'use strict'</span>;
@@ -4482,12 +5680,15 @@ SPE.Emitter.prototype._assignValue = <span class="hljs-function"><span class="hl
             <span class="hljs-keyword">this</span>._assignPositionValue( index );
             <span class="hljs-keyword">break</span>;
 
+<<<<<<< HEAD
         <span class="hljs-keyword">case</span> <span class="hljs-string">'radius'</span>:
             <span class="hljs-keyword">if</span> ( <span class="hljs-keyword">this</span>.position._distribution !== SPE.distributions.BOX ) {
                 <span class="hljs-keyword">this</span>._assignPositionValue( index );
             }
             <span class="hljs-keyword">break</span>;
 
+=======
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         <span class="hljs-keyword">case</span> <span class="hljs-string">'velocity'</span>:
         <span class="hljs-keyword">case</span> <span class="hljs-string">'acceleration'</span>:
             <span class="hljs-keyword">this</span>._assignForceValue( index, prop );
@@ -4525,8 +5726,12 @@ SPE.Emitter.prototype._assignPositionValue = <span class="hljs-function"><span c
         attr = <span class="hljs-keyword">this</span>.attributes.position,
         value = prop._value,
         spread = prop._spread,
+<<<<<<< HEAD
         distribution = prop._distribution,
         radius = <span class="hljs-keyword">this</span>.radius;
+=======
+        distribution = prop._distribution;
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
     <span class="hljs-keyword">switch</span> ( distribution ) {
         <span class="hljs-keyword">case</span> distributions.BOX:
@@ -4534,11 +5739,19 @@ SPE.Emitter.prototype._assignPositionValue = <span class="hljs-function"><span c
             <span class="hljs-keyword">break</span>;
 
         <span class="hljs-keyword">case</span> distributions.SPHERE:
+<<<<<<< HEAD
             utils.randomVector3OnSphere( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
             <span class="hljs-keyword">break</span>;
 
         <span class="hljs-keyword">case</span> distributions.DISC:
             utils.randomVector3OnDisc( attr, index, value, radius._value, radius._spread, radius._scale, radius._spreadClamp );
+=======
+            utils.randomVector3OnSphere( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x, prop._distributionClamp || <span class="hljs-keyword">this</span>.particleCount );
+            <span class="hljs-keyword">break</span>;
+
+        <span class="hljs-keyword">case</span> distributions.DISC:
+            utils.randomVector3OnDisc( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x );
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             <span class="hljs-keyword">break</span>;
     }
 };
@@ -4564,13 +5777,17 @@ SPE.Emitter.prototype._assignForceValue = <span class="hljs-function"><span clas
             <span class="hljs-keyword">break</span>;
 
         <span class="hljs-keyword">case</span> distributions.SPHERE:
+<<<<<<< HEAD
         <span class="hljs-keyword">case</span> distributions.DISC:
+=======
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             pos = <span class="hljs-keyword">this</span>.attributes.position.typedArray.array;
             i = index * <span class="hljs-number">3</span>;</pre></div></div>
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-133">
             <div class="annotation">
               
@@ -4585,6 +5802,25 @@ applied.</p>
             <div class="content"><div class='highlight'><pre>            positionX = utils.zeroToEpsilon( pos[ i ], <span class="hljs-literal">true</span> );
             positionY = utils.zeroToEpsilon( pos[ i + <span class="hljs-number">1</span> ], <span class="hljs-literal">true</span> );
             positionZ = utils.zeroToEpsilon( pos[ i + <span class="hljs-number">2</span> ], <span class="hljs-literal">true</span> );
+=======
+        <li id="section-136">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-136">&#182;</a>
+              </div>
+              <p>Ensure position values aren’t zero, otherwise no force will be
+applied.
+positionX = utils.zeroToEpsilon( pos[ i ], true );
+positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            positionX = pos[ i ];
+            positionY = pos[ i + <span class="hljs-number">1</span> ];
+            positionZ = pos[ i + <span class="hljs-number">2</span> ];
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
             utils.randomDirectionVector3OnSphere(
                 <span class="hljs-keyword">this</span>.attributes[ attrName ], index,
@@ -4594,6 +5830,43 @@ applied.</p>
                 prop._spread.x
             );
             <span class="hljs-keyword">break</span>;
+<<<<<<< HEAD
+=======
+
+        <span class="hljs-keyword">case</span> distributions.DISC:
+            pos = <span class="hljs-keyword">this</span>.attributes.position.typedArray.array;
+            i = index * <span class="hljs-number">3</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-137">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-137">&#182;</a>
+              </div>
+              <p>Ensure position values aren’t zero, otherwise no force will be
+applied.
+positionX = utils.zeroToEpsilon( pos[ i ], true );
+positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            positionX = pos[ i ];
+            positionY = pos[ i + <span class="hljs-number">1</span> ];
+            positionZ = pos[ i + <span class="hljs-number">2</span> ];
+
+            utils.randomDirectionVector3OnDisc(
+                <span class="hljs-keyword">this</span>.attributes[ attrName ], index,
+                positionX, positionY, positionZ,
+                <span class="hljs-keyword">this</span>.position._value,
+                prop._value.x,
+                prop._spread.x
+            );
+            <span class="hljs-keyword">break</span>;
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     }
 
     <span class="hljs-keyword">if</span> ( attrName === <span class="hljs-string">'acceleration'</span> ) {
@@ -4671,7 +5944,10 @@ SPE.Emitter.prototype._assignRotationValue = <span class="hljs-function"><span c
 
 SPE.Emitter.prototype._assignColorValue = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> index </span>) </span>{
 <span class="hljs-pi">    'use strict'</span>;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     SPE.utils.randomColorAsHex( <span class="hljs-keyword">this</span>.attributes.color, index, <span class="hljs-keyword">this</span>.color._value, <span class="hljs-keyword">this</span>.color._spread );
 };
 
@@ -4689,6 +5965,7 @@ SPE.Emitter.prototype._resetParticle = <span class="hljs-function"><span class="
         key = keys[ i ];
         updateFlag = updateFlags[ key ];
 
+<<<<<<< HEAD
         <span class="hljs-keyword">if</span> ( resetFlags[ key ] || updateFlag ) {
             <span class="hljs-keyword">this</span>._assignValue( key, index );
             <span class="hljs-keyword">this</span>._updateAttributeUpdateRange( key, index );
@@ -4697,6 +5974,19 @@ SPE.Emitter.prototype._resetParticle = <span class="hljs-function"><span class="
                 updateFlags[ key ] = <span class="hljs-literal">false</span>;
                 updateCounts[ key ] = <span class="hljs-number">0.0</span>;
             }
+=======
+        <span class="hljs-keyword">if</span> ( resetFlags[ key ] === <span class="hljs-literal">true</span> || updateFlag === <span class="hljs-literal">true</span> ) {
+            <span class="hljs-keyword">this</span>._assignValue( key, index );
+            <span class="hljs-keyword">this</span>._updateAttributeUpdateRange( key, index );
+
+            <span class="hljs-keyword">if</span> ( updateFlag === <span class="hljs-literal">true</span> &amp;&amp; updateCounts[ key ] === <span class="hljs-keyword">this</span>.particleCount ) {
+                updateFlags[ key ] = <span class="hljs-literal">false</span>;
+                updateCounts[ key ] = <span class="hljs-number">0.0</span>;
+            }
+            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( updateFlag == <span class="hljs-literal">true</span> ) {
+                ++updateCounts[ key ];
+            }
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         }
     }
 };
@@ -4731,11 +6021,19 @@ SPE.Emitter.prototype._onRemove = <span class="hljs-function"><span class="hljs-
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-134">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-134">&#182;</a>
+=======
+        <li id="section-138">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-138">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Reset any properties of the emitter that were set by
 a group when it was added.</p>
@@ -4759,11 +6057,19 @@ SPE.Emitter.prototype._decrementParticleCount = <span class="hljs-function"><spa
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-135">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-135">&#182;</a>
+=======
+        <li id="section-139">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-139">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>TODO:</p>
 <ul>
@@ -4781,11 +6087,19 @@ SPE.Emitter.prototype._incrementParticleCount = <span class="hljs-function"><spa
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-136">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-136">&#182;</a>
+=======
+        <li id="section-140">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-140">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>TODO:</p>
 <ul>
@@ -4810,11 +6124,19 @@ SPE.Emitter.prototype._checkParticleAges = <span class="hljs-function"><span cla
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-137">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-137">&#182;</a>
+=======
+        <li id="section-141">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-141">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Increment age</p>
 
@@ -4822,6 +6144,7 @@ SPE.Emitter.prototype._checkParticleAges = <span class="hljs-function"><span cla
             
             <div class="content"><div class='highlight'><pre>        age = params[ index + <span class="hljs-number">1</span> ];
         maxAge = params[ index + <span class="hljs-number">2</span> ];
+<<<<<<< HEAD
         age += dt;</pre></div></div>
             
         </li>
@@ -4855,6 +6178,26 @@ SPE.Emitter.prototype._checkParticleAges = <span class="hljs-function"><span cla
             </div>
             
             <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">this</span>._decrementParticleCount();
+=======
+
+        <span class="hljs-keyword">if</span> ( <span class="hljs-keyword">this</span>.direction === <span class="hljs-number">1</span> ) {
+            age += dt;
+
+            <span class="hljs-keyword">if</span> ( age &gt;= maxAge ) {
+                age = <span class="hljs-number">0.0</span>;
+                alive = <span class="hljs-number">0.0</span>;
+                <span class="hljs-keyword">this</span>._decrementParticleCount();
+            }
+        }
+        <span class="hljs-keyword">else</span> {
+            age -= dt;
+
+            <span class="hljs-keyword">if</span> ( age &lt;= <span class="hljs-number">0.0</span> ) {
+                age = maxAge;
+                alive = <span class="hljs-number">0.0</span>;
+                <span class="hljs-keyword">this</span>._decrementParticleCount();
+            }
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         }
 
         params[ index ] = alive;
@@ -4866,17 +6209,52 @@ SPE.Emitter.prototype._checkParticleAges = <span class="hljs-function"><span cla
 
 SPE.Emitter.prototype._activateParticles = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> activationStart, activationEnd, params, dtPerParticle </span>) </span>{
 <span class="hljs-pi">    'use strict'</span>;
+<<<<<<< HEAD
     <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = activationStart, index; i &lt; activationEnd; ++i ) {
+=======
+    <span class="hljs-keyword">var</span> direction = <span class="hljs-keyword">this</span>.direction;
+
+    <span class="hljs-keyword">for</span> ( <span class="hljs-keyword">var</span> i = activationStart, index, dtValue; i &lt; activationEnd; ++i ) {
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         index = i * <span class="hljs-number">4</span>;</pre></div></div>
             
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-140">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-140">&#182;</a>
+=======
+        <li id="section-142">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-142">&#182;</a>
+              </div>
+              <p>Don’t re-activate particles that aren’t dead yet.
+if ( params[ index ] !== 0.0 &amp;&amp; ( this.particleCount !== 1 || this.activeMultiplier !== 1 ) ) {
+    continue;
+}</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+        <span class="hljs-keyword">if</span> ( params[ index ] != <span class="hljs-number">0.0</span> &amp;&amp; <span class="hljs-keyword">this</span>.particleCount !== <span class="hljs-number">1</span> ) {
+            <span class="hljs-keyword">continue</span>;
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-143">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-143">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Increment the active particle count.</p>
 
@@ -4887,11 +6265,19 @@ SPE.Emitter.prototype._activateParticles = <span class="hljs-function"><span cla
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-141">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-141">&#182;</a>
+=======
+        <li id="section-144">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-144">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Mark the particle as alive.</p>
 
@@ -4902,11 +6288,19 @@ SPE.Emitter.prototype._activateParticles = <span class="hljs-function"><span cla
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-142">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-142">&#182;</a>
+=======
+        <li id="section-145">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-145">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Reset the particle</p>
 
@@ -4917,11 +6311,19 @@ SPE.Emitter.prototype._activateParticles = <span class="hljs-function"><span cla
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-143">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-143">&#182;</a>
+=======
+        <li id="section-146">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-146">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Move each particle being activated to
 it’s actual position in time.</p>
@@ -4931,10 +6333,17 @@ or not constant (a very real possibility!)</p>
 
             </div>
             
+<<<<<<< HEAD
             <div class="content"><div class='highlight'><pre>        params[ index + <span class="hljs-number">1</span> ] = dtPerParticle * ( i - activationStart );
 
         <span class="hljs-keyword">this</span>._updateAttributeUpdateRange( <span class="hljs-string">'params'</span>, i );
 
+=======
+            <div class="content"><div class='highlight'><pre>        dtValue = dtPerParticle * ( i - activationStart )
+        params[ index + <span class="hljs-number">1</span> ] = direction === -<span class="hljs-number">1</span> ? params[ index + <span class="hljs-number">2</span> ] - dtValue : dtValue;
+
+        <span class="hljs-keyword">this</span>._updateAttributeUpdateRange( <span class="hljs-string">'params'</span>, i );
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     }
 };
 
@@ -4967,11 +6376,19 @@ SPE.Emitter.prototype.tick = <span class="hljs-function"><span class="hljs-keywo
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-144">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-144">&#182;</a>
+=======
+        <li id="section-147">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-147">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Reset the buffer update indices.</p>
 
@@ -4982,11 +6399,19 @@ SPE.Emitter.prototype.tick = <span class="hljs-function"><span class="hljs-keywo
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-145">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-145">&#182;</a>
+=======
+        <li id="section-148">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-148">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Increment age for those particles that are alive,
 and kill off any particles whose age is over the limit.</p>
@@ -4998,11 +6423,19 @@ and kill off any particles whose age is over the limit.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-146">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-146">&#182;</a>
+=======
+        <li id="section-149">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-149">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the emitter is dead, reset the age of the emitter to zero,
 ready to go again if required</p>
@@ -5017,11 +6450,19 @@ ready to go again if required</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-147">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-147">&#182;</a>
+=======
+        <li id="section-150">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-150">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>If the emitter has a specified lifetime and we’ve exceeded it,
 mark the emitter as dead.</p>
@@ -5031,11 +6472,20 @@ mark the emitter as dead.</p>
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> ( <span class="hljs-keyword">this</span>.duration !== <span class="hljs-literal">null</span> &amp;&amp; <span class="hljs-keyword">this</span>.age &gt; <span class="hljs-keyword">this</span>.duration ) {
         <span class="hljs-keyword">this</span>.alive = <span class="hljs-literal">false</span>;
         <span class="hljs-keyword">this</span>.age = <span class="hljs-number">0.0</span>;
+<<<<<<< HEAD
     }
 
 
     <span class="hljs-keyword">var</span> activationStart = <span class="hljs-keyword">this</span>.particleCount === <span class="hljs-number">1</span> ? activationIndex : activationIndex | <span class="hljs-number">0</span>,
         activationEnd = activationStart + ppsDt,
+=======
+        <span class="hljs-keyword">return</span>;
+    }
+
+
+    <span class="hljs-keyword">var</span> activationStart = <span class="hljs-keyword">this</span>.particleCount === <span class="hljs-number">1</span> ? activationIndex : ( activationIndex | <span class="hljs-number">0</span> ),
+        activationEnd = <span class="hljs-built_in">Math</span>.min( activationStart + ppsDt, <span class="hljs-keyword">this</span>.activationEnd ),
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         activationCount = activationEnd - <span class="hljs-keyword">this</span>.activationIndex | <span class="hljs-number">0</span>,
         dtPerParticle = activationCount &gt; <span class="hljs-number">0</span> ? dt / activationCount : <span class="hljs-number">0</span>;
 
@@ -5044,11 +6494,19 @@ mark the emitter as dead.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-148">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-148">&#182;</a>
+=======
+        <li id="section-151">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-151">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Move the activation window forward, soldier.</p>
 
@@ -5063,11 +6521,19 @@ mark the emitter as dead.</p>
         </li>
         
         
+<<<<<<< HEAD
         <li id="section-149">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-149">&#182;</a>
+=======
+        <li id="section-152">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-152">&#182;</a>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
               </div>
               <p>Increment the age of the emitter.</p>
 
@@ -5119,7 +6585,10 @@ SPE.Emitter.prototype.reset = <span class="hljs-function"><span class="hljs-keyw
  */</span>
 SPE.Emitter.prototype.enable = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
 <span class="hljs-pi">    'use strict'</span>;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
     <span class="hljs-keyword">this</span>.alive = <span class="hljs-literal">true</span>;
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
 };

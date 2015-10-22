@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SPE: Clock</title>
+		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body>
+		<script type="text/javascript" src="../examples/js/THREE-r72.js"></script>
+		<script type="text/javascript" src="../examples/js/Stats.min.js"></script>
+		<script type="text/javascript" src="../src/SPE.js"></script>
+		<script type="text/javascript" src="../src/helpers/SPE.TypedArrayHelper.js"></script>
+        <script type="text/javascript" src="../src/helpers/SPE.ShaderAttribute.js"></script>
+        <script type="text/javascript" src="../src/shaders/SPE.shaderChunks.js"></script>
+        <script type="text/javascript" src="../src/shaders/SPE.shaders.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.utils.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.Group.js"></script>
+        <script type="text/javascript" src="../src/core/SPE.Emitter.js"></script>
+  		<script type="text/javascript" src="js/basicScene.js"></script>
+
+		<script type="text/javascript">
+			var group = new SPE.Group( {
+					texture: {
+						value: THREE.ImageUtils.loadTexture( '../../examples/img/smokeparticle.png' ),
+					}
+				} ),
+				secondHand = new SPE.Emitter({
+					particleCount: 500,
+					maxAge: {
+						value: 2
+					},
+					position: {
+						value: new THREE.Vector3( 0, 5, 0 )
+					},
+					size: {
+						value: [0, 1]
+					},
+					color: {
+						value: [new THREE.Color(0, 0, 1), new THREE.Color(1, 1, 0), new THREE.Color(1, 0, 0)]
+					},
+					opacity: {
+						value: 1
+					},
+					rotation: {
+						axis: new THREE.Vector3( 0, 0, 1 ),
+						angle: 0,
+						static: false,
+						center: new THREE.Vector3()
+					},
+					direction: -1
+				}),
+				minuteHand = new SPE.Emitter({
+					particleCount: 500,
+					maxAge: {
+						value: 2
+					},
+					position: {
+						value: new THREE.Vector3( 0, 7.5, 0 )
+					},
+					size: {
+						value: [0, 2]
+					},
+					color: {
+						value: [new THREE.Color(0, 0, 1), new THREE.Color(0, 1, 0), new THREE.Color(0, 1, 1)]
+					},
+					opacity: {
+						value: 1
+					},
+					rotation: {
+						axis: new THREE.Vector3( 0, 0, 1 ),
+						angle: 0,
+						static: false,
+						center: new THREE.Vector3()
+					},
+					direction: -1
+				}),
+				hourHand = new SPE.Emitter({
+					particleCount: 500,
+					maxAge: {
+						value: 2
+					},
+					position: {
+						value: new THREE.Vector3( 0, 10, 0 )
+					},
+					size: {
+						value: [0, 4]
+					},
+					color: {
+						value: new THREE.Color(0.5, 0.25, 0.9)
+					},
+					opacity: {
+						value: 1
+					},
+					rotation: {
+						axis: new THREE.Vector3( 0, 0, 1 ),
+						angle: 0,
+						static: false,
+						center: new THREE.Vector3()
+					},
+					direction: -1
+				});
+
+			group.addEmitter( secondHand );
+			group.addEmitter( minuteHand );
+			group.addEmitter( hourHand );
+			scene.add( group.mesh );
+
+			camera.position.z = 40;
+			camera.lookAt( scene.position );
+
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			document.body.appendChild( stats.domElement );
+
+			var date = new Date( Date.now() );
+
+
+			function preRender() {
+				var catchUpSeconds = date.getSeconds(),
+					catchUpMinutes = date.getMinutes(),
+					catchUpHours = date.getHours() % 12;
+
+				secondHand.rotation.angle = (catchUpSeconds / 60) * Math.PI * 2;
+				minuteHand.rotation.angle = (catchUpMinutes / 60) * Math.PI * 2;
+				hourHand.rotation.angle = (catchUpHours / 12) * Math.PI * 2;
+			}
+
+			function onAnimate() {
+				date.setTime( Date.now() );
+
+				var seconds = date.getSeconds(),
+					minutes = date.getMinutes(),
+					hours = date.getHours() % 12,
+					fullRotation = Math.PI * 2,
+					secondAngle = (seconds / 60) * fullRotation,
+					minuteAngle = (minutes / 60) * fullRotation,
+					hourAngle = (hours / 12) * fullRotation;
+
+				if( secondAngle !== secondHand.rotation.angle ) {
+					secondHand.rotation.angle = secondAngle;
+				}
+
+				if( minuteAngle !== minuteHand.rotation.angle ) {
+					minuteHand.rotation.angle = minuteAngle;
+				}
+
+				if( hourAngle !== hourHand.rotation.angle ) {
+					hourHand.rotation.angle = hourAngle;
+				}
+			}
+
+			fixedTimeStep = true;
+
+			preRender();
+			animate();
+		</script>
+	</body>
+</html>

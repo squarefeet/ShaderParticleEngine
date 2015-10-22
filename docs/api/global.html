@@ -603,6 +603,47 @@
 
         <tr>
             
+<<<<<<< HEAD
+=======
+                <td class="name"><code>direction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    1
+                
+                </td>
+            
+
+            <td class="description last">The direction of the emitter. If value is `1`, emitter will start at beginning of particle's lifecycle.
+                                  If value is `-1`, emitter will start at end of particle's lifecycle and work it's way backwards.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
                 <td class="name"><code>maxAge</code></td>
             
 
@@ -918,6 +959,7 @@
 
         <tr>
             
+<<<<<<< HEAD
                 <td class="name"><code>distribution</code></td>
             
 
@@ -1059,12 +1101,19 @@
         <tr>
             
                 <td class="name"><code>value</code></td>
+=======
+                <td class="name"><code>radius</code></td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
 
             <td class="type">
             
                 
+<<<<<<< HEAD
 <span class="param-type">Object</span>
+=======
+<span class="param-type">Number</span>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
 
             
@@ -1083,19 +1132,31 @@
             
                 <td class="default">
                 
+<<<<<<< HEAD
                     new THREE.Vector3()
+=======
+                    10
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
                 
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">A THREE.Vector3 instance describing this emitter's base velocity.</td>
+=======
+            <td class="description last">This emitter's base radius.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
 
         <tr>
             
+<<<<<<< HEAD
                 <td class="name"><code>spread</code></td>
+=======
+                <td class="name"><code>radiusScale</code></td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
 
             <td class="type">
@@ -1125,9 +1186,13 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">A THREE.Vector3 instance describing this emitter's velocity variance on a per-particle basis.
                                                          Note that when using a SPHERE or DISC distribution, only the x-component
                                                          of this vector is used.</td>
+=======
+            <td class="description last">A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1164,7 +1229,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">A specific distribution to use when calculating a particle's velocity. Overrides the `type` option.</td>
+=======
+            <td class="description last">A specific distribution to use when radiusing particles. Overrides the `type` option.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1201,7 +1270,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">When a particle is re-spawned, whether it's velocity should be re-randomised or not. Can incur a performance hit.</td>
+=======
+            <td class="description last">When a particle is re-spawned, whether it's position should be re-randomised or not. Can incur a performance hit.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1215,7 +1288,11 @@
 
         <tr>
             
+<<<<<<< HEAD
                 <td class="name"><code>acceleration</code></td>
+=======
+                <td class="name"><code>velocity</code></td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
 
             <td class="type">
@@ -1245,7 +1322,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">An object describing this particle's acceleration.
+=======
+            <td class="description last">An object describing this particle velocity.
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
                 <h6>Properties</h6>
 
 <table class="props">
@@ -1304,7 +1385,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">A THREE.Vector3 instance describing this emitter's base acceleration.</td>
+=======
+            <td class="description last">A THREE.Vector3 instance describing this emitter's base velocity.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1341,9 +1426,15 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">A THREE.Vector3 instance describing this emitter's acceleration variance on a per-particle basis.
                           Note that when using a SPHERE or DISC distribution, only the x-component
                           of this vector is used.</td>
+=======
+            <td class="description last">A THREE.Vector3 instance describing this emitter's velocity variance on a per-particle basis.
+                                                         Note that when using a SPHERE or DISC distribution, only the x-component
+                                                         of this vector is used.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1380,7 +1471,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">A specific distribution to use when calculating a particle's acceleration. Overrides the `type` option.</td>
+=======
+            <td class="description last">A specific distribution to use when calculating a particle's velocity. Overrides the `type` option.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1417,7 +1512,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">When a particle is re-spawned, whether it's acceleration should be re-randomised or not. Can incur a performance hit.</td>
+=======
+            <td class="description last">When a particle is re-spawned, whether it's velocity should be re-randomised or not. Can incur a performance hit.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1431,7 +1530,11 @@
 
         <tr>
             
+<<<<<<< HEAD
                 <td class="name"><code>radius</code></td>
+=======
+                <td class="name"><code>acceleration</code></td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
             
 
             <td class="type">
@@ -1461,7 +1564,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">An object describing this emitter's radius. Only used when using SPHERE or DISC distribution type.
+=======
+            <td class="description last">An object describing this particle's acceleration.
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
                 <h6>Properties</h6>
 
 <table class="props">
@@ -1496,7 +1603,11 @@
             <td class="type">
             
                 
+<<<<<<< HEAD
 <span class="param-type">Number</span>
+=======
+<span class="param-type">Object</span>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 
 
             
@@ -1515,12 +1626,20 @@
             
                 <td class="default">
                 
+<<<<<<< HEAD
                     10
+=======
+                    new THREE.Vector3()
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
                 
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">This emitter's base radius.</td>
+=======
+            <td class="description last">A THREE.Vector3 instance describing this emitter's base acceleration.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1533,6 +1652,7 @@
             <td class="type">
             
                 
+<<<<<<< HEAD
 <span class="param-type">Number</span>
 
 
@@ -1607,6 +1727,8 @@
             <td class="type">
             
                 
+=======
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 <span class="param-type">Object</span>
 
 
@@ -1631,7 +1753,13 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.</td>
+=======
+            <td class="description last">A THREE.Vector3 instance describing this emitter's acceleration variance on a per-particle basis.
+                          Note that when using a SPHERE or DISC distribution, only the x-component
+                          of this vector is used.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1668,7 +1796,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">A specific distribution to use when radiusing particles. Overrides the `type` option.</td>
+=======
+            <td class="description last">A specific distribution to use when calculating a particle's acceleration. Overrides the `type` option.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -1705,7 +1837,11 @@
                 </td>
             
 
+<<<<<<< HEAD
             <td class="description last">When a particle is re-spawned, whether it's radius should be re-randomised or not. Can incur a performance hit.</td>
+=======
+            <td class="description last">When a particle is re-spawned, whether it's acceleration should be re-randomised or not. Can incur a performance hit.</td>
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
         </tr>
 
     
@@ -3769,7 +3905,11 @@
 <br class="clear">
 
 <footer>
+<<<<<<< HEAD
     Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Tue Oct 20 2015 23:56:46 GMT+0100 (BST)
+=======
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Thu Oct 22 2015 23:41:24 GMT+0100 (BST)
+>>>>>>> 098b7057d62125213c0abcda6c44cc0a368027ca
 </footer>
 
 <script> prettyPrint(); </script>
