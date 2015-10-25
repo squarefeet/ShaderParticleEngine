@@ -30,12 +30,12 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/* Shader-Particle-Engine 1.0.0
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/* shader-particle-engine 1.0.0
  * 
  * (c) 2015 Luke Moody (http://www.github.com/squarefeet)
  *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
  *
- * Shader-Particle-Engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
+ * shader-particle-engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
  */</span>
 <span class="hljs-comment">/**
  * @typedef {Number} distribution
@@ -1537,6 +1537,10 @@ what frame of the texture the particle is using at it’s current position in ti
 
         <span class="hljs-string">'void main() {'</span>,
         <span class="hljs-string">'    vec3 outgoingLight = vColor.xyz;'</span>,
+        <span class="hljs-string">'    '</span>,
+        <span class="hljs-string">'    #ifdef ALPHATEST'</span>,
+        <span class="hljs-string">'       if ( vColor.w &lt; float(ALPHATEST) ) discard;'</span>,
+        <span class="hljs-string">'    #endif'</span>,
 
         SPE.shaderChunks.rotateTexture,
 
@@ -2519,7 +2523,7 @@ z = this.randomFloat( base.z, spread.z );</p>
  *
  * @property {Boolean} transparent Whether these particle's should be rendered with transparency.
  *
- * @property {Boolean} alphaTest Sets the alpha value to be used when running an alpha test on the `texture.value` property.
+ * @property {Number} alphaTest Sets the alpha value to be used when running an alpha test on the `texture.value` property. Value between 0 and 1.
  *
  * @property {Boolean} depthWrite Whether rendering the group has any effect on the depth buffer.
  *
@@ -2631,7 +2635,7 @@ texture stuff.</p>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.AdditiveBlending );
     <span class="hljs-keyword">this</span>.transparent = utils.ensureTypedArg( options.transparent, types.BOOLEAN, <span class="hljs-literal">true</span> );
-    <span class="hljs-keyword">this</span>.alphaTest = utils.ensureTypedArg( options.alphaTest, types.NUMBER, <span class="hljs-number">0.5</span> );
+    <span class="hljs-keyword">this</span>.alphaTest = <span class="hljs-built_in">parseFloat</span>( utils.ensureTypedArg( options.alphaTest, types.NUMBER, <span class="hljs-number">0.0</span> ) );
     <span class="hljs-keyword">this</span>.depthWrite = utils.ensureTypedArg( options.depthWrite, types.BOOLEAN, <span class="hljs-literal">false</span> );
     <span class="hljs-keyword">this</span>.depthTest = utils.ensureTypedArg( options.depthTest, types.BOOLEAN, <span class="hljs-literal">true</span> );
     <span class="hljs-keyword">this</span>.fog = utils.ensureTypedArg( options.fog, types.BOOLEAN, <span class="hljs-literal">true</span> );

@@ -1,9 +1,9 @@
-/* Shader-Particle-Engine 1.0.0
+/* shader-particle-engine 1.0.0
  * 
  * (c) 2015 Luke Moody (http://www.github.com/squarefeet)
  *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
  *
- * Shader-Particle-Engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
+ * shader-particle-engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
  */
 /**
  * @typedef {Number} distribution
@@ -1036,6 +1036,10 @@ SPE.shaders = {
 
         'void main() {',
         '    vec3 outgoingLight = vColor.xyz;',
+        '    ',
+        '    #ifdef ALPHATEST',
+        '       if ( vColor.w < float(ALPHATEST) ) discard;',
+        '    #endif',
 
         SPE.shaderChunks.rotateTexture,
 
@@ -1795,7 +1799,7 @@ SPE.utils = {
  *
  * @property {Boolean} transparent Whether these particle's should be rendered with transparency.
  *
- * @property {Boolean} alphaTest Sets the alpha value to be used when running an alpha test on the `texture.value` property.
+ * @property {Number} alphaTest Sets the alpha value to be used when running an alpha test on the `texture.value` property. Value between 0 and 1.
  *
  * @property {Boolean} depthWrite Whether rendering the group has any effect on the depth buffer.
  *
@@ -1848,7 +1852,7 @@ SPE.Group = function( options ) {
     // Set properties used to define the ShaderMaterial's appearance.
     this.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.AdditiveBlending );
     this.transparent = utils.ensureTypedArg( options.transparent, types.BOOLEAN, true );
-    this.alphaTest = utils.ensureTypedArg( options.alphaTest, types.NUMBER, 0.5 );
+    this.alphaTest = parseFloat( utils.ensureTypedArg( options.alphaTest, types.NUMBER, 0.0 ) );
     this.depthWrite = utils.ensureTypedArg( options.depthWrite, types.BOOLEAN, false );
     this.depthTest = utils.ensureTypedArg( options.depthTest, types.BOOLEAN, true );
     this.fog = utils.ensureTypedArg( options.fog, types.BOOLEAN, true );
