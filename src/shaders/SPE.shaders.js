@@ -159,6 +159,10 @@ SPE.shaders = {
 
         'void main() {',
         '    vec3 outgoingLight = vColor.xyz;',
+        '    ',
+        '    #ifdef ALPHATEST',
+        '       if ( vColor.w < float(ALPHATEST) ) discard;',
+        '    #endif',
 
         SPE.shaderChunks.rotateTexture,
 

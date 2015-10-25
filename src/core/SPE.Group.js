@@ -38,7 +38,7 @@
  *
  * @property {Boolean} transparent Whether these particle's should be rendered with transparency.
  *
- * @property {Boolean} alphaTest Sets the alpha value to be used when running an alpha test on the `texture.value` property.
+ * @property {Number} alphaTest Sets the alpha value to be used when running an alpha test on the `texture.value` property. Value between 0 and 1.
  *
  * @property {Boolean} depthWrite Whether rendering the group has any effect on the depth buffer.
  *
@@ -91,7 +91,7 @@ SPE.Group = function( options ) {
     // Set properties used to define the ShaderMaterial's appearance.
     this.blending = utils.ensureTypedArg( options.blending, types.NUMBER, THREE.AdditiveBlending );
     this.transparent = utils.ensureTypedArg( options.transparent, types.BOOLEAN, true );
-    this.alphaTest = utils.ensureTypedArg( options.alphaTest, types.NUMBER, 0.5 );
+    this.alphaTest = parseFloat( utils.ensureTypedArg( options.alphaTest, types.NUMBER, 0.0 ) );
     this.depthWrite = utils.ensureTypedArg( options.depthWrite, types.BOOLEAN, false );
     this.depthTest = utils.ensureTypedArg( options.depthTest, types.BOOLEAN, true );
     this.fog = utils.ensureTypedArg( options.fog, types.BOOLEAN, true );
