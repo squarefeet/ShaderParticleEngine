@@ -942,7 +942,7 @@ SPE.shaders = {
 
         // Rotate the emitter around it's central point
         '    #ifdef SHOULD_ROTATE_PARTICLES',
-        '        pos = getRotation( pos, positionInTime );',
+        '        pos = getRotation( pos, positionInTime ) * -1.0;',
         '    #endif',
 
         // Convert pos to a world-space value
