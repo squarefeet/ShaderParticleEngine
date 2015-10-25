@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+v1.0.1
+------
+* Fixed bugs #77 and #78.
+	* #78: Using rotation on an emitter inverted its position.
+	* #77: The `alphaTest` setting on `SPE.Group` wasn't being applied. No `ALPHATEST` check in fragment shader existed.
+
+
 v1.0.0
 ------
 * A complete rewrite to enable support for THREE.js r72.
