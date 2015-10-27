@@ -1,4 +1,4 @@
-/* shader-particle-engine 1.0.1
+/* shader-particle-engine 1.0.2
  * 
  * (c) 2015 Luke Moody (http://www.github.com/squarefeet)
  *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).

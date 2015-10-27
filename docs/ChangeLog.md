@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+v1.0.2
+------
+* Fixed bug #80:
+	* Rotation on one emitter affects others in the same group.
+	* Rotation with center !== position inverts forces.
+
 v1.0.1
 ------
 * Fixed bugs #77 and #78.
