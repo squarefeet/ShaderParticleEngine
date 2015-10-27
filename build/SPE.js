@@ -819,27 +819,29 @@ SPE.shaderChunks = {
         '       float s = sin(angle);',
         '       float c = cos(angle);',
         '       float oc = 1.0 - c;',
-
+        '',
         '       return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,',
         '                   oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,',
         '                   oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,',
         '                   0.0,                                0.0,                                0.0,                                1.0);',
         '   }',
-
+        '',
         '   vec3 getRotation( in vec3 pos, in float positionInTime ) {',
+        '      if( rotation.y == 0.0 ) {',
+        '           return pos;',
+        '      }',
+        '',
         '      vec3 axis = unpackColor( rotation.x );',
         '      vec3 center = rotationCenter;',
         '      vec3 translated;',
         '      mat4 rotationMatrix;',
 
-        // '      pos *= -1.0;',
-
         '      float angle = 0.0;',
         '      angle += when_eq( rotation.z, 0.0 ) * rotation.y;',
         '      angle += when_gt( rotation.z, 0.0 ) * mix( 0.0, rotation.y, positionInTime );',
-        '      translated = pos - rotationCenter;',
+        '      translated = rotationCenter - pos;',
         '      rotationMatrix = getRotationMatrix( axis, angle );',
-        '      return vec3( rotationMatrix * vec4( translated, 0.0 ) ) - center;',
+        '      return center - vec3( rotationMatrix * vec4( translated, 0.0 ) );',
         '   }',
         '#endif'
     ].join( '\n' ),
@@ -942,7 +944,7 @@ SPE.shaders = {
 
         // Rotate the emitter around it's central point
         '    #ifdef SHOULD_ROTATE_PARTICLES',
-        '        pos = getRotation( pos, positionInTime ) * -1.0;',
+        '        pos = getRotation( pos, positionInTime );',
         '    #endif',
 
         // Convert pos to a world-space value
