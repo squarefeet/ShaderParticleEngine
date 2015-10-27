@@ -1,4 +1,4 @@
-Shader Particle Engine v1.0.0 ![](https://travis-ci.org/squarefeet/ShaderParticleEngine.svg?branch=master)
+Shader Particle Engine v1.0.2 ![](https://travis-ci.org/squarefeet/ShaderParticleEngine.svg?branch=master)
 =============================
 
 
