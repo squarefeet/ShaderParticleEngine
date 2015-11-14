@@ -10,6 +10,7 @@ SPE.shaders = {
 
         SPE.shaderChunks.branchAvoidanceFunctions,
         SPE.shaderChunks.unpackColor,
+        SPE.shaderChunks.unpackRotationAxis,
         SPE.shaderChunks.floatOverLifetime,
         SPE.shaderChunks.colorOverLifetime,
         SPE.shaderChunks.paramFetchingFunctions,

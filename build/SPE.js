@@ -740,6 +740,25 @@ SPE.shaderChunks = {
         '}',
     ].join( '\n' ),
 
+    unpackRotationAxis: [
+        'vec3 unpackRotationAxis( in float hex ) {',
+        '   vec3 c = vec3( 0.0 );',
+
+        '   float r = mod( (hex / PACKED_COLOR_SIZE / PACKED_COLOR_SIZE), PACKED_COLOR_SIZE );',
+        '   float g = mod( (hex / PACKED_COLOR_SIZE), PACKED_COLOR_SIZE );',
+        '   float b = mod( hex, PACKED_COLOR_SIZE );',
+
+        '   c.r = r / PACKED_COLOR_DIVISOR;',
+        '   c.g = g / PACKED_COLOR_DIVISOR;',
+        '   c.b = b / PACKED_COLOR_DIVISOR;',
+
+        '   c *= vec3( 2.0 );',
+        '   c -= vec3( 1.0 );',
+
+        '   return c;',
+        '}',
+    ].join( '\n' ),
+
     floatOverLifetime: [
         'float getFloatOverLifetime( in float positionInTime, in vec4 attr ) {',
         '    highp float value = 0.0;',
@@ -831,7 +850,7 @@ SPE.shaderChunks = {
         '           return pos;',
         '      }',
         '',
-        '      vec3 axis = unpackColor( rotation.x );',
+        '      vec3 axis = unpackRotationAxis( rotation.x );',
         '      vec3 center = rotationCenter;',
         '      vec3 translated;',
         '      mat4 rotationMatrix;',
@@ -889,6 +908,7 @@ SPE.shaders = {
 
         SPE.shaderChunks.branchAvoidanceFunctions,
         SPE.shaderChunks.unpackColor,
+        SPE.shaderChunks.unpackRotationAxis,
         SPE.shaderChunks.floatOverLifetime,
         SPE.shaderChunks.colorOverLifetime,
         SPE.shaderChunks.paramFetchingFunctions,
@@ -1730,7 +1750,8 @@ SPE.utils = {
 
         var v = new THREE.Vector3(),
             vSpread = new THREE.Vector3(),
-            c = new THREE.Color();
+            c = new THREE.Color(),
+            addOne = new THREE.Vector3( 1, 1, 1 );
 
         /**
          * Given a rotation axis, and a rotation axis spread vector,
@@ -1748,11 +1769,11 @@ SPE.utils = {
             v.y += ( -axisSpread.y * 0.5 ) + ( Math.random() * axisSpread.y );
             v.z += ( -axisSpread.z * 0.5 ) + ( Math.random() * axisSpread.z );
 
-            v.x = Math.abs( v.x );
-            v.y = Math.abs( v.y );
-            v.z = Math.abs( v.z );
+            // v.x = Math.abs( v.x );
+            // v.y = Math.abs( v.y );
+            // v.z = Math.abs( v.z );
 
-            v.normalize();
+            v.normalize().add( addOne ).multiplyScalar( 0.5 );
 
             c.setRGB( v.x, v.y, v.z );
 

@@ -98,6 +98,25 @@ SPE.shaderChunks = {
         '}',
     ].join( '\n' ),
 
+    unpackRotationAxis: [
+        'vec3 unpackRotationAxis( in float hex ) {',
+        '   vec3 c = vec3( 0.0 );',
+
+        '   float r = mod( (hex / PACKED_COLOR_SIZE / PACKED_COLOR_SIZE), PACKED_COLOR_SIZE );',
+        '   float g = mod( (hex / PACKED_COLOR_SIZE), PACKED_COLOR_SIZE );',
+        '   float b = mod( hex, PACKED_COLOR_SIZE );',
+
+        '   c.r = r / PACKED_COLOR_DIVISOR;',
+        '   c.g = g / PACKED_COLOR_DIVISOR;',
+        '   c.b = b / PACKED_COLOR_DIVISOR;',
+
+        '   c *= vec3( 2.0 );',
+        '   c -= vec3( 1.0 );',
+
+        '   return c;',
+        '}',
+    ].join( '\n' ),
+
     floatOverLifetime: [
         'float getFloatOverLifetime( in float positionInTime, in vec4 attr ) {',
         '    highp float value = 0.0;',
@@ -189,7 +208,7 @@ SPE.shaderChunks = {
         '           return pos;',
         '      }',
         '',
-        '      vec3 axis = unpackColor( rotation.x );',
+        '      vec3 axis = unpackRotationAxis( rotation.x );',
         '      vec3 center = rotationCenter;',
         '      vec3 translated;',
         '      mat4 rotationMatrix;',

@@ -672,7 +672,8 @@ SPE.utils = {
 
         var v = new THREE.Vector3(),
             vSpread = new THREE.Vector3(),
-            c = new THREE.Color();
+            c = new THREE.Color(),
+            addOne = new THREE.Vector3( 1, 1, 1 );
 
         /**
          * Given a rotation axis, and a rotation axis spread vector,
@@ -690,11 +691,11 @@ SPE.utils = {
             v.y += ( -axisSpread.y * 0.5 ) + ( Math.random() * axisSpread.y );
             v.z += ( -axisSpread.z * 0.5 ) + ( Math.random() * axisSpread.z );
 
-            v.x = Math.abs( v.x );
-            v.y = Math.abs( v.y );
-            v.z = Math.abs( v.z );
+            // v.x = Math.abs( v.x );
+            // v.y = Math.abs( v.y );
+            // v.z = Math.abs( v.z );
 
-            v.normalize();
+            v.normalize().add( addOne ).multiplyScalar( 0.5 );
 
             c.setRGB( v.x, v.y, v.z );
 
