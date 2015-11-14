@@ -3,7 +3,7 @@ Change Log
 
 v1.0.3
 ------
-* Make sure grunt dependencies are listed in `devDependencies` (**@pawsong**).
+* Make sure grunt dependencies are listed in `devDependencies` (**[pawsong](https://github.com/pawsong)**).
 * Fixed bug #81: Axis of rotation ignores signs.
 * Fixed bug #82: `radiusScale` of `position` does not work because it is labelled incorrectly.
 
