@@ -189,7 +189,7 @@ SPE.Emitter = function( options ) {
         _distribution: utils.ensureTypedArg( options.position.distribution, types.NUMBER, this.type ),
         _randomise: utils.ensureTypedArg( options.position.randomise, types.BOOLEAN, false ),
         _radius: utils.ensureTypedArg( options.position.radius, types.NUMBER, 10 ),
-        _radiusScale: utils.ensureInstanceOf( options.position.scale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) ),
+        _radiusScale: utils.ensureInstanceOf( options.position.radiusScale, THREE.Vector3, new THREE.Vector3( 1, 1, 1 ) ),
         _distributionClamp: utils.ensureTypedArg( options.position.distributionClamp, types.NUMBER, 0 ),
     };
 
