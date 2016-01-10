@@ -31,7 +31,7 @@
     "scripts": {
         "test": "grunt"
     },
-    "main": "Gruntfile.js",
+    "main": "build/SPE.min.js",
     "directories": {
         "doc": "docs",
         "example": "examples"
