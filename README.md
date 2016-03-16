@@ -48,15 +48,9 @@ A massive improvement over the previous versions of this library is _actual docu
 
 Building
 --------
-This project uses [Grunt](http://gruntjs.com/) to create the distributions, one dev build (not minimized) and one production build (minimized). If you make changes and want to build it, follow these steps:
+This project uses [Grunt](http://gruntjs.com/) to create the distributions, one dev build (not minimized) and one production build (minimized). If you make changes and want to build it, run:
 
-If you don't have grunt installed, first make sure you've got [NodeJS](http://nodejs.org/) and NPM installed, then install Grunt CLI. You might have to do this as root:
-
-```npm install -g grunt-cli```
-
-Now you can install the local grunt package:
-
-```cd [projectFolder] && npm install && grunt```
+```npm run build```
 
 The output of grunt will sit in the `build` folder.
 
