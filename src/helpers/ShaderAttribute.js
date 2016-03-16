@@ -1,16 +1,19 @@
+var TypedArrayHelper = require('./TypedArrayHelper.js');
+var THREE = require('three');
+
 /**
  * A helper to handle creating and updating a THREE.BufferAttribute instance.
  *
  * @author  Luke Moody
  * @constructor
- * @param {String} type          The buffer attribute type. See SPE.ShaderAttribute.typeSizeMap for valid values.
+ * @param {String} type          The buffer attribute type. See ShaderAttribute.typeSizeMap for valid values.
  * @param {Boolean=} dynamicBuffer Whether this buffer attribute should be marked as dynamic or not.
  * @param {Function=} arrayType     A reference to a TypedArray constructor. Defaults to Float32Array if none provided.
  */
-SPE.ShaderAttribute = function( type, dynamicBuffer, arrayType ) {
+function ShaderAttribute( type, dynamicBuffer, arrayType ) {
     'use strict';
 
-    var typeMap = SPE.ShaderAttribute.typeSizeMap;
+    var typeMap = ShaderAttribute.typeSizeMap;
 
     this.type = typeof type === 'string' && typeMap.hasOwnProperty( type ) ? type : 'f';
     this.componentSize = typeMap[ this.type ];
@@ -23,13 +26,13 @@ SPE.ShaderAttribute = function( type, dynamicBuffer, arrayType ) {
     this.updateMax = 0;
 };
 
-SPE.ShaderAttribute.constructor = SPE.ShaderAttribute;
+ShaderAttribute.constructor = ShaderAttribute;
 
 /**
  * A map of uniform types to their component size.
  * @enum {Number}
  */
-SPE.ShaderAttribute.typeSizeMap = {
+ShaderAttribute.typeSizeMap = {
     /**
      * Float
      * @type {Number}
@@ -80,7 +83,7 @@ SPE.ShaderAttribute.typeSizeMap = {
  * @param {Number} min The start of the range to mark as needing an update.
  * @param {Number} max The end of the range to mark as needing an update.
  */
-SPE.ShaderAttribute.prototype.setUpdateRange = function( min, max ) {
+ShaderAttribute.prototype.setUpdateRange = function( min, max ) {
     'use strict';
 
     this.updateMin = Math.min( min * this.componentSize, this.updateMin * this.componentSize );
@@ -91,7 +94,7 @@ SPE.ShaderAttribute.prototype.setUpdateRange = function( min, max ) {
  * Calculate the number of indices that this attribute should mark as needing
  * updating. Also marks the attribute as needing an update.
  */
-SPE.ShaderAttribute.prototype.flagUpdate = function() {
+ShaderAttribute.prototype.flagUpdate = function() {
     'use strict';
 
     var attr = this.bufferAttribute,
@@ -109,14 +112,14 @@ SPE.ShaderAttribute.prototype.flagUpdate = function() {
 /**
  * Reset the index update counts for this attribute
  */
-SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
+ShaderAttribute.prototype.resetUpdateRange = function() {
     'use strict';
 
     this.updateMin = 0;
     this.updateMax = 0;
 };
 
-SPE.ShaderAttribute.prototype.resetDynamic = function() {
+ShaderAttribute.prototype.resetDynamic = function() {
     'use strict';
     this.bufferAttribute.dynamic = this.dynamicBuffer;
 };
@@ -126,7 +129,7 @@ SPE.ShaderAttribute.prototype.resetDynamic = function() {
  * @param  {Number} start The start index of the splice. Will be multiplied by the number of components for this attribute.
  * @param  {Number} end The end index of the splice. Will be multiplied by the number of components for this attribute.
  */
-SPE.ShaderAttribute.prototype.splice = function( start, end ) {
+ShaderAttribute.prototype.splice = function( start, end ) {
     'use strict';
 
     this.typedArray.splice( start, end );
@@ -136,7 +139,7 @@ SPE.ShaderAttribute.prototype.splice = function( start, end ) {
     this.forceUpdateAll();
 };
 
-SPE.ShaderAttribute.prototype.forceUpdateAll = function() {
+ShaderAttribute.prototype.forceUpdateAll = function() {
     'use strict';
 
     this.bufferAttribute.array = this.typedArray.array;
@@ -151,11 +154,11 @@ SPE.ShaderAttribute.prototype.forceUpdateAll = function() {
  *
  * If it does, then it will ensure the typed array is of the correct size.
  *
- * If not, a new SPE.TypedArrayHelper instance will be created.
+ * If not, a new TypedArrayHelper instance will be created.
  *
  * @param  {Number} size The size of the typed array to create or update to.
  */
-SPE.ShaderAttribute.prototype._ensureTypedArray = function( size ) {
+ShaderAttribute.prototype._ensureTypedArray = function( size ) {
     'use strict';
 
     // Condition that's most likely to be true at the top: no change.
@@ -171,7 +174,7 @@ SPE.ShaderAttribute.prototype._ensureTypedArray = function( size ) {
 
     // This condition should only occur once in an attribute's lifecycle.
     else if ( this.typedArray === null ) {
-        this.typedArray = new SPE.TypedArrayHelper( this.arrayType, size, this.componentSize );
+        this.typedArray = new TypedArrayHelper( this.arrayType, size, this.componentSize );
     }
 };
 
@@ -185,7 +188,7 @@ SPE.ShaderAttribute.prototype._ensureTypedArray = function( size ) {
  *
  * @param  {Number} size The size of the typed array to create if one doesn't exist, or resize existing array to.
  */
-SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
+ShaderAttribute.prototype._createBufferAttribute = function( size ) {
     'use strict';
 
     // Make sure the typedArray is present and correct.
@@ -208,7 +211,7 @@ SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
  * Returns the length of the typed array associated with this attribute.
  * @return {Number} The length of the typed array. Will be 0 if no typed array has been created yet.
  */
-SPE.ShaderAttribute.prototype.getLength = function() {
+ShaderAttribute.prototype.getLength = function() {
     'use strict';
 
     if ( this.typedArray === null ) {
@@ -217,3 +220,5 @@ SPE.ShaderAttribute.prototype.getLength = function() {
 
     return this.typedArray.array.length;
 };
+
+module.exports = ShaderAttribute;

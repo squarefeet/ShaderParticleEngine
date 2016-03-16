@@ -1,9 +1,11 @@
+var THREE = require('three');
+
 /**
  * A bunch of utility functions used throughout the library.
  * @namespace
  * @type {Object}
  */
-SPE.utils = {
+var utils = {
     /**
      * A map of types used by `SPE.utils.ensureTypedArg` and
      * `SPE.utils.ensureArrayTypedArg` to compare types against.
@@ -703,3 +705,5 @@ SPE.utils = {
         };
     }() )
 };
+
+module.exports = utils;

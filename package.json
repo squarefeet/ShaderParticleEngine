@@ -28,12 +28,16 @@
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-uglify": "^0.9.2",
     "grunt-docco2": "^0.2.1",
-    "grunt-jsdoc": "^1.1.0"
+    "grunt-jsdoc": "^1.1.0",
+    "three": "^0.74.0"
+  },
+  "peerDependencies": {
+    "three": ">=0.72.0"
   },
   "scripts": {
     "build": "grunt"
   },
-  "main": "build/SPE.min.js",
+  "main": "src/index.js",
   "directories": {
     "doc": "docs",
     "example": "examples"

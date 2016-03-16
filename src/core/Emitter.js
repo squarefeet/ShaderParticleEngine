@@ -1,11 +1,15 @@
+var THREE = require('three');
+var utils = require('./utils.js');
+var variables = require('./variables.js');
+
 /**
- * An SPE.Emitter instance.
+ * An Emitter instance.
  * @typedef {Object} Emitter
- * @see SPE.Emitter
+ * @see Emitter
  */
 
 /**
- * A map of options to configure an SPE.Emitter instance.
+ * A map of options to configure an Emitter instance.
  *
  * @typedef {Object} EmitterOptions
  *
@@ -22,7 +26,7 @@
  *                                         will emit particles indefinitely.
  *                                         NOTE: When an emitter is older than a specified duration, the emitter is NOT removed from
  *                                         it's group, but rather is just marked as dead, allowing it to be reanimated at a later time
- *                                         using `SPE.Emitter.prototype.enable()`.
+ *                                         using `Emitter.prototype.enable()`.
  *
  * @property {Boolean} [isStatic=false] Whether this emitter should be not be simulated (true).
  * @property {Boolean} [activeMultiplier=1] A value between 0 and 1 describing what percentage of this emitter's particlesPerSecond should be
@@ -141,18 +145,17 @@
  */
 
 /**
- * The SPE.Emitter class.
+ * The Emitter class.
  *
  * @constructor
  *
  * @param {EmitterOptions} options A map of options to configure the emitter.
  */
-SPE.Emitter = function( options ) {
+var Emitter = function( options ) {
     'use strict';
 
-    var utils = SPE.utils,
-        types = utils.types,
-        lifetimeLength = SPE.valueOverLifetimeLength;
+    var types = utils.types,
+        lifetimeLength = variables.valueOverLifetimeLength;
 
     // Ensure we have a map of options to play with,
     // and that each option is in the correct format.
@@ -176,7 +179,7 @@ SPE.Emitter = function( options ) {
 
     this.uuid = THREE.Math.generateUUID();
 
-    this.type = utils.ensureTypedArg( options.type, types.NUMBER, SPE.distributions.BOX );
+    this.type = utils.ensureTypedArg( options.type, types.NUMBER, variables.distributions.BOX );
 
     // Start assigning properties...kicking it off with props that DON'T support values over
     // lifetimes.
@@ -379,9 +382,9 @@ SPE.Emitter = function( options ) {
     utils.ensureValueOverLifetimeCompliance( this.angle, lifetimeLength, lifetimeLength );
 };
 
-SPE.Emitter.constructor = SPE.Emitter;
+Emitter.constructor = Emitter;
 
-SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
+Emitter.prototype._createGetterSetters = function( propObj, propName ) {
     'use strict';
 
     var self = this;
@@ -402,7 +405,7 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
                     return function( value ) {
                         var mapName = self.updateMap[ propName ],
                             prevValue = this[ prop ],
-                            length = SPE.valueOverLifetimeLength;
+                            length = variables.valueOverLifetimeLength;
 
                         if ( prop === '_rotationCenter' ) {
                             self.updateFlags.rotationCenter = true;
@@ -423,7 +426,7 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
                         // If the previous value was an array, then make
                         // sure the provided value is interpolated correctly.
                         if ( Array.isArray( prevValue ) ) {
-                            SPE.utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length );
+                            utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length );
                         }
                     };
                 }( i ) )
@@ -432,7 +435,7 @@ SPE.Emitter.prototype._createGetterSetters = function( propObj, propName ) {
     }
 };
 
-SPE.Emitter.prototype._setBufferUpdateRanges = function( keys ) {
+Emitter.prototype._setBufferUpdateRanges = function( keys ) {
     'use strict';
 
     this.attributeKeys = keys;
@@ -446,7 +449,7 @@ SPE.Emitter.prototype._setBufferUpdateRanges = function( keys ) {
     }
 };
 
-SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
+Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     'use strict';
 
     var particleCount = this.particleCount;
@@ -463,14 +466,14 @@ SPE.Emitter.prototype._calculatePPSValue = function( groupMaxAge ) {
     }
 };
 
-SPE.Emitter.prototype._setAttributeOffset = function( startIndex ) {
+Emitter.prototype._setAttributeOffset = function( startIndex ) {
     this.attributeOffset = startIndex;
     this.activationIndex = startIndex;
     this.activationEnd = startIndex + this.particleCount;
 };
 
 
-SPE.Emitter.prototype._assignValue = function( prop, index ) {
+Emitter.prototype._assignValue = function( prop, index ) {
     'use strict';
 
     switch ( prop ) {
@@ -506,11 +509,10 @@ SPE.Emitter.prototype._assignValue = function( prop, index ) {
     }
 };
 
-SPE.Emitter.prototype._assignPositionValue = function( index ) {
+Emitter.prototype._assignPositionValue = function( index ) {
     'use strict';
 
-    var distributions = SPE.distributions,
-        utils = SPE.utils,
+    var distributions = variables.distributions,
         prop = this.position,
         attr = this.attributes.position,
         value = prop._value,
@@ -532,11 +534,10 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
     }
 };
 
-SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
+Emitter.prototype._assignForceValue = function( index, attrName ) {
     'use strict';
 
-    var distributions = SPE.distributions,
-        utils = SPE.utils,
+    var distributions = variables.distributions,
         prop = this[ attrName ],
         value = prop._value,
         spread = prop._spread,
@@ -603,12 +604,11 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
     }
 };
 
-SPE.Emitter.prototype._assignAbsLifetimeValue = function( index, propName ) {
+Emitter.prototype._assignAbsLifetimeValue = function( index, propName ) {
     'use strict';
 
     var array = this.attributes[ propName ].typedArray,
         prop = this[ propName ],
-        utils = SPE.utils,
         value;
 
     if ( utils.arrayValuesAreEqual( prop._value ) && utils.arrayValuesAreEqual( prop._spread ) ) {
@@ -625,12 +625,11 @@ SPE.Emitter.prototype._assignAbsLifetimeValue = function( index, propName ) {
     }
 };
 
-SPE.Emitter.prototype._assignAngleValue = function( index ) {
+Emitter.prototype._assignAngleValue = function( index ) {
     'use strict';
 
     var array = this.attributes.angle.typedArray,
         prop = this.angle,
-        utils = SPE.utils,
         value;
 
     if ( utils.arrayValuesAreEqual( prop._value ) && utils.arrayValuesAreEqual( prop._spread ) ) {
@@ -647,35 +646,35 @@ SPE.Emitter.prototype._assignAngleValue = function( index ) {
     }
 };
 
-SPE.Emitter.prototype._assignParamsValue = function( index ) {
+Emitter.prototype._assignParamsValue = function( index ) {
     'use strict';
 
     this.attributes.params.typedArray.setVec4Components( index,
         this.isStatic ? 1 : 0,
         0.0,
-        Math.abs( SPE.utils.randomFloat( this.maxAge._value, this.maxAge._spread ) ),
-        SPE.utils.randomFloat( this.wiggle._value, this.wiggle._spread )
+        Math.abs( utils.randomFloat( this.maxAge._value, this.maxAge._spread ) ),
+        utils.randomFloat( this.wiggle._value, this.wiggle._spread )
     );
 };
 
-SPE.Emitter.prototype._assignRotationValue = function( index ) {
+Emitter.prototype._assignRotationValue = function( index ) {
     'use strict';
 
     this.attributes.rotation.typedArray.setVec3Components( index,
-        SPE.utils.getPackedRotationAxis( this.rotation._axis, this.rotation._axisSpread ),
-        SPE.utils.randomFloat( this.rotation._angle, this.rotation._angleSpread ),
+        utils.getPackedRotationAxis( this.rotation._axis, this.rotation._axisSpread ),
+        utils.randomFloat( this.rotation._angle, this.rotation._angleSpread ),
         this.rotation._static ? 0 : 1
     );
 
     this.attributes.rotationCenter.typedArray.setVec3( index, this.rotation._center );
 };
 
-SPE.Emitter.prototype._assignColorValue = function( index ) {
+Emitter.prototype._assignColorValue = function( index ) {
     'use strict';
-    SPE.utils.randomColorAsHex( this.attributes.color, index, this.color._value, this.color._spread );
+    utils.randomColorAsHex( this.attributes.color, index, this.color._value, this.color._spread );
 };
 
-SPE.Emitter.prototype._resetParticle = function( index ) {
+Emitter.prototype._resetParticle = function( index ) {
     'use strict';
 
     var resetFlags = this.resetFlags,
@@ -704,7 +703,7 @@ SPE.Emitter.prototype._resetParticle = function( index ) {
     }
 };
 
-SPE.Emitter.prototype._updateAttributeUpdateRange = function( attr, i ) {
+Emitter.prototype._updateAttributeUpdateRange = function( attr, i ) {
     'use strict';
 
     var ranges = this.bufferUpdateRanges[ attr ];
@@ -713,7 +712,7 @@ SPE.Emitter.prototype._updateAttributeUpdateRange = function( attr, i ) {
     ranges.max = Math.max( i, ranges.max );
 };
 
-SPE.Emitter.prototype._resetBufferRanges = function() {
+Emitter.prototype._resetBufferRanges = function() {
     'use strict';
 
     var ranges = this.bufferUpdateRanges,
@@ -728,7 +727,7 @@ SPE.Emitter.prototype._resetBufferRanges = function() {
     }
 };
 
-SPE.Emitter.prototype._onRemove = function() {
+Emitter.prototype._onRemove = function() {
     'use strict';
     // Reset any properties of the emitter that were set by
     // a group when it was added.
@@ -742,7 +741,7 @@ SPE.Emitter.prototype._onRemove = function() {
     this.age = 0.0;
 };
 
-SPE.Emitter.prototype._decrementParticleCount = function() {
+Emitter.prototype._decrementParticleCount = function() {
     'use strict';
     --this.activeParticleCount;
 
@@ -750,7 +749,7 @@ SPE.Emitter.prototype._decrementParticleCount = function() {
     //  - Trigger event if count === 0.
 };
 
-SPE.Emitter.prototype._incrementParticleCount = function() {
+Emitter.prototype._incrementParticleCount = function() {
     'use strict';
     ++this.activeParticleCount;
 
@@ -758,7 +757,7 @@ SPE.Emitter.prototype._incrementParticleCount = function() {
     //  - Trigger event if count === this.particleCount.
 };
 
-SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
+Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
     'use strict';
     for ( var i = end - 1, index, maxAge, age, alive; i >= start; --i ) {
         index = i * 4;
@@ -799,7 +798,7 @@ SPE.Emitter.prototype._checkParticleAges = function( start, end, params, dt ) {
     }
 };
 
-SPE.Emitter.prototype._activateParticles = function( activationStart, activationEnd, params, dtPerParticle ) {
+Emitter.prototype._activateParticles = function( activationStart, activationEnd, params, dtPerParticle ) {
     'use strict';
     var direction = this.direction;
 
@@ -830,7 +829,7 @@ SPE.Emitter.prototype._activateParticles = function( activationStart, activation
         // This stops particles being 'clumped' together
         // when frame rates are on the lower side of 60fps
         // or not constant (a very real possibility!)
-        dtValue = dtPerParticle * ( i - activationStart )
+        dtValue = dtPerParticle * ( i - activationStart );
         params[ index + 1 ] = direction === -1 ? params[ index + 2 ] - dtValue : dtValue;
 
         this._updateAttributeUpdateRange( 'params', i );
@@ -846,7 +845,7 @@ SPE.Emitter.prototype._activateParticles = function( activationStart, activation
  *
  * @param  {Number} dt The number of seconds to simulate (deltaTime)
  */
-SPE.Emitter.prototype.tick = function( dt ) {
+Emitter.prototype.tick = function( dt ) {
     'use strict';
 
     if ( this.isStatic ) {
@@ -913,7 +912,7 @@ SPE.Emitter.prototype.tick = function( dt ) {
  * @param  {Boolean} [force=undefined] If true, all particles will be marked as dead instantly.
  * @return {Emitter}       This emitter instance.
  */
-SPE.Emitter.prototype.reset = function( force ) {
+Emitter.prototype.reset = function( force ) {
     'use strict';
 
     this.age = 0.0;
@@ -946,7 +945,7 @@ SPE.Emitter.prototype.reset = function( force ) {
  *
  * @return {Emitter} This emitter instance.
  */
-SPE.Emitter.prototype.enable = function() {
+Emitter.prototype.enable = function() {
     'use strict';
     this.alive = true;
     return this;
@@ -960,7 +959,7 @@ SPE.Emitter.prototype.enable = function() {
  *
  * @return {Emitter} This emitter instance.
  */
-SPE.Emitter.prototype.disable = function() {
+Emitter.prototype.disable = function() {
     'use strict';
 
     this.alive = false;
@@ -978,7 +977,7 @@ SPE.Emitter.prototype.disable = function() {
  *
  * @see SPE.Group.prototype.removeEmitter
  */
-SPE.Emitter.prototype.remove = function() {
+Emitter.prototype.remove = function() {
     'use strict';
     if ( this.group !== null ) {
         this.group.removeEmitter( this );
@@ -989,3 +988,5 @@ SPE.Emitter.prototype.remove = function() {
 
     return this;
 };
+
+module.exports = Emitter;

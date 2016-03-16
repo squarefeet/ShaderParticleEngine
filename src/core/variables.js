@@ -5,15 +5,7 @@
  * @property {Number} SPE.distributions.DISC Values will be distributed within a 2D disc.
  */
 
-/**
- * Namespace for Shader Particle Engine.
- *
- * All SPE-related code sits under this namespace.
- *
- * @type {Object}
- * @namespace
- */
-var SPE = {
+var variables = {
 
     /**
      * A map of supported distribution types used
@@ -73,10 +65,4 @@ var SPE = {
     valueOverLifetimeLength: 4
 };
 
-// Module loader support:
-if ( typeof define === 'function' && define.amd ) {
-    define( 'spe', SPE );
-}
-else if ( typeof exports !== 'undefined' && typeof module !== 'undefined' ) {
-    module.exports = SPE;
-}
+module.exports = variables;

@@ -13,7 +13,7 @@
  * @param {Number} componentSize        The number of components per-value (ie. 3 for a vec3, 9 for a Mat3, etc.)
  * @param {Number} indexOffset          The index in the array from which to start assigning values. Default `0` if none provided
  */
-SPE.TypedArrayHelper = function( TypedArrayConstructor, size, componentSize, indexOffset ) {
+function TypedArrayHelper( TypedArrayConstructor, size, componentSize, indexOffset ) {
     'use strict';
 
     this.componentSize = componentSize || 1;
@@ -23,7 +23,7 @@ SPE.TypedArrayHelper = function( TypedArrayConstructor, size, componentSize, ind
     this.indexOffset = indexOffset || 0;
 };
 
-SPE.TypedArrayHelper.constructor = SPE.TypedArrayHelper;
+TypedArrayHelper.constructor = TypedArrayHelper;
 
 /**
  * Sets the size of the internal array.
@@ -35,7 +35,7 @@ SPE.TypedArrayHelper.constructor = SPE.TypedArrayHelper;
  *
  * @param {Number} size The new size of the array.
  */
-SPE.TypedArrayHelper.prototype.setSize = function( size, noComponentMultiply ) {
+TypedArrayHelper.prototype.setSize = function( size, noComponentMultiply ) {
     'use strict';
 
     var currentArraySize = this.array.length;
@@ -59,9 +59,9 @@ SPE.TypedArrayHelper.prototype.setSize = function( size, noComponentMultiply ) {
  * Shrinks the internal array.
  *
  * @param  {Number} size The new size of the typed array. Must be smaller than `this.array.length`.
- * @return {SPE.TypedArrayHelper}      Instance of this class.
+ * @return {TypedArrayHelper}      Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.shrink = function( size ) {
+TypedArrayHelper.prototype.shrink = function( size ) {
     'use strict';
 
     this.array = this.array.subarray( 0, size );
@@ -72,9 +72,9 @@ SPE.TypedArrayHelper.prototype.shrink = function( size ) {
 /**
  * Grows the internal array.
  * @param  {Number} size The new size of the typed array. Must be larger than `this.array.length`.
- * @return {SPE.TypedArrayHelper}      Instance of this class.
+ * @return {TypedArrayHelper}      Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.grow = function( size ) {
+TypedArrayHelper.prototype.grow = function( size ) {
     'use strict';
 
     var existingArray = this.array,
@@ -92,9 +92,9 @@ SPE.TypedArrayHelper.prototype.grow = function( size ) {
  * Perform a splice operation on this array's buffer.
  * @param  {Number} start The start index of the splice. Will be multiplied by the number of components for this attribute.
  * @param  {Number} end The end index of the splice. Will be multiplied by the number of components for this attribute.
- * @returns {Object} The SPE.TypedArrayHelper instance.
+ * @returns {Object} The TypedArrayHelper instance.
  */
-SPE.TypedArrayHelper.prototype.splice = function( start, end ) {
+TypedArrayHelper.prototype.splice = function( start, end ) {
     'use strict';
     start *= this.componentSize;
     end *= this.componentSize;
@@ -123,9 +123,9 @@ SPE.TypedArrayHelper.prototype.splice = function( start, end ) {
  *
  * @param {Number} index      The start position from which to copy into this array.
  * @param {TypedArray} array The array from which to copy; the source array.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setFromArray = function( index, array ) {
+TypedArrayHelper.prototype.setFromArray = function( index, array ) {
     'use strict';
 
     var sourceArraySize = array.length,
@@ -148,9 +148,9 @@ SPE.TypedArrayHelper.prototype.setFromArray = function( index, array ) {
  *
  * @param {Number} index The index at which to set the vec2 values from.
  * @param {Vector2} vec2  Any object that has `x` and `y` properties.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setVec2 = function( index, vec2 ) {
+TypedArrayHelper.prototype.setVec2 = function( index, vec2 ) {
     'use strict';
 
     return this.setVec2Components( index, vec2.x, vec2.y );
@@ -162,9 +162,9 @@ SPE.TypedArrayHelper.prototype.setVec2 = function( index, vec2 ) {
  * @param {Number} index The index at which to set the vec2 values from.
  * @param {Number} x     The Vec2's `x` component.
  * @param {Number} y     The Vec2's `y` component.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setVec2Components = function( index, x, y ) {
+TypedArrayHelper.prototype.setVec2Components = function( index, x, y ) {
     'use strict';
 
     var array = this.array,
@@ -180,9 +180,9 @@ SPE.TypedArrayHelper.prototype.setVec2Components = function( index, x, y ) {
  *
  * @param {Number} index The index at which to set the vec3 values from.
  * @param {Vector3} vec2  Any object that has `x`, `y`, and `z` properties.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setVec3 = function( index, vec3 ) {
+TypedArrayHelper.prototype.setVec3 = function( index, vec3 ) {
     'use strict';
 
     return this.setVec3Components( index, vec3.x, vec3.y, vec3.z );
@@ -195,9 +195,9 @@ SPE.TypedArrayHelper.prototype.setVec3 = function( index, vec3 ) {
  * @param {Number} x     The Vec3's `x` component.
  * @param {Number} y     The Vec3's `y` component.
  * @param {Number} z     The Vec3's `z` component.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setVec3Components = function( index, x, y, z ) {
+TypedArrayHelper.prototype.setVec3Components = function( index, x, y, z ) {
     'use strict';
 
     var array = this.array,
@@ -214,9 +214,9 @@ SPE.TypedArrayHelper.prototype.setVec3Components = function( index, x, y, z ) {
  *
  * @param {Number} index The index at which to set the vec4 values from.
  * @param {Vector4} vec2  Any object that has `x`, `y`, `z`, and `w` properties.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setVec4 = function( index, vec4 ) {
+TypedArrayHelper.prototype.setVec4 = function( index, vec4 ) {
     'use strict';
 
     return this.setVec4Components( index, vec4.x, vec4.y, vec4.z, vec4.w );
@@ -230,9 +230,9 @@ SPE.TypedArrayHelper.prototype.setVec4 = function( index, vec4 ) {
  * @param {Number} y     The Vec4's `y` component.
  * @param {Number} z     The Vec4's `z` component.
  * @param {Number} w     The Vec4's `w` component.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setVec4Components = function( index, x, y, z, w ) {
+TypedArrayHelper.prototype.setVec4Components = function( index, x, y, z, w ) {
     'use strict';
 
     var array = this.array,
@@ -250,9 +250,9 @@ SPE.TypedArrayHelper.prototype.setVec4Components = function( index, x, y, z, w )
  *
  * @param {Number} index The index at which to set the matrix values from.
  * @param {Matrix3} mat3 The 3x3 matrix to set from. Must have a TypedArray property named `elements` to copy from.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setMat3 = function( index, mat3 ) {
+TypedArrayHelper.prototype.setMat3 = function( index, mat3 ) {
     'use strict';
 
     return this.setFromArray( this.indexOffset + ( index * this.componentSize ), mat3.elements );
@@ -263,9 +263,9 @@ SPE.TypedArrayHelper.prototype.setMat3 = function( index, mat3 ) {
  *
  * @param {Number} index The index at which to set the matrix values from.
  * @param {Matrix4} mat3 The 4x4 matrix to set from. Must have a TypedArray property named `elements` to copy from.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setMat4 = function( index, mat4 ) {
+TypedArrayHelper.prototype.setMat4 = function( index, mat4 ) {
     'use strict';
 
     return this.setFromArray( this.indexOffset + ( index * this.componentSize ), mat4.elements );
@@ -276,9 +276,9 @@ SPE.TypedArrayHelper.prototype.setMat4 = function( index, mat4 ) {
  *
  * @param {Number} index The index at which to set the vec3 values from.
  * @param {Color} color  Any object that has `r`, `g`, and `b` properties.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setColor = function( index, color ) {
+TypedArrayHelper.prototype.setColor = function( index, color ) {
     'use strict';
 
     return this.setVec3Components( index, color.r, color.g, color.b );
@@ -289,9 +289,9 @@ SPE.TypedArrayHelper.prototype.setColor = function( index, color ) {
  *
  * @param {Number} index The index at which to set the vec3 values from.
  * @param {Number} numericValue  The number to assign to this index in the array.
- * @return {SPE.TypedArrayHelper} Instance of this class.
+ * @return {TypedArrayHelper} Instance of this class.
  */
-SPE.TypedArrayHelper.prototype.setNumber = function( index, numericValue ) {
+TypedArrayHelper.prototype.setNumber = function( index, numericValue ) {
     'use strict';
 
     this.array[ this.indexOffset + ( index * this.componentSize ) ] = numericValue;
@@ -308,7 +308,7 @@ SPE.TypedArrayHelper.prototype.setNumber = function( index, numericValue ) {
  * @param  {Number} index The index in the array to fetch.
  * @return {Number}       The value at the given index.
  */
-SPE.TypedArrayHelper.prototype.getValueAtIndex = function( index ) {
+TypedArrayHelper.prototype.getValueAtIndex = function( index ) {
     'use strict';
 
     return this.array[ this.indexOffset + index ];
@@ -324,8 +324,10 @@ SPE.TypedArrayHelper.prototype.getValueAtIndex = function( index ) {
  * @param  {Number} index The index in the array to fetch.
  * @return {TypedArray}       The component value at the given index.
  */
-SPE.TypedArrayHelper.prototype.getComponentValueAtIndex = function( index ) {
+TypedArrayHelper.prototype.getComponentValueAtIndex = function( index ) {
     'use strict';
 
     return this.array.subarray( this.indexOffset + ( index * this.componentSize ) );
 };
+
+module.exports = TypedArrayHelper;

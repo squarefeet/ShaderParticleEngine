@@ -1,4 +1,4 @@
-SPE.shaderChunks = {
+var shaderChunks = {
     // Register color-packing define statements.
     defines: [
         '#define PACKED_COLOR_SIZE 256.0',
@@ -253,3 +253,5 @@ SPE.shaderChunks = {
         '    vec4 rotatedTexture = texture2D( texture, vUv );',
     ].join( '\n' )
 };
+
+module.exports = shaderChunks;
