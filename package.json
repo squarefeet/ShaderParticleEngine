@@ -1,7 +1,7 @@
 {
     "name": "shader-particle-engine",
     "description": "A GLSL-focused particle engine for THREE.js.",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "author": "Luke Moody (https://github.com/squarefeet/)",
     "license": "MIT",
     "repository": {

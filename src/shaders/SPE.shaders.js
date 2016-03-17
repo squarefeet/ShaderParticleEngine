@@ -46,13 +46,9 @@ SPE.shaders = {
         '    vec3 force = vec3( 0.0 );',
         '    vec3 pos = vec3( position );',
 
-        // Calculate the required drag to apply to the forces.
-        '    float drag = 1.0 - (positionInTime * 0.5) * acceleration.w;',
-
-        // Integrate forces...
-        '    force += vel;',
-        '    force *= drag;',
-        '    force += accel * age;',
+        // Integrate forces, applying `drag` along the way...
+        '    force += vel * (1.0 - (positionInTime * 0.5) * acceleration.w);',
+        '    force += accel * (1.0 - acceleration.w) * age;',
         '    pos += force;',
 
 
