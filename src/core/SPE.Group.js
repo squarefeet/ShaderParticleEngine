@@ -593,7 +593,7 @@ SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
     setTimeout( function() {
         emitter.disable();
         self.releaseIntoPool( emitter );
-    }, ( emitter.maxAge.value + emitter.maxAge.spread ) * 1000 );
+    }, ( Math.max( emitter.duration, ( emitter.maxAge.value + emitter.maxAge.spread ) ) ) * 1000 );
 
     return this;
 };
