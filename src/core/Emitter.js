@@ -917,6 +917,9 @@ export default class Emitter {
             attr.updateRange.offset = 0;
             attr.updateRange.count = -1;
             attr.needsUpdate = true;
+
+            this.activationIndex = 0;
+            this.activeParticleCount = 0;
         }
 
         return this;
@@ -982,5 +985,7 @@ export default class Emitter {
         this.color.value = this.color.value;
 
         this.opacity.value = this.opacity.value;
+
+        this._calculatePPSValue( this.maxAge._value + this.maxAge._spread );
     }
 };

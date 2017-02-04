@@ -1337,6 +1337,155 @@ var utils = Object.freeze({
 	getPackedRotationAxis: getPackedRotationAxis
 });
 
+/**
+ * An SPE.Emitter instance.
+ * @typedef {Object} Emitter
+ * @see SPE.Emitter
+ */
+
+/**
+ * A map of options to configure an SPE.Emitter instance.
+ *
+ * @typedef {Object} EmitterOptions
+ *
+ * @property {distribution} [type=BOX] The default distribution this emitter should use to control
+ *                         its particle's spawn position and force behaviour.
+ *                         Must be an SPE.distributions.* value.
+ *
+ *
+ * @property {Number} [particleCount=100] The total number of particles this emitter will hold. NOTE: this is not the number
+ *                                  of particles emitted in a second, or anything like that. The number of particles
+ *                                  emitted per-second is calculated by particleCount / maxAge (approximately!)
+ *
+ * @property {Number|null} [duration=null] The duration in seconds that this emitter should live for. If not specified, the emitter
+ *                                         will emit particles indefinitely.
+ *                                         NOTE: When an emitter is older than a specified duration, the emitter is NOT removed from
+ *                                         it's group, but rather is just marked as dead, allowing it to be reanimated at a later time
+ *                                         using `SPE.Emitter.prototype.enable()`.
+ *
+ * @property {Boolean} [isStatic=false] Whether this emitter should be not be simulated (true).
+ * @property {Boolean} [activeMultiplier=1] A value between 0 and 1 describing what percentage of this emitter's particlesPerSecond should be
+ *                                          emitted, where 0 is 0%, and 1 is 100%.
+ *                                          For example, having an emitter with 100 particles, a maxAge of 2, yields a particlesPerSecond
+ *                                          value of 50. Setting `activeMultiplier` to 0.5, then, will only emit 25 particles per second (0.5 = 50%).
+ *                                          Values greater than 1 will emulate a burst of particles, causing the emitter to run out of particles
+ *                                          before it's next activation cycle.
+ *
+ * @property {Boolean} [direction=1] The direction of the emitter. If value is `1`, emitter will start at beginning of particle's lifecycle.
+ *                                   If value is `-1`, emitter will start at end of particle's lifecycle and work it's way backwards.
+ *
+ * @property {Object} [maxAge={}] An object describing the particle's maximum age in seconds.
+ * @property {Number} [maxAge.value=2] A number between 0 and 1 describing the amount of maxAge to apply to all particles.
+ * @property {Number} [maxAge.spread=0] A number describing the maxAge variance on a per-particle basis.
+ *
+ *
+ * @property {Object} [position={}] An object describing this emitter's position.
+ * @property {Object} [position.value=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter's base position.
+ * @property {Object} [position.spread=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter's position variance on a per-particle basis.
+ *                                                          Note that when using a SPHERE or DISC distribution, only the x-component
+ *                                                          of this vector is used.
+ * @property {Object} [position.spreadClamp=new THREE.Vector3()] A THREE.Vector3 instance describing the numeric multiples the particle's should
+ *                                                               be spread out over.
+ *                                                               Note that when using a SPHERE or DISC distribution, only the x-component
+ *                                                               of this vector is used.
+ * @property {Number} [position.radius=10] This emitter's base radius.
+ * @property {Object} [position.radiusScale=new THREE.Vector3()] A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.
+ * @property {distribution} [position.distribution=value of the `type` option.] A specific distribution to use when radiusing particles. Overrides the `type` option.
+ * @property {Boolean} [position.randomise=false] When a particle is re-spawned, whether it's position should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [velocity={}] An object describing this particle velocity.
+ * @property {Object} [velocity.value=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter's base velocity.
+ * @property {Object} [velocity.spread=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter's velocity variance on a per-particle basis.
+ *                                                          Note that when using a SPHERE or DISC distribution, only the x-component
+ *                                                          of this vector is used.
+ * @property {distribution} [velocity.distribution=value of the `type` option.] A specific distribution to use when calculating a particle's velocity. Overrides the `type` option.
+ * @property {Boolean} [velocity.randomise=false] When a particle is re-spawned, whether it's velocity should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [acceleration={}] An object describing this particle's acceleration.
+ * @property {Object} [acceleration.value=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter's base acceleration.
+ * @property {Object} [acceleration.spread=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter's acceleration variance on a per-particle basis.
+ *                           Note that when using a SPHERE or DISC distribution, only the x-component
+ *                           of this vector is used.
+ * @property {distribution} [acceleration.distribution=value of the `type` option.] A specific distribution to use when calculating a particle's acceleration. Overrides the `type` option.
+ * @property {Boolean} [acceleration.randomise=false] When a particle is re-spawned, whether it's acceleration should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [drag={}] An object describing this particle drag. Drag is applied to both velocity and acceleration values.
+ * @property {Number} [drag.value=0] A number between 0 and 1 describing the amount of drag to apply to all particles.
+ * @property {Number} [drag.spread=0] A number describing the drag variance on a per-particle basis.
+ * @property {Boolean} [drag.randomise=false] When a particle is re-spawned, whether it's drag should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [wiggle={}] This is quite a fun one! The values of this object will determine whether a particle will wiggle, or jiggle, or wave,
+ *                                or shimmy, or waggle, or... Well you get the idea. The wiggle is calculated over-time, meaning that a particle will
+ *                                start off with no wiggle, and end up wiggling about with the distance of the `value` specified by the time it dies.
+ *                                It's quite handy to simulate fire embers, or similar effects where the particle's position should slightly change over
+ *                                time, and such change isn't easily controlled by rotation, velocity, or acceleration. The wiggle is a combination of sin and cos calculations, so is circular in nature.
+ * @property {Number} [wiggle.value=0] A number describing the amount of wiggle to apply to all particles. It's measured in distance.
+ * @property {Number} [wiggle.spread=0] A number describing the wiggle variance on a per-particle basis.
+ *
+ *
+ * @property {Object} [rotation={}] An object describing this emitter's rotation. It can either be static, or set to rotate from 0radians to the value of `rotation.value`
+ *                                  over a particle's lifetime. Rotation values affect both a particle's position and the forces applied to it.
+ * @property {Object} [rotation.axis=new THREE.Vector3(0, 1, 0)] A THREE.Vector3 instance describing this emitter's axis of rotation.
+ * @property {Object} [rotation.axisSpread=new THREE.Vector3()] A THREE.Vector3 instance describing the amount of variance to apply to the axis of rotation on
+ *                                                              a per-particle basis.
+ * @property {Number} [rotation.angle=0] The angle of rotation, given in radians. If `rotation.static` is true, the emitter will start off rotated at this angle, and stay as such.
+ *                                       Otherwise, the particles will rotate from 0radians to this value over their lifetimes.
+ * @property {Number} [rotation.angleSpread=0] The amount of variance in each particle's rotation angle.
+ * @property {Boolean} [rotation.static=false] Whether the rotation should be static or not.
+ * @property {Object} [rotation.center=The value of `position.value`] A THREE.Vector3 instance describing the center point of rotation.
+ * @property {Boolean} [rotation.randomise=false] When a particle is re-spawned, whether it's rotation should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [color={}] An object describing a particle's color. This property is a "value-over-lifetime" property, meaning an array of values and spreads can be
+ *                               given to describe specific value changes over a particle's lifetime.
+ *                               Depending on the value of SPE.valueOverLifetimeLength, if arrays of THREE.Color instances are given, then the array will be interpolated to
+ *                               have a length matching the value of SPE.valueOverLifetimeLength.
+ * @property {Object} [color.value=new THREE.Color()] Either a single THREE.Color instance, or an array of THREE.Color instances to describe the color of a particle over it's lifetime.
+ * @property {Object} [color.spread=new THREE.Vector3()] Either a single THREE.Vector3 instance, or an array of THREE.Vector3 instances to describe the color variance of a particle over it's lifetime.
+ * @property {Boolean} [color.randomise=false] When a particle is re-spawned, whether it's color should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [opacity={}] An object describing a particle's opacity. This property is a "value-over-lifetime" property, meaning an array of values and spreads can be
+ *                               given to describe specific value changes over a particle's lifetime.
+ *                               Depending on the value of SPE.valueOverLifetimeLength, if arrays of numbers are given, then the array will be interpolated to
+ *                               have a length matching the value of SPE.valueOverLifetimeLength.
+ * @property {Number} [opacity.value=1] Either a single number, or an array of numbers to describe the opacity of a particle over it's lifetime.
+ * @property {Number} [opacity.spread=0] Either a single number, or an array of numbers to describe the opacity variance of a particle over it's lifetime.
+ * @property {Boolean} [opacity.randomise=false] When a particle is re-spawned, whether it's opacity should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [size={}] An object describing a particle's size. This property is a "value-over-lifetime" property, meaning an array of values and spreads can be
+ *                               given to describe specific value changes over a particle's lifetime.
+ *                               Depending on the value of SPE.valueOverLifetimeLength, if arrays of numbers are given, then the array will be interpolated to
+ *                               have a length matching the value of SPE.valueOverLifetimeLength.
+ * @property {Number} [size.value=1] Either a single number, or an array of numbers to describe the size of a particle over it's lifetime.
+ * @property {Number} [size.spread=0] Either a single number, or an array of numbers to describe the size variance of a particle over it's lifetime.
+ * @property {Boolean} [size.randomise=false] When a particle is re-spawned, whether it's size should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [angle={}] An object describing a particle's angle. The angle is a 2d-rotation, measured in radians, applied to the particle's texture.
+ *                               NOTE: if a particle's texture is a sprite-sheet, this value IS IGNORED.
+ *                               This property is a "value-over-lifetime" property, meaning an array of values and spreads can be
+ *                               given to describe specific value changes over a particle's lifetime.
+ *                               Depending on the value of SPE.valueOverLifetimeLength, if arrays of numbers are given, then the array will be interpolated to
+ *                               have a length matching the value of SPE.valueOverLifetimeLength.
+ * @property {Number} [angle.value=0] Either a single number, or an array of numbers to describe the angle of a particle over it's lifetime.
+ * @property {Number} [angle.spread=0] Either a single number, or an array of numbers to describe the angle variance of a particle over it's lifetime.
+ * @property {Boolean} [angle.randomise=false] When a particle is re-spawned, whether it's angle should be re-randomised or not. Can incur a performance hit.
+ *
+ */
+
+/**
+ * The SPE.Emitter class.
+ *
+ * @constructor
+ *
+ * @param {EmitterOptions} options A map of options to configure the emitter.
+ */
 class Emitter {
     constructor(options = {}) {
         const lifetimeLength = valueOverLifetimeLength;
@@ -2032,6 +2181,9 @@ class Emitter {
             attr.updateRange.offset = 0;
             attr.updateRange.count = -1;
             attr.needsUpdate = true;
+
+            this.activationIndex = 0;
+            this.activeParticleCount = 0;
         }
 
         return this;
@@ -2096,67 +2248,11 @@ class Emitter {
         this.color.value = this.color.value;
 
         this.opacity.value = this.opacity.value;
+
+        this._calculatePPSValue(this.maxAge._value + this.maxAge._spread);
     }
 }
 
-/**
- * An SPE.Group instance.
- * @typedef {Object} Group
- * @see SPE.Group
- */
-
-/**
- * A map of options to configure an SPE.Group instance.
- * @typedef {Object} GroupOptions
- *
- * @property {Object} texture An object describing the texture used by the group.
- *
- * @property {Object} texture.value An instance of THREE.Texture.
- *
- * @property {Object=} texture.frames A THREE.Vector2 instance describing the number
- *                                    of frames on the x- and y-axis of the given texture.
- *                                    If not provided, the texture will NOT be treated as
- *                                    a sprite-sheet and as such will NOT be animated.
- *
- * @property {Number} [texture.frameCount=texture.frames.x * texture.frames.y] The total number of frames in the sprite-sheet.
- *                                                                   Allows for sprite-sheets that don't fill the entire
- *                                                                   texture.
- *
- * @property {Number} texture.loop The number of loops through the sprite-sheet that should
- *                                 be performed over the course of a single particle's lifetime.
- *
- * @property {Number} fixedTimeStep If no `dt` (or `deltaTime`) value is passed to this group's
- *                                  `tick()` function, this number will be used to move the particle
- *                                  simulation forward. Value in SECONDS.
- *
- * @property {Boolean} hasPerspective Whether the distance a particle is from the camera should affect
- *                                    the particle's size.
- *
- * @property {Boolean} colorize Whether the particles in this group should be rendered with color, or
- *                              whether the only color of particles will come from the provided texture.
- *
- * @property {Number} blending One of Three.js's blending modes to apply to this group's `ShaderMaterial`.
- *
- * @property {Boolean} transparent Whether these particle's should be rendered with transparency.
- *
- * @property {Number} alphaTest Sets the alpha value to be used when running an alpha test on the `texture.value` property. Value between 0 and 1.
- *
- * @property {Boolean} depthWrite Whether rendering the group has any effect on the depth buffer.
- *
- * @property {Boolean} depthTest Whether to have depth test enabled when rendering this group.
- *
- * @property {Boolean} fog Whether this group's particles should be affected by their scene's fog.
- *
- * @property {Number} scale The scale factor to apply to this group's particle sizes. Useful for
- *                          setting particle sizes to be relative to renderer size.
- */
-
-/**
- * The SPE.Group class. Creates a new group, containing a material, geometry, and mesh.
- *
- * @constructor
- * @param {GroupOptions} options A map of options to configure the group instance.
- */
 class Group {
     constructor(options = {}) {
         // Ensure we have a map of options to play with

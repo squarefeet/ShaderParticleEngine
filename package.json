@@ -34,7 +34,7 @@
     "babel-preset-es2015": "^6.14.0"
   },
   "scripts": {
-    "test": "grunt",
+    "test": "rollup -c",
     "watch": "rollup --watch -c"
   },
   "main": "build/SPE.min.js",
