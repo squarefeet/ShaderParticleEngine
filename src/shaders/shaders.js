@@ -1,21 +1,25 @@
-SPE.shaders = {
+import { ShaderChunk } from 'three';
+import shaderChunks from './shaderChunks';
+
+const shaders = {
     vertex: [
-        SPE.shaderChunks.defines,
-        SPE.shaderChunks.uniforms,
-        SPE.shaderChunks.attributes,
-        SPE.shaderChunks.varyings,
+        shaderChunks.defines,
+        shaderChunks.uniforms,
+        shaderChunks.attributes,
+        shaderChunks.varyings,
 
-        THREE.ShaderChunk.common,
-        THREE.ShaderChunk.logdepthbuf_pars_vertex,
+        ShaderChunk.common,
+        ShaderChunk.logdepthbuf_pars_vertex,
+        ShaderChunk.fog_pars_vertex,
 
-        SPE.shaderChunks.branchAvoidanceFunctions,
-        SPE.shaderChunks.unpackColor,
-        SPE.shaderChunks.unpackRotationAxis,
-        SPE.shaderChunks.floatOverLifetime,
-        SPE.shaderChunks.colorOverLifetime,
-        SPE.shaderChunks.paramFetchingFunctions,
-        SPE.shaderChunks.forceFetchingFunctions,
-        SPE.shaderChunks.rotationFunctions,
+        shaderChunks.branchAvoidanceFunctions,
+        shaderChunks.unpackColor,
+        shaderChunks.unpackRotationAxis,
+        shaderChunks.floatOverLifetime,
+        shaderChunks.colorOverLifetime,
+        shaderChunks.paramFetchingFunctions,
+        shaderChunks.forceFetchingFunctions,
+        shaderChunks.rotationFunctions,
 
 
         'void main() {',
@@ -70,14 +74,14 @@ SPE.shaders = {
         '    #endif',
 
         // Convert pos to a world-space value
-        '    vec4 mvPos = modelViewMatrix * vec4( pos, 1.0 );',
+        '    vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );',
 
         // Determine point size.
         '    highp float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;',
 
         // Determine perspective
         '    #ifdef HAS_PERSPECTIVE',
-        '        float perspective = scale / length( mvPos.xyz );',
+        '        float perspective = scale / length( mvPosition.xyz );',
         '    #else',
         '        float perspective = 1.0;',
         '    #endif',
@@ -140,23 +144,24 @@ SPE.shaders = {
 
         // Set PointSize according to size at current point in time.
         '    gl_PointSize = pointSizePerspective;',
-        '    gl_Position = projectionMatrix * mvPos;',
+        '    gl_Position = projectionMatrix * mvPosition;',
 
-        THREE.ShaderChunk.logdepthbuf_vertex,
+        ShaderChunk.logdepthbuf_vertex,
+        ShaderChunk.fog_vertex,
 
         '}'
     ].join( '\n' ),
 
     fragment: [
-        SPE.shaderChunks.uniforms,
+        shaderChunks.uniforms,
 
-        THREE.ShaderChunk.common,
-        THREE.ShaderChunk.fog_pars_fragment,
-        THREE.ShaderChunk.logdepthbuf_pars_fragment,
+        ShaderChunk.common,
+        ShaderChunk.fog_pars_fragment,
+        ShaderChunk.logdepthbuf_pars_fragment,
 
-        SPE.shaderChunks.varyings,
+        shaderChunks.varyings,
 
-        SPE.shaderChunks.branchAvoidanceFunctions,
+        shaderChunks.branchAvoidanceFunctions,
 
         'void main() {',
         '    vec3 outgoingLight = vColor.xyz;',
@@ -165,15 +170,24 @@ SPE.shaders = {
         '       if ( vColor.w < float(ALPHATEST) ) discard;',
         '    #endif',
 
-        SPE.shaderChunks.rotateTexture,
+        shaderChunks.rotateTexture,
 
-        THREE.ShaderChunk.logdepthbuf_fragment,
+        ShaderChunk.logdepthbuf_fragment,
 
-        '    outgoingLight = vColor.xyz * rotatedTexture.xyz;',
 
-        THREE.ShaderChunk.fog_fragment,
+        '    #ifdef USE_TEXTURE',
+        '        outgoingLight = vColor.xyz * rotatedTexture.xyz;',
+        '        gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
+        '    #else',
+        '        gl_FragColor = vec4( outgoingLight.xyz, vColor.w );',
+        '    #endif',
 
-        '    gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
+
+
+
+        ShaderChunk.fog_fragment,
         '}'
     ].join( '\n' )
 };
+
+export default shaders;

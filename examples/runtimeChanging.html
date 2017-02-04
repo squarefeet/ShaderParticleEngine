@@ -18,9 +18,9 @@
     </head>
     <body>
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.js"></script>
-        <script type="text/javascript" src="js/THREE-r72.js"></script>
-        <script type="text/javascript" src="js/Stats.min.js"></script>
-        <script type="text/javascript" src="../build/SPE.min.js"></script>
+        <script type="text/javascript" src="./js/Stats.min.js"></script>
+        <script type="text/javascript" src="../node_modules/three/build/three.js"></script>
+        <script type="text/javascript" src="../build/SPE.js"></script>
 
         <script type="text/javascript">
             var scene = new THREE.Scene(),
@@ -178,13 +178,13 @@
 
                 for( i = 0; i < vec3Components.length; ++i ) {
                     positionValue.add( emitter.position.value, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
-                        emitter.position.value = emitter.position.value;
+                        emitter.update();
                     } );
                     positionSpread.add( emitter.position.spread, vec3Components[ i ], -100, 100 ).listen().onChange( function() {
-                        emitter.position.spread = emitter.position.spread;
+                        emitter.update();
                     } );
                     positionSpreadClamp.add( emitter.position.spreadClamp, vec3Components[ i ], -50, 50 ).listen().onChange( function() {
-                        emitter.position.spreadClamp = emitter.position.spreadClamp;
+                        emitter.update();
                     } );
                 }
 
@@ -197,10 +197,10 @@
 
                 for( i = 0; i < vec3Components.length; ++i ) {
                     velocityValue.add( emitter.velocity.value, vec3Components[ i ], -50, 50 ).listen().onChange( function() {
-                        emitter.velocity.value = emitter.velocity.value;
+                        emitter.update();
                     } );
                     velocitySpread.add( emitter.velocity.spread, vec3Components[ i ], -50, 50 ).listen().onChange( function() {
-                        emitter.velocity.spread = emitter.velocity.spread;
+                        emitter.update();
                     } );
                 }
                 velocityFolder.add( emitter.velocity, 'randomise' ).listen();
@@ -211,10 +211,10 @@
 
                 for( i = 0; i < vec3Components.length; ++i ) {
                     accelerationValue.add( emitter.acceleration.value, vec3Components[ i ], -50, 50 ).listen().onChange( function() {
-                        emitter.acceleration.value = emitter.acceleration.value;
+                        emitter.update();
                     } );
                     accelerationSpread.add( emitter.acceleration.spread, vec3Components[ i ], -50, 50 ).listen().onChange( function() {
-                        emitter.acceleration.spread = emitter.acceleration.spread;
+                        emitter.update();
                     } );
                 }
 
@@ -231,19 +231,19 @@
                 var colorFolder = gui.addFolder( 'Color steps' );
                 colorFolder.addColor(colors, 'Step 1' ).onChange( function( value ) {
                     emitter.color.value[ 0 ].setStyle( value );
-                    emitter.color.value = emitter.color.value;
+                    emitter.update();
                 } );
                 colorFolder.addColor(colors, 'Step 2' ).onChange( function( value ) {
                     emitter.color.value[ 1 ].setStyle( value );
-                    emitter.color.value = emitter.color.value;
+                    emitter.update();
                 } );
                 colorFolder.addColor(colors, 'Step 3' ).onChange( function( value ) {
                     emitter.color.value[ 2 ].setStyle( value );
-                    emitter.color.value = emitter.color.value;
+                    emitter.update();
                 } );
                 colorFolder.addColor(colors, 'Step 4' ).onChange( function( value ) {
                     emitter.color.value[ 3 ].setStyle( value );
-                    emitter.color.value = emitter.color.value;
+                    emitter.update();
                 } );
 
                 var opacities = {
@@ -255,19 +255,19 @@
                 var opacityFolder = gui.addFolder( 'Opacity steps' );
                 opacityFolder.add( opacities, 'Step 1' ).min(0).max(1).step(0.01).listen().onChange( function( value ) {
                     emitter.opacity.value[ 0 ] = value;
-                    emitter.opacity.value = emitter.opacity.value;
+                    emitter.update();
                 } );
                 opacityFolder.add( opacities, 'Step 2' ).min(0).max(1).step(0.01).listen().onChange( function( value ) {
                     emitter.opacity.value[ 1 ] = value;
-                    emitter.opacity.value = emitter.opacity.value;
+                    emitter.update();
                 } );
                 opacityFolder.add( opacities, 'Step 3' ).min(0).max(1).step(0.01).listen().onChange( function( value ) {
                     emitter.opacity.value[ 2 ] = value;
-                    emitter.opacity.value = emitter.opacity.value;
+                    emitter.update();
                 } );
                 opacityFolder.add( opacities, 'Step 4' ).min(0).max(1).step(0.01).listen().onChange( function( value ) {
                     emitter.opacity.value[ 3 ] = value;
-                    emitter.opacity.value = emitter.opacity.value;
+                    emitter.update();
                 } );
             }
 
@@ -282,9 +282,6 @@
                 group.tick( dt );
                 renderer.render( scene, camera );
             }
-
-            console.log( group );
-            console.log( emitter );
 
             initDAT();
             animate();

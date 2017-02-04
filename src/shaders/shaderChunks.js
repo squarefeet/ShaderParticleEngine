@@ -1,4 +1,4 @@
-SPE.shaderChunks = {
+const shaderChunks = {
     // Register color-packing define statements.
     defines: [
         '#define PACKED_COLOR_SIZE 256.0',
@@ -226,15 +226,15 @@ SPE.shaderChunks = {
 
     // Fragment chunks
     rotateTexture: [
+        '#ifdef USE_TEXTURE',
         '    vec2 vUv = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y );',
         '',
         '    #ifdef SHOULD_ROTATE_TEXTURE',
-        '       float x = gl_PointCoord.x - 0.5;',
-        '       float y = 1.0 - gl_PointCoord.y - 0.5;',
-        '       float c = cos( -vAngle );',
-        '       float s = sin( -vAngle );',
-
-        '       vUv = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
+        '        float x = gl_PointCoord.x - 0.5;',
+        '        float y = 1.0 - gl_PointCoord.y - 0.5;',
+        '        float c = cos( -vAngle );',
+        '        float s = sin( -vAngle );',
+        '        vUv = vec2( c * x + s * y + 0.5, c * y - s * x + 0.5 );',
         '    #endif',
         '',
 
@@ -244,12 +244,14 @@ SPE.shaderChunks = {
         '        float framesY = vSpriteSheet.y;',
         '        float columnNorm = vSpriteSheet.z;',
         '        float rowNorm = vSpriteSheet.w;',
-
         '        vUv.x = gl_PointCoord.x * framesX + columnNorm;',
         '        vUv.y = 1.0 - (gl_PointCoord.y * framesY + rowNorm);',
         '    #endif',
 
         '',
         '    vec4 rotatedTexture = texture2D( texture, vUv );',
+        '#endif',
     ].join( '\n' )
 };
+
+export default shaderChunks;

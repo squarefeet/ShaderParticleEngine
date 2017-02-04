@@ -6,10 +6,9 @@
 <body>
 	<p class="numParticles"></p>
 
-	<script type="text/javascript" src="./js/THREE-r72.js"></script>
 	<script type="text/javascript" src="./js/Stats.min.js"></script>
-
-    <script type="text/javascript" src="../build/SPE.min.js"></script>
+    <script type="text/javascript" src="../node_modules/three/build/three.js"></script>
+    <script type="text/javascript" src="../build/SPE.js"></script>
 
 
 	<script type="text/javascript">
@@ -23,8 +22,6 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
-            // camera.position.z = 50;
-            // camera.lookAt( scene.position );
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );

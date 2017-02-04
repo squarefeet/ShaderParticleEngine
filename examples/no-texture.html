@@ -1,7 +1,6 @@
 <html>
 <head>
-    <title>SPE: Fog support</title>
-    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+    <title>SPE: Basic</title>
     <link rel="stylesheet" type="text/css" href="./css/style.css">
 </head>
 <body>
@@ -22,16 +21,11 @@
         // Setup the scene
         function init() {
             scene = new THREE.Scene();
-            scene.fog = new THREE.Fog( 0x000000, 40, 70 );
-            // scene.fog = new THREE.FogExp2( 0x000000, 0.025 );
-
-            camera = new THREE.PerspectiveCamera(64, window.innerWidth/window.innerHeight, 0.1, 10000);
-            camera.position.z = 50;
-            camera.lookAt( scene.position );
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
-            renderer.setClearColor( scene.fog.color );
+            renderer.setClearColor(0x000000);
 
             stats = new Stats();
             clock = new THREE.Clock();
@@ -39,34 +33,42 @@
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.top = '0';
 
-            var box = new THREE.Mesh(
-                new THREE.BoxGeometry( 20, 20, 20 ),
-                new THREE.MeshBasicMaterial( { wireframe: true, color: 0xffffff } )
-            );
-            scene.add( box );
-
             document.body.appendChild( renderer.domElement );
             document.body.appendChild( stats.domElement );
         }
 
         // Create particle group and emitter
         function initParticles() {
-            particleGroup = new SPE.Group({
-                texture: {
-                    value: THREE.ImageUtils.loadTexture('./img/smokeparticle.png')
-                },
-                fog: true
-            });
+            particleGroup = new SPE.Group();
 
             emitter = new SPE.Emitter({
-                type: SPE.distributions.BOX,
-                maxAge: 2,
-                position: {
-                    value: new THREE.Vector3(0, 0, 0),
-                    spread: new THREE.Vector3( 20, 20, 20 )
+                maxAge: {
+                    value: 2
                 },
-                particleCount: 20000,
-                isStatic: true
+                position: {
+                    value: new THREE.Vector3(0, 0, -50),
+                    spread: new THREE.Vector3( 0, 0, 0 )
+                },
+
+                acceleration: {
+                    value: new THREE.Vector3(0, -10, 0),
+                    spread: new THREE.Vector3( 10, 0, 10 )
+                },
+
+                velocity: {
+                    value: new THREE.Vector3(0, 25, 0),
+                    spread: new THREE.Vector3(10, 7.5, 10)
+                },
+
+                color: {
+                    value: [ new THREE.Color('white'), new THREE.Color('red') ]
+                },
+
+                size: {
+                    value: 1
+                },
+
+                particleCount: 2000
             });
 
             particleGroup.addEmitter( emitter );
@@ -79,14 +81,7 @@
 
 
         function animate() {
-            var now = Date.now() * 0.0005;
             requestAnimationFrame( animate );
-
-            camera.position.x = Math.cos( now ) * 50;
-            camera.position.y = Math.sin( now ) * 45;
-            camera.position.z = Math.sin( now ) * 50;
-            camera.lookAt( scene.position );
-
             render( clock.getDelta() );
             stats.update();
         }
@@ -112,6 +107,13 @@
         initParticles();
 
         setTimeout(animate, 0);
+
+        // This is how to change textures at run-time.
+        // Uncomment to see it in action.
+        setTimeout( function() {
+            particleGroup.texture = THREE.ImageUtils.loadTexture('./img/smokeparticle.png');
+            particleGroup.update();
+        }, 3000 );
 
     </script>
 
