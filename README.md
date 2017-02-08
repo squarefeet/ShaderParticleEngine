@@ -1,4 +1,4 @@
-Shader Particle Engine v1.0.3 ![](https://travis-ci.org/squarefeet/ShaderParticleEngine.svg?branch=master)
+Shader Particle Engine v1.0.5 ![](https://travis-ci.org/squarefeet/ShaderParticleEngine.svg?branch=master)
 =============================
 
 
@@ -23,7 +23,7 @@ Examples can be found [here](https://squarefeet.github.io/ShaderParticleEngine/)
 
 Dependencies
 ------------
-* THREE.js r72
+* THREE.js r72+
 
 
 

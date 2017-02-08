@@ -1,4 +1,4 @@
-/* shader-particle-engine 1.0.3
+/* shader-particle-engine 1.0.5
  * 
  * (c) 2015 Luke Moody (http://www.github.com/squarefeet)
  *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
@@ -2377,7 +2377,7 @@ SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
     setTimeout( function() {
         emitter.disable();
         self.releaseIntoPool( emitter );
-    }, ( emitter.maxAge.value + emitter.maxAge.spread ) * 1000 );
+    }, ( Math.max( emitter.duration, ( emitter.maxAge.value + emitter.maxAge.spread ) ) ) * 1000 );
 
     return this;
 };

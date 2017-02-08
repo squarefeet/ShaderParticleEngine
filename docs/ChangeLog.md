@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+v1.0.5
+------
+* Fixed issue with emitter pools where `duration` would be ignored in favour of `maxAge`. Duration is now taken into account.
+
 v1.0.3
 ------
 * Make sure grunt dependencies are listed in `devDependencies` (**[pawsong](https://github.com/pawsong)**).
