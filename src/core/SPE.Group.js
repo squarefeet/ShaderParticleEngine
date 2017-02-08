@@ -494,7 +494,11 @@ SPE.Group.prototype.getFromPool = function() {
         return pool.pop();
     }
     else if ( createNew ) {
-        return new SPE.Emitter( this._poolCreationSettings );
+        var emitter = new SPE.Emitter( this._poolCreationSettings );
+        
+        this.addEmitter( emitter );
+        
+        return emitter;
     }
 
     return null;

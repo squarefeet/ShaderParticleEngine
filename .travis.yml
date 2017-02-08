@@ -1,8 +1,6 @@
 language : node_js
 node_js :
-    - "0.10"
-    - "0.12"
-    - "4.1"
+    - "6.9.5"
 before_script :
     - ( node --version | grep 4.1 && npm update -g npm ) || true
     - npm --version
