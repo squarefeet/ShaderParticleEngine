@@ -908,184 +908,187 @@ SPE.shaderChunks = {
 };
 
 SPE.shaders = {
-    vertex: [
-        SPE.shaderChunks.defines,
-        SPE.shaderChunks.uniforms,
-        SPE.shaderChunks.attributes,
-        SPE.shaderChunks.varyings,
+	vertex: [
+		SPE.shaderChunks.defines,
+		SPE.shaderChunks.uniforms,
+		SPE.shaderChunks.attributes,
+		SPE.shaderChunks.varyings,
 
-        THREE.ShaderChunk.common,
-        THREE.ShaderChunk.logdepthbuf_pars_vertex,
+		THREE.ShaderChunk.common,
+		THREE.ShaderChunk.logdepthbuf_pars_vertex,
+		THREE.ShaderChunk.fog_pars_vertex,
 
-        SPE.shaderChunks.branchAvoidanceFunctions,
-        SPE.shaderChunks.unpackColor,
-        SPE.shaderChunks.unpackRotationAxis,
-        SPE.shaderChunks.floatOverLifetime,
-        SPE.shaderChunks.colorOverLifetime,
-        SPE.shaderChunks.paramFetchingFunctions,
-        SPE.shaderChunks.forceFetchingFunctions,
-        SPE.shaderChunks.rotationFunctions,
-
-
-        'void main() {',
+		SPE.shaderChunks.branchAvoidanceFunctions,
+		SPE.shaderChunks.unpackColor,
+		SPE.shaderChunks.unpackRotationAxis,
+		SPE.shaderChunks.floatOverLifetime,
+		SPE.shaderChunks.colorOverLifetime,
+		SPE.shaderChunks.paramFetchingFunctions,
+		SPE.shaderChunks.forceFetchingFunctions,
+		SPE.shaderChunks.rotationFunctions,
 
 
-        //
-        // Setup...
-        //
-        '    highp float age = getAge();',
-        '    highp float alive = getAlive();',
-        '    highp float maxAge = getMaxAge();',
-        '    highp float positionInTime = (age / maxAge);',
-        '    highp float isAlive = when_gt( alive, 0.0 );',
-
-        '    #ifdef SHOULD_WIGGLE_PARTICLES',
-        '        float wiggleAmount = positionInTime * getWiggle();',
-        '        float wiggleSin = isAlive * sin( wiggleAmount );',
-        '        float wiggleCos = isAlive * cos( wiggleAmount );',
-        '    #endif',
-
-        //
-        // Forces
-        //
-
-        // Get forces & position
-        '    vec3 vel = getVelocity( age );',
-        '    vec3 accel = getAcceleration( age );',
-        '    vec3 force = vec3( 0.0 );',
-        '    vec3 pos = vec3( position );',
-
-        // Calculate the required drag to apply to the forces.
-        '    float drag = 1.0 - (positionInTime * 0.5) * acceleration.w;',
-
-        // Integrate forces...
-        '    force += vel;',
-        '    force *= drag;',
-        '    force += accel * age;',
-        '    pos += force;',
+		'void main() {',
 
 
-        // Wiggly wiggly wiggle!
-        '    #ifdef SHOULD_WIGGLE_PARTICLES',
-        '        pos.x += wiggleSin;',
-        '        pos.y += wiggleCos;',
-        '        pos.z += wiggleSin;',
-        '    #endif',
+		//
+		// Setup...
+		//
+		'    highp float age = getAge();',
+		'    highp float alive = getAlive();',
+		'    highp float maxAge = getMaxAge();',
+		'    highp float positionInTime = (age / maxAge);',
+		'    highp float isAlive = when_gt( alive, 0.0 );',
+
+		'    #ifdef SHOULD_WIGGLE_PARTICLES',
+		'        float wiggleAmount = positionInTime * getWiggle();',
+		'        float wiggleSin = isAlive * sin( wiggleAmount );',
+		'        float wiggleCos = isAlive * cos( wiggleAmount );',
+		'    #endif',
+
+		//
+		// Forces
+		//
+
+		// Get forces & position
+		'    vec3 vel = getVelocity( age );',
+		'    vec3 accel = getAcceleration( age );',
+		'    vec3 force = vec3( 0.0 );',
+		'    vec3 pos = vec3( position );',
+
+		// Calculate the required drag to apply to the forces.
+		'    float drag = 1.0 - (positionInTime * 0.5) * acceleration.w;',
+
+		// Integrate forces...
+		'    force += vel;',
+		'    force *= drag;',
+		'    force += accel * age;',
+		'    pos += force;',
 
 
-        // Rotate the emitter around it's central point
-        '    #ifdef SHOULD_ROTATE_PARTICLES',
-        '        pos = getRotation( pos, positionInTime );',
-        '    #endif',
-
-        // Convert pos to a world-space value
-        '    vec4 mvPos = modelViewMatrix * vec4( pos, 1.0 );',
-
-        // Determine point size.
-        '    highp float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;',
-
-        // Determine perspective
-        '    #ifdef HAS_PERSPECTIVE',
-        '        float perspective = scale / length( mvPos.xyz );',
-        '    #else',
-        '        float perspective = 1.0;',
-        '    #endif',
-
-        // Apply perpective to pointSize value
-        '    float pointSizePerspective = pointSize * perspective;',
+		// Wiggly wiggly wiggle!
+		'    #ifdef SHOULD_WIGGLE_PARTICLES',
+		'        pos.x += wiggleSin;',
+		'        pos.y += wiggleCos;',
+		'        pos.z += wiggleSin;',
+		'    #endif',
 
 
-        //
-        // Appearance
-        //
+		// Rotate the emitter around it's central point
+		'    #ifdef SHOULD_ROTATE_PARTICLES',
+		'        pos = getRotation( pos, positionInTime );',
+		'    #endif',
 
-        // Determine color and opacity for this particle
-        '    #ifdef COLORIZE',
-        '       vec3 c = isAlive * getColorOverLifetime(',
-        '           positionInTime,',
-        '           unpackColor( color.x ),',
-        '           unpackColor( color.y ),',
-        '           unpackColor( color.z ),',
-        '           unpackColor( color.w )',
-        '       );',
-        '    #else',
-        '       vec3 c = vec3(1.0);',
-        '    #endif',
+		// Convert pos to a world-space value
+		'    vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );',
 
-        '    float o = isAlive * getFloatOverLifetime( positionInTime, opacity );',
+		// Determine point size.
+		'    highp float pointSize = getFloatOverLifetime( positionInTime, size ) * isAlive;',
 
-        // Assign color to vColor varying.
-        '    vColor = vec4( c, o );',
+		// Determine perspective
+		'    #ifdef HAS_PERSPECTIVE',
+		'        float perspective = scale / length( mvPosition.xyz );',
+		'    #else',
+		'        float perspective = 1.0;',
+		'    #endif',
 
-        // Determine angle
-        '    #ifdef SHOULD_ROTATE_TEXTURE',
-        '        vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
-        '    #endif',
+		// Apply perpective to pointSize value
+		'    float pointSizePerspective = pointSize * perspective;',
 
-        // If this particle is using a sprite-sheet as a texture, we'll have to figure out
-        // what frame of the texture the particle is using at it's current position in time.
-        '    #ifdef SHOULD_CALCULATE_SPRITE',
-        '        float framesX = textureAnimation.x;',
-        '        float framesY = textureAnimation.y;',
-        '        float loopCount = textureAnimation.w;',
-        '        float totalFrames = textureAnimation.z;',
-        '        float frameNumber = mod( (positionInTime * loopCount) * totalFrames, totalFrames );',
 
-        '        float column = floor(mod( frameNumber, framesX ));',
-        '        float row = floor( (frameNumber - column) / framesX );',
+		//
+		// Appearance
+		//
 
-        '        float columnNorm = column / framesX;',
-        '        float rowNorm = row / framesY;',
+		// Determine color and opacity for this particle
+		'    #ifdef COLORIZE',
+		'       vec3 c = isAlive * getColorOverLifetime(',
+		'           positionInTime,',
+		'           unpackColor( color.x ),',
+		'           unpackColor( color.y ),',
+		'           unpackColor( color.z ),',
+		'           unpackColor( color.w )',
+		'       );',
+		'    #else',
+		'       vec3 c = vec3(1.0);',
+		'    #endif',
 
-        '        vSpriteSheet.x = 1.0 / framesX;',
-        '        vSpriteSheet.y = 1.0 / framesY;',
-        '        vSpriteSheet.z = columnNorm;',
-        '        vSpriteSheet.w = rowNorm;',
-        '    #endif',
+		'    float o = isAlive * getFloatOverLifetime( positionInTime, opacity );',
 
-        //
-        // Write values
-        //
+		// Assign color to vColor varying.
+		'    vColor = vec4( c, o );',
 
-        // Set PointSize according to size at current point in time.
-        '    gl_PointSize = pointSizePerspective;',
-        '    gl_Position = projectionMatrix * mvPos;',
+		// Determine angle
+		'    #ifdef SHOULD_ROTATE_TEXTURE',
+		'        vAngle = isAlive * getFloatOverLifetime( positionInTime, angle );',
+		'    #endif',
 
-        THREE.ShaderChunk.logdepthbuf_vertex,
+		// If this particle is using a sprite-sheet as a texture, we'll have to figure out
+		// what frame of the texture the particle is using at it's current position in time.
+		'    #ifdef SHOULD_CALCULATE_SPRITE',
+		'        float framesX = textureAnimation.x;',
+		'        float framesY = textureAnimation.y;',
+		'        float loopCount = textureAnimation.w;',
+		'        float totalFrames = textureAnimation.z;',
+		'        float frameNumber = mod( (positionInTime * loopCount) * totalFrames, totalFrames );',
 
-        '}'
-    ].join( '\n' ),
+		'        float column = floor(mod( frameNumber, framesX ));',
+		'        float row = floor( (frameNumber - column) / framesX );',
 
-    fragment: [
-        SPE.shaderChunks.uniforms,
+		'        float columnNorm = column / framesX;',
+		'        float rowNorm = row / framesY;',
 
-        THREE.ShaderChunk.common,
-        THREE.ShaderChunk.fog_pars_fragment,
-        THREE.ShaderChunk.logdepthbuf_pars_fragment,
+		'        vSpriteSheet.x = 1.0 / framesX;',
+		'        vSpriteSheet.y = 1.0 / framesY;',
+		'        vSpriteSheet.z = columnNorm;',
+		'        vSpriteSheet.w = rowNorm;',
+		'    #endif',
 
-        SPE.shaderChunks.varyings,
+		//
+		// Write values
+		//
 
-        SPE.shaderChunks.branchAvoidanceFunctions,
+		// Set PointSize according to size at current point in time.
+		'    gl_PointSize = pointSizePerspective;',
+		'    gl_Position = projectionMatrix * mvPosition;',
 
-        'void main() {',
-        '    vec3 outgoingLight = vColor.xyz;',
-        '    ',
-        '    #ifdef ALPHATEST',
-        '       if ( vColor.w < float(ALPHATEST) ) discard;',
-        '    #endif',
+		THREE.ShaderChunk.logdepthbuf_vertex,
+		THREE.ShaderChunk.fog_vertex,
 
-        SPE.shaderChunks.rotateTexture,
+		'}'
+	].join( '\n' ),
 
-        THREE.ShaderChunk.logdepthbuf_fragment,
+	fragment: [
+		SPE.shaderChunks.uniforms,
 
-        '    outgoingLight = vColor.xyz * rotatedTexture.xyz;',
+		THREE.ShaderChunk.common,
+		THREE.ShaderChunk.fog_pars_fragment,
+		THREE.ShaderChunk.logdepthbuf_pars_fragment,
 
-        THREE.ShaderChunk.fog_fragment,
+		SPE.shaderChunks.varyings,
 
-        '    gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
-        '}'
-    ].join( '\n' )
+		SPE.shaderChunks.branchAvoidanceFunctions,
+
+		'void main() {',
+		'    vec3 outgoingLight = vColor.xyz;',
+		'    ',
+		'    #ifdef ALPHATEST',
+		'       if ( vColor.w < float(ALPHATEST) ) discard;',
+		'    #endif',
+
+		SPE.shaderChunks.rotateTexture,
+
+		THREE.ShaderChunk.logdepthbuf_fragment,
+
+		'    outgoingLight = vColor.xyz * rotatedTexture.xyz;',
+		'    gl_FragColor = vec4( outgoingLight.xyz, rotatedTexture.w * vColor.w );',
+
+		THREE.ShaderChunk.fog_fragment,
+
+		'}'
+	].join( '\n' )
 };
+
 
 /**
  * A bunch of utility functions used throughout the library.

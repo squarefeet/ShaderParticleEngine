@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+v1.0.6
+------
+* As of THREE.js r81, a `THREE.BufferAttribute` instance no longer calculates its `count` property each time the `count` getter is called. Since `SPE.ShaderAttribute` can sometimes resize itself when necessary, a fix has been issued to keep a shader attribute's `count` property in sync with its array size.
+* Added `three` as an NPM dependency.
+* Fixed fog.
+
 v1.0.5
 ------
 * Fixed issue with emitter pools where `duration` would be ignored in favour of `maxAge`. Duration is now taken into account.
