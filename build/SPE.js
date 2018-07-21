@@ -52,6 +52,12 @@ var SPE = {
          * @type {Number}
          */
         DISC: 3,
+
+        /**
+         * Values will be distributed along a line.
+         * @type {Number}
+         */
+        LINE: 4
     },
 
 
@@ -87,6 +93,7 @@ if ( typeof define === 'function' && define.amd ) {
 else if ( typeof exports !== 'undefined' && typeof module !== 'undefined' ) {
     module.exports = SPE;
 }
+
 
 /**
  * A helper class for TypedArrays.
@@ -1597,6 +1604,33 @@ SPE.utils = {
     }() ),
 
     /**
+     * Given an SPE.ShaderAttribute instance, and various other settings,
+     * assign values to the attribute's array in a `vec3` format.
+     *
+     * @param  {Object} attribute   The instance of SPE.ShaderAttribute to save the result to.
+     * @param  {Number} index       The offset in the attribute's TypedArray to save the result from.
+     * @param  {Object} start       THREE.Vector3 instance describing the start line position.
+     * @param  {Object} end         THREE.Vector3 instance describing the end line position.
+     */
+    randomVector3OnLine: function( attribute, index, start, end ) {
+        'use strict';
+        var pos = start.clone();
+
+        pos.lerp( end, Math.random() );
+
+        attribute.typedArray.setVec3Components( index, pos.x, pos.y, pos.z );
+    },
+
+    /**
+     * Given an SPE.Shader attribute instance, and various other settings,
+     * assign Color values to the attribute.
+     * @param  {Object} attribute The instance of SPE.ShaderAttribute to save the result to.
+     * @param  {Number} index     The offset in the attribute's TypedArray to save the result from.
+     * @param  {Object} base      THREE.Color instance describing the start color.
+     * @param  {Object} spread    THREE.Vector3 instance describing the random variance to apply to the start color.
+     */
+
+    /**
      * Assigns a random vector 3 value to an SPE.ShaderAttribute instance, projecting the
      * given values onto a sphere.
      *
@@ -1795,6 +1829,7 @@ SPE.utils = {
         };
     }() )
 };
+
 
 /**
  * An SPE.Group instance.
@@ -2597,10 +2632,12 @@ SPE.Group.prototype.dispose = function() {
  * @property {Object} [position.spread=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter's position variance on a per-particle basis.
  *                                                          Note that when using a SPHERE or DISC distribution, only the x-component
  *                                                          of this vector is used.
+ *                                                          When using a LINE distribution, this value is the endpoint of the LINE.
  * @property {Object} [position.spreadClamp=new THREE.Vector3()] A THREE.Vector3 instance describing the numeric multiples the particle's should
  *                                                               be spread out over.
  *                                                               Note that when using a SPHERE or DISC distribution, only the x-component
  *                                                               of this vector is used.
+ *                                                               When using a LINE distribution, this property is ignored.
  * @property {Number} [position.radius=10] This emitter's base radius.
  * @property {Object} [position.radiusScale=new THREE.Vector3()] A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.
  * @property {distribution} [position.distribution=value of the `type` option.] A specific distribution to use when radiusing particles. Overrides the `type` option.
@@ -3081,6 +3118,10 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
         case distributions.DISC:
             utils.randomVector3OnDisc( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x );
             break;
+
+        case distributions.LINE:
+            utils.randomVector3OnLine( attr, index, value, spread );
+            break;
     }
 };
 
@@ -3146,6 +3187,10 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
                 prop._value.x,
                 prop._spread.x
             );
+            break;
+
+        case distributions.LINE:
+            utils.randomVector3OnLine( this.attributes[ attrName ], index, value, spread );
             break;
     }
 

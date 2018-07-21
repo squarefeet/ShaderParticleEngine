@@ -505,6 +505,33 @@ SPE.utils = {
     }() ),
 
     /**
+     * Given an SPE.ShaderAttribute instance, and various other settings,
+     * assign values to the attribute's array in a `vec3` format.
+     *
+     * @param  {Object} attribute   The instance of SPE.ShaderAttribute to save the result to.
+     * @param  {Number} index       The offset in the attribute's TypedArray to save the result from.
+     * @param  {Object} start       THREE.Vector3 instance describing the start line position.
+     * @param  {Object} end         THREE.Vector3 instance describing the end line position.
+     */
+    randomVector3OnLine: function( attribute, index, start, end ) {
+        'use strict';
+        var pos = start.clone();
+
+        pos.lerp( end, Math.random() );
+
+        attribute.typedArray.setVec3Components( index, pos.x, pos.y, pos.z );
+    },
+
+    /**
+     * Given an SPE.Shader attribute instance, and various other settings,
+     * assign Color values to the attribute.
+     * @param  {Object} attribute The instance of SPE.ShaderAttribute to save the result to.
+     * @param  {Number} index     The offset in the attribute's TypedArray to save the result from.
+     * @param  {Object} base      THREE.Color instance describing the start color.
+     * @param  {Object} spread    THREE.Vector3 instance describing the random variance to apply to the start color.
+     */
+
+    /**
      * Assigns a random vector 3 value to an SPE.ShaderAttribute instance, projecting the
      * given values onto a sphere.
      *
