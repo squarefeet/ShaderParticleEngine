@@ -547,7 +547,9 @@ SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
 
 SPE.ShaderAttribute.prototype.resetDynamic = function() {
 	'use strict';
-	this.bufferAttribute.dynamic = this.dynamicBuffer;
+	this.bufferAttribute.usage = this.dynamicBuffer ?
+		THREE.DynamicDrawUsage :
+		THREE.StaticDrawUsage;
 };
 
 /**
@@ -571,7 +573,12 @@ SPE.ShaderAttribute.prototype.forceUpdateAll = function() {
 	this.bufferAttribute.array = this.typedArray.array;
 	this.bufferAttribute.updateRange.offset = 0;
 	this.bufferAttribute.updateRange.count = -1;
-	this.bufferAttribute.dynamic = false;
+	// this.bufferAttribute.dynamic = false;
+	// this.bufferAttribute.usage = this.dynamicBuffer ?
+	// 	THREE.DynamicDrawUsage :
+	// 	THREE.StaticDrawUsage;
+
+	this.bufferAttribute.usage = THREE.StaticDrawUsage;
 	this.bufferAttribute.needsUpdate = true;
 };
 
@@ -640,7 +647,10 @@ SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
 	}
 
 	this.bufferAttribute = new THREE.BufferAttribute( this.typedArray.array, this.componentSize );
-	this.bufferAttribute.dynamic = this.dynamicBuffer;
+	// this.bufferAttribute.dynamic = this.dynamicBuffer;
+	this.bufferAttribute.usage = this.dynamicBuffer ?
+		THREE.DynamicDrawUsage :
+		THREE.StaticDrawUsage;
 };
 
 /**
@@ -669,7 +679,7 @@ SPE.shaderChunks = {
     uniforms: [
         'uniform float deltaTime;',
         'uniform float runTime;',
-        'uniform sampler2D texture;',
+        'uniform sampler2D tex;',
         'uniform vec4 textureAnimation;',
         'uniform float scale;',
     ].join( '\n' ),
@@ -910,7 +920,7 @@ SPE.shaderChunks = {
         '    #endif',
 
         '',
-        '    vec4 rotatedTexture = texture2D( texture, vUv );',
+        '    vec4 rotatedTexture = texture2D( tex, vUv );',
     ].join( '\n' )
 };
 
@@ -1952,7 +1962,7 @@ SPE.Group = function( options ) {
 
     // Map of uniforms to be applied to the ShaderMaterial instance.
     this.uniforms = {
-        texture: {
+        tex: {
             type: 't',
             value: this.texture
         },
@@ -1967,7 +1977,7 @@ SPE.Group = function( options ) {
         },
         fogColor: {
             type: 'c',
-            value: null
+            value: this.fog ? new THREE.Color() : null
         },
         fogNear: {
             type: 'f',
@@ -2328,9 +2338,9 @@ SPE.Group.prototype.getFromPool = function() {
     }
     else if ( createNew ) {
         var emitter = new SPE.Emitter( this._poolCreationSettings );
-        
+
         this.addEmitter( emitter );
-        
+
         return emitter;
     }
 
