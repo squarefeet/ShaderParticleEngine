@@ -9,7 +9,10 @@ v2.0.0
 	* `Group`, `Emitter`, `distribution`, and `globals` are now the only exposed objects.
 * `SPE.valueOverLifetimeLength` is now `SPE.globals.valueOverLifetimeLength` (or accessed by importing `globals`)
 
-
+v1.1.0
+------
+* Updated `texture` uniform name to `tex`.
+* Moved to use BufferAttribute.usage instead of BufferAttribute.dynamic.
 
 v1.0.6
 ------
