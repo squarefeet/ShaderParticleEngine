@@ -1,7 +1,7 @@
 /*!
  * /* shader-particle-engine 2.0.0
  *  * 
- *  * (c) 2015 Luke Moody (http://www.github.com/squarefeet)
+ *  * (c) 2020 Luke Moody (http://www.github.com/squarefeet)
  *  *     Originally based on Lee Stemkoski's original work (https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/js/ParticleEngine.js).
  *  *
  *  * shader-particle-engine may be freely distributed under the MIT license (See LICENSE at root of this repository.)
