@@ -45,10 +45,12 @@
  * @property {Object} [position.spread=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter's position variance on a per-particle basis.
  *                                                          Note that when using a SPHERE or DISC distribution, only the x-component
  *                                                          of this vector is used.
+ *                                                          When using a LINE distribution, this value is the endpoint of the LINE.
  * @property {Object} [position.spreadClamp=new THREE.Vector3()] A THREE.Vector3 instance describing the numeric multiples the particle's should
  *                                                               be spread out over.
  *                                                               Note that when using a SPHERE or DISC distribution, only the x-component
  *                                                               of this vector is used.
+ *                                                               When using a LINE distribution, this property is ignored.
  * @property {Number} [position.radius=10] This emitter's base radius.
  * @property {Object} [position.radiusScale=new THREE.Vector3()] A THREE.Vector3 instance describing the radius's scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.
  * @property {distribution} [position.distribution=value of the `type` option.] A specific distribution to use when radiusing particles. Overrides the `type` option.
@@ -529,6 +531,10 @@ SPE.Emitter.prototype._assignPositionValue = function( index ) {
         case distributions.DISC:
             utils.randomVector3OnDisc( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x );
             break;
+
+        case distributions.LINE:
+            utils.randomVector3OnLine( attr, index, value, spread );
+            break;
     }
 };
 
@@ -594,6 +600,10 @@ SPE.Emitter.prototype._assignForceValue = function( index, attrName ) {
                 prop._value.x,
                 prop._spread.x
             );
+            break;
+
+        case distributions.LINE:
+            utils.randomVector3OnLine( this.attributes[ attrName ], index, value, spread );
             break;
     }
 

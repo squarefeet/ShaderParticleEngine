@@ -45,6 +45,12 @@ var SPE = {
          * @type {Number}
          */
         DISC: 3,
+
+        /**
+         * Values will be distributed along a line.
+         * @type {Number}
+         */
+        LINE: 4
     },
 
 
