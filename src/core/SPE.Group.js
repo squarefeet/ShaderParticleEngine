@@ -119,7 +119,7 @@ SPE.Group = function( options ) {
 
     // Map of uniforms to be applied to the ShaderMaterial instance.
     this.uniforms = {
-        texture: {
+        tex: {
             type: 't',
             value: this.texture
         },
