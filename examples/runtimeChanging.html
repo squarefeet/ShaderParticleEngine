@@ -250,7 +250,7 @@
                     'Step 1': emitter.opacity.value[0],
                     'Step 2': emitter.opacity.value[1],
                     'Step 3': emitter.opacity.value[2],
-                    'Step 4': emitter.opacity.value[2]
+                    'Step 4': emitter.opacity.value[3]
                 };
                 var opacityFolder = gui.addFolder( 'Opacity steps' );
                 opacityFolder.add( opacities, 'Step 1' ).min(0).max(1).step(0.01).listen().onChange( function( value ) {
