@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v1.1.0
+------
+* Updated `texture` uniform name to `tex`.
+* Moved to use BufferAttribute.usage instead of BufferAttribute.dynamic.
+
 v1.0.6
 ------
 * #110: Added `three` as an NPM dependency.
