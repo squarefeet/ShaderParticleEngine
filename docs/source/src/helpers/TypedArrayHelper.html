@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>TypedArrayHelper.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="../../docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="../constants/distributions.html">
+                  src/constants/distributions.js
+                </a>
+              
+                
+                <a class="source" href="../constants/globals.html">
+                  src/constants/globals.js
+                </a>
+              
+                
+                <a class="source" href="../constants/typeSizeMap.html">
+                  src/constants/typeSizeMap.js
+                </a>
+              
+                
+                <a class="source" href="../constants/valueTypes.html">
+                  src/constants/valueTypes.js
+                </a>
+              
+                
+                <a class="source" href="../core/Emitter.html">
+                  src/core/Emitter.js
+                </a>
+              
+                
+                <a class="source" href="../core/Group.html">
+                  src/core/Group.js
+                </a>
+              
+                
+                <a class="source" href="../core/utils.html">
+                  src/core/utils.js
+                </a>
+              
+                
+                <a class="source" href="ShaderAttribute.html">
+                  src/helpers/ShaderAttribute.js
+                </a>
+              
+                
+                <a class="source" href="TypedArrayHelper.html">
+                  src/helpers/TypedArrayHelper.js
+                </a>
+              
+                
+                <a class="source" href="../shaders/shaderChunks.html">
+                  src/shaders/shaderChunks.js
+                </a>
+              
+                
+                <a class="source" href="../shaders/shaders.html">
+                  src/shaders/shaders.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>TypedArrayHelper.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/**
+ * A helper class for TypedArrays.
+ *
+ * Allows for easy resizing, assignment of various component-based
+ * types (Vector2s, Vector3s, Vector4s, Mat3s, Mat4s),
+ * as well as Colors (where components are `r`, `g`, `b`),
+ * Numbers, and setting from other TypedArrays.
+ *
+ * <span class="hljs-doctag">@author </span>Luke Moody
+ * <span class="hljs-doctag">@constructor</span>
+ * <span class="hljs-doctag">@param <span class="hljs-type">{Function}</span> </span>TypedArrayConstructor The constructor to use (Float32Array, Uint8Array, etc.)
+ * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>size                 The size of the array to create
+ * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>componentSize        The number of components per-value (ie. 3 for a vec3, 9 for a Mat3, etc.)
+ * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>indexOffset          The index in the array from which to start assigning values. Default `0` if none provided
+ */</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TypedArrayHelper</span> </span>{
+	<span class="hljs-keyword">constructor</span>( TypedArrayConstructor, size, componentSize, indexOffset ) {
+		<span class="hljs-built_in">this</span>.componentSize = componentSize || <span class="hljs-number">1</span>;
+		<span class="hljs-built_in">this</span>.size = ( size || <span class="hljs-number">1</span> );
+		<span class="hljs-built_in">this</span>.TypedArrayConstructor = TypedArrayConstructor || <span class="hljs-built_in">Float32Array</span>;
+		<span class="hljs-built_in">this</span>.array = <span class="hljs-keyword">new</span> TypedArrayConstructor( size * <span class="hljs-built_in">this</span>.componentSize );
+		<span class="hljs-built_in">this</span>.indexOffset = indexOffset || <span class="hljs-number">0</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Sets the size of the internal array.
+	 *
+	 * Delegates to `this.shrink` or `this.grow` depending on size
+	 * argument&#x27;s relation to the current size of the internal array.
+	 *
+	 * Note that if the array is to be shrunk, data will be lost.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>size The new size of the array.
+	 */</span>
+	setSize( s, noComponentMultiply ) {
+		<span class="hljs-keyword">const</span> currentArraySize = <span class="hljs-built_in">this</span>.array.length;
+		<span class="hljs-keyword">let</span> size = s;
+
+		<span class="hljs-keyword">if</span> ( !noComponentMultiply ) {
+			size = size * <span class="hljs-built_in">this</span>.componentSize;
+		}
+
+		<span class="hljs-keyword">if</span> ( size &lt; currentArraySize ) {
+			<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.shrink( size );
+		}
+		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( size &gt; currentArraySize ) {
+			<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.grow( size );
+		}
+		<span class="hljs-keyword">else</span> {
+			<span class="hljs-built_in">console</span>.info( <span class="hljs-string">&#x27;TypedArray is already of size:&#x27;</span>, size + <span class="hljs-string">&#x27;.&#x27;</span>, <span class="hljs-string">&#x27;Will not resize.&#x27;</span> );
+		}
+	}
+
+	<span class="hljs-comment">/**
+	 * Shrinks the internal array.
+	 *
+	 * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>size The new size of the typed array. Must be smaller than `this.array.length`.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span>      </span>Instance of this class.
+	 */</span>
+	shrink( size ) {
+		<span class="hljs-built_in">this</span>.array = <span class="hljs-built_in">this</span>.array.subarray( <span class="hljs-number">0</span>, size );
+		<span class="hljs-built_in">this</span>.size = size;
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Grows the internal array.
+	 * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>size The new size of the typed array. Must be larger than `this.array.length`.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span>      </span>Instance of this class.
+	 */</span>
+	grow( size ) {
+		<span class="hljs-keyword">const</span> newArray = <span class="hljs-keyword">new</span> <span class="hljs-built_in">this</span>.TypedArrayConstructor( size );
+
+		newArray.set( <span class="hljs-built_in">this</span>.array );
+		<span class="hljs-built_in">this</span>.array = newArray;
+		<span class="hljs-built_in">this</span>.size = size;
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+
+	<span class="hljs-comment">/**
+	 * Perform a splice operation on this array&#x27;s buffer.
+	 * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>start The start index of the splice. Will be multiplied by the number of components for this attribute.
+	 * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>end The end index of the splice. Will be multiplied by the number of components for this attribute.
+	 * <span class="hljs-doctag">@returns <span class="hljs-type">{Object}</span> </span>The SPE.TypedArrayHelper instance.
+	 */</span>
+	splice( start, end ) {
+		<span class="hljs-keyword">const</span> _start = start * <span class="hljs-built_in">this</span>.componentSize,
+			_end = end * <span class="hljs-built_in">this</span>.componentSize;
+
+		<span class="hljs-keyword">const</span> data = [],
+			array = <span class="hljs-built_in">this</span>.array,
+			size = array.length;
+
+		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; size; ++i ) {
+			<span class="hljs-keyword">if</span> ( i &lt; _start || i &gt;= _end ) {
+				data.push( array[ i ] );
+			}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>array[ i ] = 0;</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		}
+
+		<span class="hljs-built_in">this</span>.setFromArray( <span class="hljs-number">0</span>, data );
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+
+	<span class="hljs-comment">/**
+	 * Copies from the given TypedArray into this one, using the index argument
+	 * as the start position. Alias for `TypedArray.set`. Will automatically resize
+	 * if the given source array is of a larger size than the internal array.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index      The start position from which to copy into this array.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{TypedArray}</span> </span>array The array from which to copy; the source array.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setFromArray( index, array ) {
+		<span class="hljs-keyword">const</span> sourceArraySize = array.length,
+			newSize = index + sourceArraySize;
+
+		<span class="hljs-keyword">if</span> ( newSize &gt; <span class="hljs-built_in">this</span>.array.length ) {
+			<span class="hljs-built_in">this</span>.grow( newSize );
+		}
+		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( newSize &lt; <span class="hljs-built_in">this</span>.array.length ) {
+			<span class="hljs-built_in">this</span>.shrink( newSize );
+		}
+
+		<span class="hljs-built_in">this</span>.array.set( array, <span class="hljs-built_in">this</span>.indexOffset + index );
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Vector2 value at `index`.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the vec2 values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Vector2}</span> </span>vec2  Any object that has `x` and `y` properties.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setVec2( index, vec2 ) {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.setVec2Components( index, vec2.x, vec2.y );
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Vector2 value using raw components.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the vec2 values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>x     The Vec2&#x27;s `x` component.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>y     The Vec2&#x27;s `y` component.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setVec2Components( index, x, y ) {
+		<span class="hljs-keyword">const</span> array = <span class="hljs-built_in">this</span>.array,
+			i = <span class="hljs-built_in">this</span>.indexOffset + ( index * <span class="hljs-built_in">this</span>.componentSize );
+
+		array[ i ] = x;
+		array[ i + <span class="hljs-number">1</span> ] = y;
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Vector3 value at `index`.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the vec3 values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Vector3}</span> </span>vec2  Any object that has `x`, `y`, and `z` properties.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setVec3( index, vec3 ) {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.setVec3Components( index, vec3.x, vec3.y, vec3.z );
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Vector3 value using raw components.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the vec3 values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>x     The Vec3&#x27;s `x` component.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>y     The Vec3&#x27;s `y` component.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>z     The Vec3&#x27;s `z` component.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setVec3Components( index, x, y, z ) {
+		<span class="hljs-keyword">const</span> array = <span class="hljs-built_in">this</span>.array,
+			i = <span class="hljs-built_in">this</span>.indexOffset + ( index * <span class="hljs-built_in">this</span>.componentSize );
+
+		array[ i ] = x;
+		array[ i + <span class="hljs-number">1</span> ] = y;
+		array[ i + <span class="hljs-number">2</span> ] = z;
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Vector4 value at `index`.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the vec4 values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Vector4}</span> </span>vec2  Any object that has `x`, `y`, `z`, and `w` properties.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setVec4( index, vec4 ) {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.setVec4Components( index, vec4.x, vec4.y, vec4.z, vec4.w );
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Vector4 value using raw components.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the vec4 values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>x     The Vec4&#x27;s `x` component.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>y     The Vec4&#x27;s `y` component.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>z     The Vec4&#x27;s `z` component.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>w     The Vec4&#x27;s `w` component.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setVec4Components( index, x, y, z, w ) {
+		<span class="hljs-keyword">const</span> array = <span class="hljs-built_in">this</span>.array,
+			i = <span class="hljs-built_in">this</span>.indexOffset + ( index * <span class="hljs-built_in">this</span>.componentSize );
+
+		array[ i ] = x;
+		array[ i + <span class="hljs-number">1</span> ] = y;
+		array[ i + <span class="hljs-number">2</span> ] = z;
+		array[ i + <span class="hljs-number">3</span> ] = w;
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Matrix3 value at `index`.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the matrix values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Matrix3}</span> </span>mat3 The 3x3 matrix to set from. Must have a TypedArray property named `elements` to copy from.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setMat3( index, mat3 ) {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.setFromArray( <span class="hljs-built_in">this</span>.indexOffset + ( index * <span class="hljs-built_in">this</span>.componentSize ), mat3.elements );
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Matrix4 value at `index`.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the matrix values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Matrix4}</span> </span>mat3 The 4x4 matrix to set from. Must have a TypedArray property named `elements` to copy from.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setMat4( index, mat4 ) {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.setFromArray( <span class="hljs-built_in">this</span>.indexOffset + ( index * <span class="hljs-built_in">this</span>.componentSize ), mat4.elements );
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Color value at `index`.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the vec3 values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Color}</span> </span>color  Any object that has `r`, `g`, and `b` properties.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setColor( index, color ) {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.setVec3Components( index, color.r, color.g, color.b );
+	}
+
+	<span class="hljs-comment">/**
+	 * Set a Number value at `index`.
+	 *
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>index The index at which to set the vec3 values from.
+	 * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>numericValue  The number to assign to this index in the array.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{SPE.TypedArrayHelper}</span> </span>Instance of this class.
+	 */</span>
+	setNumber( index, numericValue ) {
+		<span class="hljs-built_in">this</span>.array[ <span class="hljs-built_in">this</span>.indexOffset + ( index * <span class="hljs-built_in">this</span>.componentSize ) ] = numericValue;
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Returns the value of the array at the given index, taking into account
+	 * the `indexOffset` property of this class.
+	 *
+	 * Note that this function ignores the component size and will just return a
+	 * single value.
+	 *
+	 * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>index The index in the array to fetch.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{Number}</span>       </span>The value at the given index.
+	 */</span>
+	getValueAtIndex( index ) {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.array[ <span class="hljs-built_in">this</span>.indexOffset + index ];
+	}
+
+	<span class="hljs-comment">/**
+	 * Returns the component value of the array at the given index, taking into account
+	 * the `indexOffset` property of this class.
+	 *
+	 * If the componentSize is set to 3, then it will return a new TypedArray
+	 * of length 3.
+	 *
+	 * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>index The index in the array to fetch.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{TypedArray}</span>       </span>The component value at the given index.
+	 */</span>
+	getComponentValueAtIndex( index ) {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.array.subarray( <span class="hljs-built_in">this</span>.indexOffset + ( index * <span class="hljs-built_in">this</span>.componentSize ) );
+	}
+}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

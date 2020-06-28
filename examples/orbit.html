@@ -5,9 +5,9 @@
 </head>
 <body>
 
-	<script type="text/javascript" src="./js/THREE-r84.js"></script>
+	<script type="text/javascript" src="./js/THREE-r118.js"></script>
     <script type="text/javascript" src="./js/Stats.min.js"></script>
-    <script type="text/javascript" src="../build/SPE.min.js"></script>
+    <script type="text/javascript" src="../dist/SPE.js"></script>
 
 	<script type="text/javascript">
 		// variables used in init()
@@ -75,8 +75,8 @@
                     angle: Math.PI * 10,
                     center: new THREE.Vector3( 0, 0, 0 )
                 },
-        		particleCount: 1000,
-                direction: -1
+        		particleCount: 10000,
+                direction: 1
         	});
 
         	particleGroup.addEmitter( emitter );

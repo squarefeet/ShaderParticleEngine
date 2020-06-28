@@ -7,9 +7,9 @@
 <body>
 	<p class="numParticles"></p>
 
-    <script type="text/javascript" src="./js/THREE-r84.js"></script>
+    <script type="text/javascript" src="./js/THREE-r118.js"></script>
     <script type="text/javascript" src="./js/Stats.min.js"></script>
-    <script type="text/javascript" src="../build/SPE.min.js"></script>
+    <script type="text/javascript" src="../dist/SPE.js"></script>
 
 	<script type="text/javascript">
 		// variables used in init()
@@ -141,8 +141,8 @@
 
         function updateCamera() {
             var now = Date.now() * 0.0005;
-            camera.position.x = Math.sin( now ) * 500;
-            camera.position.z = Math.cos( now ) * 500;
+            camera.position.x = Math.sin( now ) * 200;
+            camera.position.z = Math.cos( now ) * 300;
             camera.lookAt( scene.position );
         }
 

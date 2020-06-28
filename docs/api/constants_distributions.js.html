@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: constants/distributions.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,55 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: constants/distributions.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * A map of supported distribution types used
+ * by SPE.Emitter instances.
+ *
+ * These distribution types can be applied to
+ * an emitter globally, which will affect the
+ * `position`, `velocity`, and `acceleration`
+ * value calculations for an emitter, or they
+ * can be applied on a per-property basis.
+ *
+ * @enum {Number}
+ */
+export default {
 
+	/**
+	 * Values will be distributed within a box.
+	 * @type {Number}
+	 */
+	BOX: 1,
 
-    <h3> </h3>
+	/**
+	 * Values will be distributed on a sphere.
+	 * @type {Number}
+	 */
+	SPHERE: 2,
 
+	/**
+	 * Values will be distributed on a 2d-disc shape.
+	 * @type {Number}
+	 */
+	DISC: 3,
 
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
+	/**
+	 * Values will be distributed along a line.
+	 * @type {Number}
+	 */
+	LINE: 4,
+};</code></pre>
+        </article>
+    </section>
 
 
 

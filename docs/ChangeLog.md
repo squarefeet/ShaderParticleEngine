@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+v2.0.0
+------
+* Replaced Grunt with Webpack.
+* Moved to import/export.
+* Full module support.
+	* `Group`, `Emitter`, `distribution`, and `globals` are now the only exposed objects.
+* `SPE.valueOverLifetimeLength` is now `SPE.globals.valueOverLifetimeLength` (or accessed by importing `globals`)
+* Distribution files are now located in `dist`, changed from `build`.
+* `SPE.min.js` has been removed. Please use `SPE.js` instead - this is minified.
+
+v1.1.0
+------
+* Updated `texture` uniform name to `tex`.
+* Moved to use BufferAttribute.usage instead of BufferAttribute.dynamic.
+
 v1.0.6
 ------
 * #110: Added `three` as an NPM dependency.

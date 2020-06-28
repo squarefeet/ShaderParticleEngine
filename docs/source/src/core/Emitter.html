@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Emitter.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="../../docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="../constants/distributions.html">
+                  src/constants/distributions.js
+                </a>
+              
+                
+                <a class="source" href="../constants/globals.html">
+                  src/constants/globals.js
+                </a>
+              
+                
+                <a class="source" href="../constants/typeSizeMap.html">
+                  src/constants/typeSizeMap.js
+                </a>
+              
+                
+                <a class="source" href="../constants/valueTypes.html">
+                  src/constants/valueTypes.js
+                </a>
+              
+                
+                <a class="source" href="Emitter.html">
+                  src/core/Emitter.js
+                </a>
+              
+                
+                <a class="source" href="Group.html">
+                  src/core/Group.js
+                </a>
+              
+                
+                <a class="source" href="utils.html">
+                  src/core/utils.js
+                </a>
+              
+                
+                <a class="source" href="../helpers/ShaderAttribute.html">
+                  src/helpers/ShaderAttribute.js
+                </a>
+              
+                
+                <a class="source" href="../helpers/TypedArrayHelper.html">
+                  src/helpers/TypedArrayHelper.js
+                </a>
+              
+                
+                <a class="source" href="../shaders/shaderChunks.html">
+                  src/shaders/shaderChunks.js
+                </a>
+              
+                
+                <a class="source" href="../shaders/shaders.html">
+                  src/shaders/shaders.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>Emitter.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> THREE <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;three&#x27;</span>;
+<span class="hljs-keyword">import</span> valueTypes <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/constants/valueTypes&#x27;</span>;
+<span class="hljs-keyword">import</span> distributions <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/constants/distributions&#x27;</span>;
+<span class="hljs-keyword">import</span> globals <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/constants/globals&#x27;</span>;
+<span class="hljs-keyword">import</span> utils <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./utils&#x27;</span>;
+
+<span class="hljs-keyword">const</span> HAS_OWN = <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty;
+
+<span class="hljs-comment">/**
+ * An SPE.Emitter instance.
+ * @typedef {Object} Emitter
+ * @see SPE.Emitter
+ */</span>
+
+<span class="hljs-comment">/**
+ * A map of options to configure an SPE.Emitter instance.
+ *
+ * @typedef {Object} EmitterOptions
+ *
+ * @property {distribution} [type=BOX] The default distribution this emitter should use to control
+ *                         its particle&#x27;s spawn position and force behaviour.
+ *                         Must be an distributions.* value.
+ *
+ *
+ * @property {Number} [particleCount=100] The total number of particles this emitter will hold. <span class="hljs-doctag">NOTE:</span> this is not the number
+ *                                  of particles emitted in a second, or anything like that. The number of particles
+ *                                  emitted per-second is calculated by particleCount / maxAge (approximately!)
+ *
+ * @property {Number|null} [duration=null] The duration in seconds that this emitter should live for. If not specified, the emitter
+ *                                         will emit particles indefinitely.
+ *                                         <span class="hljs-doctag">NOTE:</span> When an emitter is older than a specified duration, the emitter is NOT removed from
+ *                                         it&#x27;s group, but rather is just marked as dead, allowing it to be reanimated at a later time
+ *                                         using `SPE.Emitter.prototype.enable()`.
+ *
+ * @property {Boolean} [isStatic=false] Whether this emitter should be not be simulated (true).
+ * @property {Boolean} [activeMultiplier=1] A value between 0 and 1 describing what percentage of this emitter&#x27;s particlesPerSecond should be
+ *                                          emitted, where 0 is 0%, and 1 is 100%.
+ *                                          For example, having an emitter with 100 particles, a maxAge of 2, yields a particlesPerSecond
+ *                                          value of 50. Setting `activeMultiplier` to 0.5, then, will only emit 25 particles per second (0.5 = 50%).
+ *                                          Values greater than 1 will emulate a burst of particles, causing the emitter to run out of particles
+ *                                          before it&#x27;s next activation cycle.
+ *
+ * @property {Boolean} [direction=1] The direction of the emitter. If value is `1`, emitter will start at beginning of particle&#x27;s lifecycle.
+ *                                   If value is `-1`, emitter will start at end of particle&#x27;s lifecycle and work it&#x27;s way backwards.
+ *
+ * @property {Object} [maxAge={}] An object describing the particle&#x27;s maximum age in seconds.
+ * @property {Number} [maxAge.value=2] A number between 0 and 1 describing the amount of maxAge to apply to all particles.
+ * @property {Number} [maxAge.spread=0] A number describing the maxAge variance on a per-particle basis.
+ *
+ *
+ * @property {Object} [position={}] An object describing this emitter&#x27;s position.
+ * @property {Object} [position.value=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter&#x27;s base position.
+ * @property {Object} [position.spread=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter&#x27;s position variance on a per-particle basis.
+ *                                                          Note that when using a SPHERE or DISC distribution, only the x-component
+ *                                                          of this vector is used.
+ *                                                          When using a LINE distribution, this value is the endpoint of the LINE.
+ * @property {Object} [position.spreadClamp=new THREE.Vector3()] A THREE.Vector3 instance describing the numeric multiples the particle&#x27;s should
+ *                                                               be spread out over.
+ *                                                               Note that when using a SPHERE or DISC distribution, only the x-component
+ *                                                               of this vector is used.
+ *                                                               When using a LINE distribution, this property is ignored.
+ * @property {Number} [position.radius=10] This emitter&#x27;s base radius.
+ * @property {Object} [position.radiusScale=new THREE.Vector3()] A THREE.Vector3 instance describing the radius&#x27;s scale in all three axes. Allows a SPHERE or DISC to be squashed or stretched.
+ * @property {distribution} [position.distribution=value of the `type` option.] A specific distribution to use when radiusing particles. Overrides the `type` option.
+ * @property {Boolean} [position.randomise=false] When a particle is re-spawned, whether it&#x27;s position should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [velocity={}] An object describing this particle velocity.
+ * @property {Object} [velocity.value=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter&#x27;s base velocity.
+ * @property {Object} [velocity.spread=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter&#x27;s velocity variance on a per-particle basis.
+ *                                                          Note that when using a SPHERE or DISC distribution, only the x-component
+ *                                                          of this vector is used.
+ * @property {distribution} [velocity.distribution=value of the `type` option.] A specific distribution to use when calculating a particle&#x27;s velocity. Overrides the `type` option.
+ * @property {Boolean} [velocity.randomise=false] When a particle is re-spawned, whether it&#x27;s velocity should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [acceleration={}] An object describing this particle&#x27;s acceleration.
+ * @property {Object} [acceleration.value=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter&#x27;s base acceleration.
+ * @property {Object} [acceleration.spread=new THREE.Vector3()] A THREE.Vector3 instance describing this emitter&#x27;s acceleration variance on a per-particle basis.
+ *                           Note that when using a SPHERE or DISC distribution, only the x-component
+ *                           of this vector is used.
+ * @property {distribution} [acceleration.distribution=value of the `type` option.] A specific distribution to use when calculating a particle&#x27;s acceleration. Overrides the `type` option.
+ * @property {Boolean} [acceleration.randomise=false] When a particle is re-spawned, whether it&#x27;s acceleration should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [drag={}] An object describing this particle drag. Drag is applied to both velocity and acceleration values.
+ * @property {Number} [drag.value=0] A number between 0 and 1 describing the amount of drag to apply to all particles.
+ * @property {Number} [drag.spread=0] A number describing the drag variance on a per-particle basis.
+ * @property {Boolean} [drag.randomise=false] When a particle is re-spawned, whether it&#x27;s drag should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [wiggle={}] This is quite a fun one! The values of this object will determine whether a particle will wiggle, or jiggle, or wave,
+ *                                or shimmy, or waggle, or... Well you get the idea. The wiggle is calculated over-time, meaning that a particle will
+ *                                start off with no wiggle, and end up wiggling about with the distance of the `value` specified by the time it dies.
+ *                                It&#x27;s quite handy to simulate fire embers, or similar effects where the particle&#x27;s position should slightly change over
+ *                                time, and such change isn&#x27;t easily controlled by rotation, velocity, or acceleration. The wiggle is a combination of sin and cos calculations, so is circular in nature.
+ * @property {Number} [wiggle.value=0] A number describing the amount of wiggle to apply to all particles. It&#x27;s measured in distance.
+ * @property {Number} [wiggle.spread=0] A number describing the wiggle variance on a per-particle basis.
+ *
+ *
+ * @property {Object} [rotation={}] An object describing this emitter&#x27;s rotation. It can either be static, or set to rotate from 0radians to the value of `rotation.value`
+ *                                  over a particle&#x27;s lifetime. Rotation values affect both a particle&#x27;s position and the forces applied to it.
+ * @property {Object} [rotation.axis=new THREE.Vector3(0, 1, 0)] A THREE.Vector3 instance describing this emitter&#x27;s axis of rotation.
+ * @property {Object} [rotation.axisSpread=new THREE.Vector3()] A THREE.Vector3 instance describing the amount of variance to apply to the axis of rotation on
+ *                                                              a per-particle basis.
+ * @property {Number} [rotation.angle=0] The angle of rotation, given in radians. If `rotation.static` is true, the emitter will start off rotated at this angle, and stay as such.
+ *                                       Otherwise, the particles will rotate from 0radians to this value over their lifetimes.
+ * @property {Number} [rotation.angleSpread=0] The amount of variance in each particle&#x27;s rotation angle.
+ * @property {Boolean} [rotation.static=false] Whether the rotation should be static or not.
+ * @property {Object} [rotation.center=The value of `position.value`] A THREE.Vector3 instance describing the center point of rotation.
+ * @property {Boolean} [rotation.randomise=false] When a particle is re-spawned, whether it&#x27;s rotation should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [color={}] An object describing a particle&#x27;s color. This property is a &quot;value-over-lifetime&quot; property, meaning an array of values and spreads can be
+ *                               given to describe specific value changes over a particle&#x27;s lifetime.
+ *                               Depending on the value of SPE.valueOverLifetimeLength, if arrays of THREE.Color instances are given, then the array will be interpolated to
+ *                               have a length matching the value of SPE.valueOverLifetimeLength.
+ * @property {Object} [color.value=new THREE.Color()] Either a single THREE.Color instance, or an array of THREE.Color instances to describe the color of a particle over it&#x27;s lifetime.
+ * @property {Object} [color.spread=new THREE.Vector3()] Either a single THREE.Vector3 instance, or an array of THREE.Vector3 instances to describe the color variance of a particle over it&#x27;s lifetime.
+ * @property {Boolean} [color.randomise=false] When a particle is re-spawned, whether it&#x27;s color should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [opacity={}] An object describing a particle&#x27;s opacity. This property is a &quot;value-over-lifetime&quot; property, meaning an array of values and spreads can be
+ *                               given to describe specific value changes over a particle&#x27;s lifetime.
+ *                               Depending on the value of SPE.valueOverLifetimeLength, if arrays of numbers are given, then the array will be interpolated to
+ *                               have a length matching the value of SPE.valueOverLifetimeLength.
+ * @property {Number} [opacity.value=1] Either a single number, or an array of numbers to describe the opacity of a particle over it&#x27;s lifetime.
+ * @property {Number} [opacity.spread=0] Either a single number, or an array of numbers to describe the opacity variance of a particle over it&#x27;s lifetime.
+ * @property {Boolean} [opacity.randomise=false] When a particle is re-spawned, whether it&#x27;s opacity should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [size={}] An object describing a particle&#x27;s size. This property is a &quot;value-over-lifetime&quot; property, meaning an array of values and spreads can be
+ *                               given to describe specific value changes over a particle&#x27;s lifetime.
+ *                               Depending on the value of SPE.valueOverLifetimeLength, if arrays of numbers are given, then the array will be interpolated to
+ *                               have a length matching the value of SPE.valueOverLifetimeLength.
+ * @property {Number} [size.value=1] Either a single number, or an array of numbers to describe the size of a particle over it&#x27;s lifetime.
+ * @property {Number} [size.spread=0] Either a single number, or an array of numbers to describe the size variance of a particle over it&#x27;s lifetime.
+ * @property {Boolean} [size.randomise=false] When a particle is re-spawned, whether it&#x27;s size should be re-randomised or not. Can incur a performance hit.
+ *
+ *
+ * @property {Object} [angle={}] An object describing a particle&#x27;s angle. The angle is a 2d-rotation, measured in radians, applied to the particle&#x27;s texture.
+ *                               <span class="hljs-doctag">NOTE:</span> if a particle&#x27;s texture is a sprite-sheet, this value IS IGNORED.
+ *                               This property is a &quot;value-over-lifetime&quot; property, meaning an array of values and spreads can be
+ *                               given to describe specific value changes over a particle&#x27;s lifetime.
+ *                               Depending on the value of SPE.valueOverLifetimeLength, if arrays of numbers are given, then the array will be interpolated to
+ *                               have a length matching the value of SPE.valueOverLifetimeLength.
+ * @property {Number} [angle.value=0] Either a single number, or an array of numbers to describe the angle of a particle over it&#x27;s lifetime.
+ * @property {Number} [angle.spread=0] Either a single number, or an array of numbers to describe the angle variance of a particle over it&#x27;s lifetime.
+ * @property {Boolean} [angle.randomise=false] When a particle is re-spawned, whether it&#x27;s angle should be re-randomised or not. Can incur a performance hit.
+ *
+ */</span>
+
+<span class="hljs-comment">/**
+ * The SPE.Emitter class.
+ *
+ * @constructor
+ *
+ * @param {EmitterOptions} options A map of options to configure the emitter.
+ */</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Emitter</span> </span>{
+	<span class="hljs-keyword">constructor</span>( opts ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Ensure we have a map of options to play with,
+and that each option is in the correct format.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">const</span> options = utils.ensureTypedArg( opts, valueTypes.OBJECT, {} );
+		options.position = utils.ensureTypedArg( options.position, valueTypes.OBJECT, {} );
+		options.velocity = utils.ensureTypedArg( options.velocity, valueTypes.OBJECT, {} );
+		options.acceleration = utils.ensureTypedArg( options.acceleration, valueTypes.OBJECT, {} );
+		options.radius = utils.ensureTypedArg( options.radius, valueTypes.OBJECT, {} );
+		options.drag = utils.ensureTypedArg( options.drag, valueTypes.OBJECT, {} );
+		options.rotation = utils.ensureTypedArg( options.rotation, valueTypes.OBJECT, {} );
+		options.color = utils.ensureTypedArg( options.color, valueTypes.OBJECT, {} );
+		options.opacity = utils.ensureTypedArg( options.opacity, valueTypes.OBJECT, {} );
+		options.size = utils.ensureTypedArg( options.size, valueTypes.OBJECT, {} );
+		options.angle = utils.ensureTypedArg( options.angle, valueTypes.OBJECT, {} );
+		options.wiggle = utils.ensureTypedArg( options.wiggle, valueTypes.OBJECT, {} );
+		options.maxAge = utils.ensureTypedArg( options.maxAge, valueTypes.OBJECT, {} );
+
+		<span class="hljs-keyword">if</span> ( options.onParticleSpawn ) {
+			<span class="hljs-built_in">console</span>.warn( <span class="hljs-string">&#x27;onParticleSpawn has been removed. Please set properties directly to alter values at runtime.&#x27;</span> );
+		}
+
+		<span class="hljs-built_in">this</span>.uuid = THREE.Math.generateUUID();
+
+		<span class="hljs-built_in">this</span>.type = utils.ensureTypedArg( options.type, valueTypes.NUMBER, distributions.BOX );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Start assigning properties…kicking it off with props that DON’T support values over
+lifetimes.</p>
+<p>Btw, values over lifetimes are just the new way of referring to *Start, *Middle, and *End.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.position = {
+			<span class="hljs-attr">_value</span>: utils.ensureInstanceOf( options.position.value, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_spread</span>: utils.ensureInstanceOf( options.position.spread, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_spreadClamp</span>: utils.ensureInstanceOf( options.position.spreadClamp, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_distribution</span>: utils.ensureTypedArg( options.position.distribution, valueTypes.NUMBER, <span class="hljs-built_in">this</span>.type ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">_radius</span>: utils.ensureTypedArg( options.position.radius, valueTypes.NUMBER, <span class="hljs-number">10</span> ),
+			<span class="hljs-attr">_radiusScale</span>: utils.ensureInstanceOf( options.position.radiusScale, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3( <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span> ) ),
+			<span class="hljs-attr">_distributionClamp</span>: utils.ensureTypedArg( options.position.distributionClamp, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.velocity = {
+			<span class="hljs-attr">_value</span>: utils.ensureInstanceOf( options.velocity.value, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_spread</span>: utils.ensureInstanceOf( options.velocity.spread, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_distribution</span>: utils.ensureTypedArg( options.velocity.distribution, valueTypes.NUMBER, <span class="hljs-built_in">this</span>.type ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.acceleration = {
+			<span class="hljs-attr">_value</span>: utils.ensureInstanceOf( options.acceleration.value, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_spread</span>: utils.ensureInstanceOf( options.acceleration.spread, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_distribution</span>: utils.ensureTypedArg( options.acceleration.distribution, valueTypes.NUMBER, <span class="hljs-built_in">this</span>.type ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.drag = {
+			<span class="hljs-attr">_value</span>: utils.ensureTypedArg( options.drag.value, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_spread</span>: utils.ensureTypedArg( options.drag.spread, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.wiggle = {
+			<span class="hljs-attr">_value</span>: utils.ensureTypedArg( options.wiggle.value, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_spread</span>: utils.ensureTypedArg( options.wiggle.spread, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.rotation = {
+			<span class="hljs-attr">_axis</span>: utils.ensureInstanceOf( options.rotation.axis, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3( <span class="hljs-number">0.0</span>, <span class="hljs-number">1.0</span>, <span class="hljs-number">0.0</span> ) ),
+			<span class="hljs-attr">_axisSpread</span>: utils.ensureInstanceOf( options.rotation.axisSpread, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_angle</span>: utils.ensureTypedArg( options.rotation.angle, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_angleSpread</span>: utils.ensureTypedArg( options.rotation.angleSpread, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_static</span>: utils.ensureTypedArg( options.rotation.static, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">_center</span>: utils.ensureInstanceOf( options.rotation.center, THREE.Vector3, <span class="hljs-built_in">this</span>.position._value.clone() ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};
+
+
+		<span class="hljs-built_in">this</span>.maxAge = {
+			<span class="hljs-attr">_value</span>: utils.ensureTypedArg( options.maxAge.value, valueTypes.NUMBER, <span class="hljs-number">2</span> ),
+			<span class="hljs-attr">_spread</span>: utils.ensureTypedArg( options.maxAge.spread, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+		};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>The following properties can support either single values, or an array of values that change
+the property over a particle’s lifetime (value over lifetime).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.color = {
+			<span class="hljs-attr">_value</span>: utils.ensureArrayInstanceOf( options.color.value, THREE.Color, <span class="hljs-keyword">new</span> THREE.Color() ),
+			<span class="hljs-attr">_spread</span>: utils.ensureArrayInstanceOf( options.color.spread, THREE.Vector3, <span class="hljs-keyword">new</span> THREE.Vector3() ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.opacity = {
+			<span class="hljs-attr">_value</span>: utils.ensureArrayTypedArg( options.opacity.value, valueTypes.NUMBER, <span class="hljs-number">1</span> ),
+			<span class="hljs-attr">_spread</span>: utils.ensureArrayTypedArg( options.opacity.spread, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.size = {
+			<span class="hljs-attr">_value</span>: utils.ensureArrayTypedArg( options.size.value, valueTypes.NUMBER, <span class="hljs-number">1</span> ),
+			<span class="hljs-attr">_spread</span>: utils.ensureArrayTypedArg( options.size.spread, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.angle = {
+			<span class="hljs-attr">_value</span>: utils.ensureArrayTypedArg( options.angle.value, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_spread</span>: utils.ensureArrayTypedArg( options.angle.spread, valueTypes.NUMBER, <span class="hljs-number">0</span> ),
+			<span class="hljs-attr">_randomise</span>: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Assign renaining option values.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.particleCount = utils.ensureTypedArg( options.particleCount, valueTypes.NUMBER, <span class="hljs-number">100</span> );
+		<span class="hljs-built_in">this</span>.duration = utils.ensureTypedArg( options.duration, valueTypes.NUMBER, <span class="hljs-literal">null</span> );
+		<span class="hljs-built_in">this</span>.isStatic = utils.ensureTypedArg( options.isStatic, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> );
+		<span class="hljs-built_in">this</span>.activeMultiplier = utils.ensureTypedArg( options.activeMultiplier, valueTypes.NUMBER, <span class="hljs-number">1</span> );
+		<span class="hljs-built_in">this</span>.direction = utils.ensureTypedArg( options.direction, valueTypes.NUMBER, <span class="hljs-number">1</span> );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Whether this emitter is alive or not.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.alive = utils.ensureTypedArg( options.alive, valueTypes.BOOLEAN, <span class="hljs-literal">true</span> );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>The following properties are set internally and are not
+user-controllable.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.particlesPerSecond = <span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>The current particle index for which particles should
+be marked as active on the next update cycle.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.activationIndex = <span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>The offset in the typed arrays this emitter’s
+particle’s values will start at</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.attributeOffset = <span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>The end of the range in the attribute buffers</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.attributeEnd = <span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Holds the time the emitter has been alive for.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.age = <span class="hljs-number">0.0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Holds the number of currently-alive particles</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.activeParticleCount = <span class="hljs-number">0.0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Holds a reference to this emitter’s group once
+it’s added to one.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.group = <span class="hljs-literal">null</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Holds a reference to this emitter’s group’s attributes object
+for easier access.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.attributes = <span class="hljs-literal">null</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Holds a reference to the params attribute’s typed array
+for quicker access.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.paramsArray = <span class="hljs-literal">null</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>A set of flags to determine whether particular properties
+should be re-randomised when a particle is reset.</p>
+<p>If a <code>randomise</code> property is given, this is preferred.
+Otherwise, it looks at whether a spread value has been
+given.</p>
+<p>It allows randomization to be turned off as desired. If
+all randomization is turned off, then I’d expect a performance
+boost as no attribute buffers (excluding the <code>params</code>)
+would have to be re-passed to the GPU each frame (since nothing
+except the <code>params</code> attribute would have changed).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.resetFlags = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>params: utils.ensureTypedArg( options.maxAge.randomise, valueTypes.BOOLEAN, !!options.maxAge.spread ) ||
+    utils.ensureTypedArg( options.wiggle.randomise, valueTypes.BOOLEAN, !!options.wiggle.spread ),</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			position: utils.ensureTypedArg( options.position.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ) ||
+				utils.ensureTypedArg( options.radius.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">velocity</span>: utils.ensureTypedArg( options.velocity.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">acceleration</span>: utils.ensureTypedArg( options.acceleration.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ) ||
+				utils.ensureTypedArg( options.drag.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">rotation</span>: utils.ensureTypedArg( options.rotation.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">rotationCenter</span>: utils.ensureTypedArg( options.rotation.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">size</span>: utils.ensureTypedArg( options.size.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">color</span>: utils.ensureTypedArg( options.color.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">opacity</span>: utils.ensureTypedArg( options.opacity.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+			<span class="hljs-attr">angle</span>: utils.ensureTypedArg( options.angle.randomise, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.updateFlags = {};
+		<span class="hljs-built_in">this</span>.updateCounts = {};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>A map to indicate which emitter parameters should update
+which attribute.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.updateMap = {
+			<span class="hljs-attr">maxAge</span>: <span class="hljs-string">&#x27;params&#x27;</span>,
+			<span class="hljs-attr">position</span>: <span class="hljs-string">&#x27;position&#x27;</span>,
+			<span class="hljs-attr">velocity</span>: <span class="hljs-string">&#x27;velocity&#x27;</span>,
+			<span class="hljs-attr">acceleration</span>: <span class="hljs-string">&#x27;acceleration&#x27;</span>,
+			<span class="hljs-attr">drag</span>: <span class="hljs-string">&#x27;acceleration&#x27;</span>,
+			<span class="hljs-attr">wiggle</span>: <span class="hljs-string">&#x27;params&#x27;</span>,
+			<span class="hljs-attr">rotation</span>: <span class="hljs-string">&#x27;rotation&#x27;</span>,
+			<span class="hljs-attr">size</span>: <span class="hljs-string">&#x27;size&#x27;</span>,
+			<span class="hljs-attr">color</span>: <span class="hljs-string">&#x27;color&#x27;</span>,
+			<span class="hljs-attr">opacity</span>: <span class="hljs-string">&#x27;opacity&#x27;</span>,
+			<span class="hljs-attr">angle</span>: <span class="hljs-string">&#x27;angle&#x27;</span>,
+		};
+
+		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">const</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>.updateMap ) {
+			<span class="hljs-keyword">if</span> ( HAS_OWN.call( <span class="hljs-built_in">this</span>.updateMap, i ) ) {
+				<span class="hljs-built_in">this</span>.updateCounts[ <span class="hljs-built_in">this</span>.updateMap[ i ] ] = <span class="hljs-number">0.0</span>;
+				<span class="hljs-built_in">this</span>.updateFlags[ <span class="hljs-built_in">this</span>.updateMap[ i ] ] = <span class="hljs-literal">false</span>;
+				<span class="hljs-built_in">this</span>._createGetterSetters( <span class="hljs-built_in">this</span>[ i ], i );
+			}
+		}
+
+		<span class="hljs-built_in">this</span>.bufferUpdateRanges = {};
+		<span class="hljs-built_in">this</span>.attributeKeys = <span class="hljs-literal">null</span>;
+		<span class="hljs-built_in">this</span>.attributeCount = <span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Ensure that the value-over-lifetime property objects above
+have value and spread properties that are of the same length.</p>
+<p>Also, for now, make sure they have a length of 3 (min/max arguments here).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		utils.ensureValueOverLifetimeCompliance( <span class="hljs-built_in">this</span>.color, globals.valueOverLifetimeLength, globals.valueOverLifetimeLength );
+		utils.ensureValueOverLifetimeCompliance( <span class="hljs-built_in">this</span>.opacity, globals.valueOverLifetimeLength, globals.valueOverLifetimeLength );
+		utils.ensureValueOverLifetimeCompliance( <span class="hljs-built_in">this</span>.size, globals.valueOverLifetimeLength, globals.valueOverLifetimeLength );
+		utils.ensureValueOverLifetimeCompliance( <span class="hljs-built_in">this</span>.angle, globals.valueOverLifetimeLength, globals.valueOverLifetimeLength );
+	}
+
+	_createGetterSetters( propObj, propName ) {
+		<span class="hljs-keyword">const</span> self = <span class="hljs-built_in">this</span>;
+
+		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">const</span> i <span class="hljs-keyword">in</span> propObj ) {
+			<span class="hljs-keyword">if</span> ( HAS_OWN.call( propObj, i ) ) {
+
+				<span class="hljs-keyword">const</span> name = i.replace( <span class="hljs-string">&#x27;_&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span> );
+
+				<span class="hljs-built_in">Object</span>.defineProperty( propObj, name, {
+					<span class="hljs-attr">get</span>: ( <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> prop </span>) </span>{
+						<span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+							<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>[ prop ];
+						};
+					}( i ) ),
+
+					<span class="hljs-attr">set</span>: ( <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> prop </span>) </span>{
+						<span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> value </span>) </span>{
+							<span class="hljs-keyword">const</span> mapName = self.updateMap[ propName ],
+								prevValue = <span class="hljs-built_in">this</span>[ prop ],
+								length = globals.valueOverLifetimeLength;
+
+							<span class="hljs-keyword">if</span> ( prop === <span class="hljs-string">&#x27;_rotationCenter&#x27;</span> ) {
+								self.updateFlags.rotationCenter = <span class="hljs-literal">true</span>;
+								self.updateCounts.rotationCenter = <span class="hljs-number">0.0</span>;
+							}
+							<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( prop === <span class="hljs-string">&#x27;_randomise&#x27;</span> ) {
+								self.resetFlags[ mapName ] = value;
+							}
+							<span class="hljs-keyword">else</span> {
+								self.updateFlags[ mapName ] = <span class="hljs-literal">true</span>;
+								self.updateCounts[ mapName ] = <span class="hljs-number">0.0</span>;
+							}
+
+							self.group._updateDefines();
+
+							<span class="hljs-built_in">this</span>[ prop ] = value;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>If the previous value was an array, then make
+sure the provided value is interpolated correctly.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>							<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">Array</span>.isArray( prevValue ) ) {
+								utils.ensureValueOverLifetimeCompliance( self[ propName ], length, length );
+							}
+						};
+					}( i ) ),
+				} );
+			}
+		}
+	}
+
+	_setBufferUpdateRanges( keys ) {
+		<span class="hljs-built_in">this</span>.attributeKeys = keys;
+		<span class="hljs-built_in">this</span>.attributeCount = keys.length;
+
+		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-built_in">this</span>.attributeCount - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; --i ) {
+			<span class="hljs-built_in">this</span>.bufferUpdateRanges[ keys[ i ] ] = {
+				<span class="hljs-attr">min</span>: <span class="hljs-built_in">Number</span>.POSITIVE_INFINITY,
+				<span class="hljs-attr">max</span>: <span class="hljs-built_in">Number</span>.NEGATIVE_INFINITY,
+			};
+		}
+	}
+
+	_calculatePPSValue( groupMaxAge ) {
+		<span class="hljs-keyword">const</span> particleCount = <span class="hljs-built_in">this</span>.particleCount;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Calculate the <code>particlesPerSecond</code> value for this emitter. It’s used
+when determining which particles should die and which should live to
+see another day. Or be born, for that matter. The “God” property.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.duration ) {
+			<span class="hljs-built_in">this</span>.particlesPerSecond = particleCount / ( groupMaxAge &lt; <span class="hljs-built_in">this</span>.duration ? groupMaxAge : <span class="hljs-built_in">this</span>.duration );
+		}
+		<span class="hljs-keyword">else</span> {
+			<span class="hljs-built_in">this</span>.particlesPerSecond = particleCount / groupMaxAge;
+		}
+	}
+
+	_setAttributeOffset( startIndex ) {
+		<span class="hljs-built_in">this</span>.attributeOffset = startIndex;
+		<span class="hljs-built_in">this</span>.activationIndex = startIndex;
+		<span class="hljs-built_in">this</span>.activationEnd = startIndex + <span class="hljs-built_in">this</span>.particleCount;
+	}
+
+
+	_assignValue( prop, index ) {
+		<span class="hljs-keyword">switch</span> ( prop ) {
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;position&#x27;</span>:
+				<span class="hljs-built_in">this</span>._assignPositionValue( index );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;velocity&#x27;</span>:
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;acceleration&#x27;</span>:
+				<span class="hljs-built_in">this</span>._assignForceValue( index, prop );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;size&#x27;</span>:
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;opacity&#x27;</span>:
+				<span class="hljs-built_in">this</span>._assignAbsLifetimeValue( index, prop );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;angle&#x27;</span>:
+				<span class="hljs-built_in">this</span>._assignAngleValue( index );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;params&#x27;</span>:
+				<span class="hljs-built_in">this</span>._assignParamsValue( index );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;rotation&#x27;</span>:
+				<span class="hljs-built_in">this</span>._assignRotationValue( index );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;color&#x27;</span>:
+				<span class="hljs-built_in">this</span>._assignColorValue( index );
+				<span class="hljs-keyword">break</span>;
+		}
+	}
+
+	_assignPositionValue( index ) {
+		<span class="hljs-keyword">const</span> prop = <span class="hljs-built_in">this</span>.position,
+			attr = <span class="hljs-built_in">this</span>.attributes.position,
+			value = prop._value,
+			spread = prop._spread,
+			distribution = prop._distribution;
+
+		<span class="hljs-keyword">switch</span> ( distribution ) {
+			<span class="hljs-keyword">case</span> distributions.BOX:
+				utils.randomVector3( attr, index, value, spread, prop._spreadClamp );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> distributions.SPHERE:
+				utils.randomVector3OnSphere( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x, prop._distributionClamp || <span class="hljs-built_in">this</span>.particleCount );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> distributions.DISC:
+				utils.randomVector3OnDisc( attr, index, value, prop._radius, prop._spread.x, prop._radiusScale, prop._spreadClamp.x );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> distributions.LINE:
+				utils.randomVector3OnLine( attr, index, value, spread );
+				<span class="hljs-keyword">break</span>;
+		}
+	}
+
+	_assignForceValue( index, attrName ) {
+		<span class="hljs-keyword">const</span> prop = <span class="hljs-built_in">this</span>[ attrName ],
+			value = prop._value,
+			spread = prop._spread,
+			distribution = prop._distribution;
+		<span class="hljs-keyword">let</span> pos,
+			positionX,
+			positionY,
+			positionZ,
+			i;
+
+		<span class="hljs-keyword">switch</span> ( distribution ) {
+			<span class="hljs-keyword">case</span> distributions.BOX:
+				utils.randomVector3( <span class="hljs-built_in">this</span>.attributes[ attrName ], index, value, spread );
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> distributions.SPHERE:
+				pos = <span class="hljs-built_in">this</span>.attributes.position.typedArray.array;
+				i = index * <span class="hljs-number">3</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Ensure position values aren’t zero, otherwise no force will be
+applied.
+positionX = utils.zeroToEpsilon( pos[ i ], true );
+positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				positionX = pos[ i ];
+				positionY = pos[ i + <span class="hljs-number">1</span> ];
+				positionZ = pos[ i + <span class="hljs-number">2</span> ];
+
+				utils.randomDirectionVector3OnSphere(
+					<span class="hljs-built_in">this</span>.attributes[ attrName ], index,
+					positionX, positionY, positionZ,
+					<span class="hljs-built_in">this</span>.position._value,
+					prop._value.x,
+					prop._spread.x
+				);
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> distributions.DISC:
+				pos = <span class="hljs-built_in">this</span>.attributes.position.typedArray.array;
+				i = index * <span class="hljs-number">3</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Ensure position values aren’t zero, otherwise no force will be
+applied.
+positionX = utils.zeroToEpsilon( pos[ i ], true );
+positionY = utils.zeroToEpsilon( pos[ i + 1 ], true );
+positionZ = utils.zeroToEpsilon( pos[ i + 2 ], true );</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				positionX = pos[ i ];
+				positionY = pos[ i + <span class="hljs-number">1</span> ];
+				positionZ = pos[ i + <span class="hljs-number">2</span> ];
+
+				utils.randomDirectionVector3OnDisc(
+					<span class="hljs-built_in">this</span>.attributes[ attrName ], index,
+					positionX, positionY, positionZ,
+					<span class="hljs-built_in">this</span>.position._value,
+					prop._value.x,
+					prop._spread.x
+				);
+				<span class="hljs-keyword">break</span>;
+
+			<span class="hljs-keyword">case</span> distributions.LINE:
+				utils.randomVector3OnLine( <span class="hljs-built_in">this</span>.attributes[ attrName ], index, value, spread );
+				<span class="hljs-keyword">break</span>;
+		}
+
+		<span class="hljs-keyword">if</span> ( attrName === <span class="hljs-string">&#x27;acceleration&#x27;</span> ) {
+			<span class="hljs-keyword">const</span> drag = utils.clamp( utils.randomFloat( <span class="hljs-built_in">this</span>.drag._value, <span class="hljs-built_in">this</span>.drag._spread ), <span class="hljs-number">0</span>, <span class="hljs-number">1</span> );
+			<span class="hljs-built_in">this</span>.attributes.acceleration.typedArray.array[ index * <span class="hljs-number">4</span> + <span class="hljs-number">3</span> ] = drag;
+		}
+	}
+
+	_assignAbsLifetimeValue( index, propName ) {
+		<span class="hljs-keyword">const</span> array = <span class="hljs-built_in">this</span>.attributes[ propName ].typedArray,
+			prop = <span class="hljs-built_in">this</span>[ propName ];
+
+		<span class="hljs-keyword">if</span> ( utils.arrayValuesAreEqual( prop._value ) &amp;&amp; utils.arrayValuesAreEqual( prop._spread ) ) {
+			<span class="hljs-keyword">const</span> value = <span class="hljs-built_in">Math</span>.abs( utils.randomFloat( prop._value[ <span class="hljs-number">0</span> ], prop._spread[ <span class="hljs-number">0</span> ] ) );
+			array.setVec4Components( index, value, value, value, value );
+		}
+		<span class="hljs-keyword">else</span> {
+			array.setVec4Components( index,
+				<span class="hljs-built_in">Math</span>.abs( utils.randomFloat( prop._value[ <span class="hljs-number">0</span> ], prop._spread[ <span class="hljs-number">0</span> ] ) ),
+				<span class="hljs-built_in">Math</span>.abs( utils.randomFloat( prop._value[ <span class="hljs-number">1</span> ], prop._spread[ <span class="hljs-number">1</span> ] ) ),
+				<span class="hljs-built_in">Math</span>.abs( utils.randomFloat( prop._value[ <span class="hljs-number">2</span> ], prop._spread[ <span class="hljs-number">2</span> ] ) ),
+				<span class="hljs-built_in">Math</span>.abs( utils.randomFloat( prop._value[ <span class="hljs-number">3</span> ], prop._spread[ <span class="hljs-number">3</span> ] ) )
+			);
+		}
+	}
+
+	_assignAngleValue( index ) {
+		<span class="hljs-keyword">const</span> array = <span class="hljs-built_in">this</span>.attributes.angle.typedArray,
+			prop = <span class="hljs-built_in">this</span>.angle;
+
+		<span class="hljs-keyword">if</span> ( utils.arrayValuesAreEqual( prop._value ) &amp;&amp; utils.arrayValuesAreEqual( prop._spread ) ) {
+			<span class="hljs-keyword">const</span> value = utils.randomFloat( prop._value[ <span class="hljs-number">0</span> ], prop._spread[ <span class="hljs-number">0</span> ] );
+			array.setVec4Components( index, value, value, value, value );
+		}
+		<span class="hljs-keyword">else</span> {
+			array.setVec4Components( index,
+				utils.randomFloat( prop._value[ <span class="hljs-number">0</span> ], prop._spread[ <span class="hljs-number">0</span> ] ),
+				utils.randomFloat( prop._value[ <span class="hljs-number">1</span> ], prop._spread[ <span class="hljs-number">1</span> ] ),
+				utils.randomFloat( prop._value[ <span class="hljs-number">2</span> ], prop._spread[ <span class="hljs-number">2</span> ] ),
+				utils.randomFloat( prop._value[ <span class="hljs-number">3</span> ], prop._spread[ <span class="hljs-number">3</span> ] )
+			);
+		}
+	}
+
+	_assignParamsValue( index ) {
+		<span class="hljs-built_in">this</span>.attributes.params.typedArray.setVec4Components( index,
+			<span class="hljs-built_in">this</span>.isStatic ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>,
+			<span class="hljs-number">0.0</span>,
+			<span class="hljs-built_in">Math</span>.abs( utils.randomFloat( <span class="hljs-built_in">this</span>.maxAge._value, <span class="hljs-built_in">this</span>.maxAge._spread ) ),
+			utils.randomFloat( <span class="hljs-built_in">this</span>.wiggle._value, <span class="hljs-built_in">this</span>.wiggle._spread )
+		);
+	}
+
+	_assignRotationValue( index ) {
+		<span class="hljs-built_in">this</span>.attributes.rotation.typedArray.setVec3Components( index,
+			utils.getPackedRotationAxis( <span class="hljs-built_in">this</span>.rotation._axis, <span class="hljs-built_in">this</span>.rotation._axisSpread ),
+			utils.randomFloat( <span class="hljs-built_in">this</span>.rotation._angle, <span class="hljs-built_in">this</span>.rotation._angleSpread ),
+			<span class="hljs-built_in">this</span>.rotation._static ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>
+		);
+
+		<span class="hljs-built_in">this</span>.attributes.rotationCenter.typedArray.setVec3( index, <span class="hljs-built_in">this</span>.rotation._center );
+	}
+
+	_assignColorValue( index ) {
+		utils.randomColorAsHex( <span class="hljs-built_in">this</span>.attributes.color, index, <span class="hljs-built_in">this</span>.color._value, <span class="hljs-built_in">this</span>.color._spread );
+	}
+
+	_resetParticle( index ) {
+		<span class="hljs-keyword">const</span> resetFlags = <span class="hljs-built_in">this</span>.resetFlags,
+			updateFlags = <span class="hljs-built_in">this</span>.updateFlags,
+			updateCounts = <span class="hljs-built_in">this</span>.updateCounts,
+			keys = <span class="hljs-built_in">this</span>.attributeKeys;
+		<span class="hljs-keyword">let</span> key,
+			updateFlag;
+
+		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-built_in">this</span>.attributeCount - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; --i ) {
+			key = keys[ i ];
+			updateFlag = updateFlags[ key ];
+
+			<span class="hljs-keyword">if</span> ( resetFlags[ key ] === <span class="hljs-literal">true</span> || updateFlag === <span class="hljs-literal">true</span> ) {
+				<span class="hljs-built_in">this</span>._assignValue( key, index );
+				<span class="hljs-built_in">this</span>._updateAttributeUpdateRange( key, index );
+
+				<span class="hljs-keyword">if</span> ( updateFlag === <span class="hljs-literal">true</span> &amp;&amp; updateCounts[ key ] === <span class="hljs-built_in">this</span>.particleCount ) {
+					updateFlags[ key ] = <span class="hljs-literal">false</span>;
+					updateCounts[ key ] = <span class="hljs-number">0.0</span>;
+				}
+				<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( updateFlag == <span class="hljs-literal">true</span> ) {
+					++updateCounts[ key ];
+				}
+			}
+		}
+	}
+
+	_updateAttributeUpdateRange( attr, i ) {
+		<span class="hljs-keyword">var</span> ranges = <span class="hljs-built_in">this</span>.bufferUpdateRanges[ attr ];
+
+		ranges.min = <span class="hljs-built_in">Math</span>.min( i, ranges.min );
+		ranges.max = <span class="hljs-built_in">Math</span>.max( i, ranges.max );
+	}
+
+	_resetBufferRanges() {
+		<span class="hljs-keyword">const</span> ranges = <span class="hljs-built_in">this</span>.bufferUpdateRanges,
+			keys = <span class="hljs-built_in">this</span>.bufferUpdateKeys;
+		<span class="hljs-keyword">let</span> i = <span class="hljs-built_in">this</span>.bufferUpdateCount - <span class="hljs-number">1</span>,
+			key;
+
+		<span class="hljs-keyword">for</span> ( i; i &gt;= <span class="hljs-number">0</span>; --i ) {
+			key = keys[ i ];
+			ranges[ key ].min = <span class="hljs-built_in">Number</span>.POSITIVE_INFINITY;
+			ranges[ key ].max = <span class="hljs-built_in">Number</span>.NEGATIVE_INFINITY;
+		}
+	}
+
+	_onRemove() {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Reset any properties of the emitter that were set by
+a group when it was added.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.particlesPerSecond = <span class="hljs-number">0</span>;
+		<span class="hljs-built_in">this</span>.attributeOffset = <span class="hljs-number">0</span>;
+		<span class="hljs-built_in">this</span>.activationIndex = <span class="hljs-number">0</span>;
+		<span class="hljs-built_in">this</span>.activeParticleCount = <span class="hljs-number">0</span>;
+		<span class="hljs-built_in">this</span>.group = <span class="hljs-literal">null</span>;
+		<span class="hljs-built_in">this</span>.attributes = <span class="hljs-literal">null</span>;
+		<span class="hljs-built_in">this</span>.paramsArray = <span class="hljs-literal">null</span>;
+		<span class="hljs-built_in">this</span>.age = <span class="hljs-number">0.0</span>;
+	}
+
+	_decrementParticleCount() {
+		--<span class="hljs-built_in">this</span>.activeParticleCount;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>TODO:</p>
+<ul>
+<li>Trigger event if count === 0.</li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	}
+
+	_incrementParticleCount() {
+		<span class="hljs-string">&#x27;use strict&#x27;</span>;
+		++<span class="hljs-built_in">this</span>.activeParticleCount;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>TODO:</p>
+<ul>
+<li>Trigger event if count === this.particleCount.</li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	}
+
+	_checkParticleAges( start, end, params, dt ) {
+		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = end - <span class="hljs-number">1</span>, index, maxAge, age, alive; i &gt;= start; --i ) {
+			index = i * <span class="hljs-number">4</span>;
+
+			alive = params[ index ];
+
+			<span class="hljs-keyword">if</span> ( alive === <span class="hljs-number">0.0</span> ) {
+				<span class="hljs-keyword">continue</span>;
+			}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Increment age</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			age = params[ index + <span class="hljs-number">1</span> ];
+			maxAge = params[ index + <span class="hljs-number">2</span> ];
+
+			<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.direction === <span class="hljs-number">1</span> ) {
+				age += dt;
+
+				<span class="hljs-keyword">if</span> ( age &gt;= maxAge ) {
+					age = <span class="hljs-number">0.0</span>;
+					alive = <span class="hljs-number">0.0</span>;
+					<span class="hljs-built_in">this</span>._decrementParticleCount();
+				}
+			}
+			<span class="hljs-keyword">else</span> {
+				age -= dt;
+
+				<span class="hljs-keyword">if</span> ( age &lt;= <span class="hljs-number">0.0</span> ) {
+					age = maxAge;
+					alive = <span class="hljs-number">0.0</span>;
+					<span class="hljs-built_in">this</span>._decrementParticleCount();
+				}
+			}
+
+			params[ index ] = alive;
+			params[ index + <span class="hljs-number">1</span> ] = age;
+
+			<span class="hljs-built_in">this</span>._updateAttributeUpdateRange( <span class="hljs-string">&#x27;params&#x27;</span>, i );
+		}
+	}
+
+	_activateParticles( activationStart, activationEnd, params, dtPerParticle ) {
+		<span class="hljs-keyword">const</span> direction = <span class="hljs-built_in">this</span>.direction;
+
+		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = activationStart, index, dtValue; i &lt; activationEnd; ++i ) {
+			index = i * <span class="hljs-number">4</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Don’t re-activate particles that aren’t dead yet.
+if ( params[ index ] !== 0.0 &amp;&amp; ( this.particleCount !== 1 || this.activeMultiplier !== 1 ) ) {
+    continue;
+}</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+			<span class="hljs-keyword">if</span> ( params[ index ] != <span class="hljs-number">0.0</span> &amp;&amp; <span class="hljs-built_in">this</span>.particleCount !== <span class="hljs-number">1</span> ) {
+				<span class="hljs-keyword">continue</span>;
+			}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>Increment the active particle count.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			<span class="hljs-built_in">this</span>._incrementParticleCount();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Mark the particle as alive.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			params[ index ] = <span class="hljs-number">1.0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>Reset the particle</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			<span class="hljs-built_in">this</span>._resetParticle( i );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Move each particle being activated to
+it’s actual position in time.</p>
+<p>This stops particles being ‘clumped’ together
+when frame rates are on the lower side of 60fps
+or not constant (a very real possibility!)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			dtValue = dtPerParticle * ( i - activationStart );
+			params[ index + <span class="hljs-number">1</span> ] = direction === <span class="hljs-number">-1</span> ? params[ index + <span class="hljs-number">2</span> ] - dtValue : dtValue;
+
+			<span class="hljs-built_in">this</span>._updateAttributeUpdateRange( <span class="hljs-string">&#x27;params&#x27;</span>, i );
+		}
+	}
+
+	<span class="hljs-comment">/**
+	 * Simulates one frame&#x27;s worth of particles, updating particles
+	 * that are already alive, and marking ones that are currently dead
+	 * but should be alive as alive.
+	 *
+	 * If the emitter is marked as static, then this function will do nothing.
+	 *
+	 * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>dt The number of seconds to simulate (deltaTime)
+	 */</span>
+	tick( dt ) {
+		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.isStatic ) {
+			<span class="hljs-keyword">return</span>;
+		}
+
+		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.paramsArray === <span class="hljs-literal">null</span> ) {
+			<span class="hljs-built_in">this</span>.paramsArray = <span class="hljs-built_in">this</span>.attributes.params.typedArray.array;
+		}
+
+		<span class="hljs-keyword">const</span> start = <span class="hljs-built_in">this</span>.attributeOffset,
+			end = start + <span class="hljs-built_in">this</span>.particleCount,
+			params = <span class="hljs-built_in">this</span>.paramsArray, <span class="hljs-comment">// vec3( alive, age, maxAge, wiggle )</span>
+			ppsDt = <span class="hljs-built_in">this</span>.particlesPerSecond * <span class="hljs-built_in">this</span>.activeMultiplier * dt,
+			activationIndex = <span class="hljs-built_in">this</span>.activationIndex;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Reset the buffer update indices.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._resetBufferRanges();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Increment age for those particles that are alive,
+and kill off any particles whose age is over the limit.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._checkParticleAges( start, end, params, dt );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>If the emitter is dead, reset the age of the emitter to zero,
+ready to go again if required</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.alive === <span class="hljs-literal">false</span> ) {
+			<span class="hljs-built_in">this</span>.age = <span class="hljs-number">0.0</span>;
+			<span class="hljs-keyword">return</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>If the emitter has a specified lifetime and we’ve exceeded it,
+mark the emitter as dead.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.duration !== <span class="hljs-literal">null</span> &amp;&amp; <span class="hljs-built_in">this</span>.age &gt; <span class="hljs-built_in">this</span>.duration ) {
+			<span class="hljs-built_in">this</span>.alive = <span class="hljs-literal">false</span>;
+			<span class="hljs-built_in">this</span>.age = <span class="hljs-number">0.0</span>;
+			<span class="hljs-keyword">return</span>;
+		}
+
+
+		<span class="hljs-keyword">const</span> activationStart = <span class="hljs-built_in">this</span>.particleCount === <span class="hljs-number">1</span> ? activationIndex : ( activationIndex | <span class="hljs-number">0</span> ),
+			activationEnd = <span class="hljs-built_in">Math</span>.min( activationStart + ppsDt, <span class="hljs-built_in">this</span>.activationEnd ),
+			activationCount = activationEnd - <span class="hljs-built_in">this</span>.activationIndex | <span class="hljs-number">0</span>,
+			dtPerParticle = activationCount &gt; <span class="hljs-number">0</span> ? dt / activationCount : <span class="hljs-number">0</span>;
+
+		<span class="hljs-built_in">this</span>._activateParticles( activationStart, activationEnd, params, dtPerParticle );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Move the activation window forward, soldier.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.activationIndex += ppsDt;
+
+		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.activationIndex &gt; end ) {
+			<span class="hljs-built_in">this</span>.activationIndex = start;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>Increment the age of the emitter.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.age += dt;
+	}
+
+	<span class="hljs-comment">/**
+	 * Resets all the emitter&#x27;s particles to their start positions
+	 * and marks the particles as dead if the `force` argument is
+	 * true.
+	 *
+	 * <span class="hljs-doctag">@param  <span class="hljs-type">{Boolean}</span> </span>[force=undefined] If true, all particles will be marked as dead instantly.
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{Emitter}</span>       </span>This emitter instance.
+	 */</span>
+	reset( force ) {
+		<span class="hljs-built_in">this</span>.age = <span class="hljs-number">0.0</span>;
+		<span class="hljs-built_in">this</span>.alive = <span class="hljs-literal">false</span>;
+
+		<span class="hljs-keyword">if</span> ( force === <span class="hljs-literal">true</span> ) {
+			<span class="hljs-keyword">const</span> start = <span class="hljs-built_in">this</span>.attributeOffset,
+				end = start + <span class="hljs-built_in">this</span>.particleCount,
+				array = <span class="hljs-built_in">this</span>.paramsArray,
+				attr = <span class="hljs-built_in">this</span>.attributes.params.bufferAttribute;
+
+			<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = end - <span class="hljs-number">1</span>, index; i &gt;= start; --i ) {
+				index = i * <span class="hljs-number">4</span>;
+
+				array[ index ] = <span class="hljs-number">0.0</span>;
+				array[ index + <span class="hljs-number">1</span> ] = <span class="hljs-number">0.0</span>;
+			}
+
+			attr.updateRange.offset = <span class="hljs-number">0</span>;
+			attr.updateRange.count = <span class="hljs-number">-1</span>;
+			attr.needsUpdate = <span class="hljs-literal">true</span>;
+		}
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Enables the emitter. If not already enabled, the emitter
+	 * will start emitting particles.
+	 *
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{Emitter}</span> </span>This emitter instance.
+	 */</span>
+	enable() {
+		<span class="hljs-built_in">this</span>.alive = <span class="hljs-literal">true</span>;
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Disables th emitter, but does not instantly remove it&#x27;s
+	 * particles fromt the scene. When called, the emitter will be
+	 * &#x27;switched off&#x27; and just stop emitting. Any particle&#x27;s alive will
+	 * be allowed to finish their lifecycle.
+	 *
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{Emitter}</span> </span>This emitter instance.
+	 */</span>
+	disable() {
+		<span class="hljs-built_in">this</span>.alive = <span class="hljs-literal">false</span>;
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+	 * Remove this emitter from it&#x27;s parent group (if it has been added to one).
+	 * Delgates to Group.prototype.removeEmitter().
+	 *
+	 * When called, all particle&#x27;s belonging to this emitter will be instantly
+	 * removed from the scene.
+	 *
+	 * <span class="hljs-doctag">@return <span class="hljs-type">{Emitter}</span> </span>This emitter instance.
+	 *
+	 * <span class="hljs-doctag">@see </span>Group.prototype.removeEmitter
+	 */</span>
+	remove() {
+		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.group !== <span class="hljs-literal">null</span> ) {
+			<span class="hljs-built_in">this</span>.group.removeEmitter( <span class="hljs-built_in">this</span> );
+		}
+		<span class="hljs-keyword">else</span> {
+			<span class="hljs-built_in">console</span>.error( <span class="hljs-string">&#x27;Emitter does not belong to a group, cannot remove.&#x27;</span> );
+		}
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
