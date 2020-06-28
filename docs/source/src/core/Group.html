@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Group.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="../../docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="../constants/distributions.html">
+                  src/constants/distributions.js
+                </a>
+              
+                
+                <a class="source" href="../constants/globals.html">
+                  src/constants/globals.js
+                </a>
+              
+                
+                <a class="source" href="../constants/typeSizeMap.html">
+                  src/constants/typeSizeMap.js
+                </a>
+              
+                
+                <a class="source" href="../constants/valueTypes.html">
+                  src/constants/valueTypes.js
+                </a>
+              
+                
+                <a class="source" href="Emitter.html">
+                  src/core/Emitter.js
+                </a>
+              
+                
+                <a class="source" href="Group.html">
+                  src/core/Group.js
+                </a>
+              
+                
+                <a class="source" href="utils.html">
+                  src/core/utils.js
+                </a>
+              
+                
+                <a class="source" href="../helpers/ShaderAttribute.html">
+                  src/helpers/ShaderAttribute.js
+                </a>
+              
+                
+                <a class="source" href="../helpers/TypedArrayHelper.html">
+                  src/helpers/TypedArrayHelper.js
+                </a>
+              
+                
+                <a class="source" href="../shaders/shaderChunks.html">
+                  src/shaders/shaderChunks.js
+                </a>
+              
+                
+                <a class="source" href="../shaders/shaders.html">
+                  src/shaders/shaders.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>Group.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> THREE <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;three&#x27;</span>;
+<span class="hljs-keyword">import</span> valueTypes <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/constants/valueTypes&#x27;</span>;
+<span class="hljs-keyword">import</span> globals <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/constants/globals&#x27;</span>;
+<span class="hljs-keyword">import</span> utils <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./utils&#x27;</span>;
+<span class="hljs-keyword">import</span> ShaderAttribute <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/helpers/ShaderAttribute&#x27;</span>;
+<span class="hljs-keyword">import</span> shaders <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/shaders/shaders&#x27;</span>;
+<span class="hljs-keyword">import</span> Emitter <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./Emitter&#x27;</span>;
+
+<span class="hljs-keyword">const</span> HAS_OWN = <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty;
+
+<span class="hljs-comment">/**
+ * An SPE.Group instance.
+ * @typedef {Object} Group
+ * @see SPE.Group
+ */</span>
+
+<span class="hljs-comment">/**
+ * A map of options to configure an SPE.Group instance.
+ * @typedef {Object} GroupOptions
+ *
+ * @property {Object} texture An object describing the texture used by the group.
+ *
+ * @property {Object} texture.value An instance of THREE.Texture.
+ *
+ * @property {Object=} texture.frames A THREE.Vector2 instance describing the number
+ *                                    of frames on the x- and y-axis of the given texture.
+ *                                    If not provided, the texture will NOT be treated as
+ *                                    a sprite-sheet and as such will NOT be animated.
+ *
+ * @property {Number} [texture.frameCount=texture.frames.x * texture.frames.y] The total number of frames in the sprite-sheet.
+ *                                                                   Allows for sprite-sheets that don&#x27;t fill the entire
+ *                                                                   texture.
+ *
+ * @property {Number} texture.loop The number of loops through the sprite-sheet that should
+ *                                 be performed over the course of a single particle&#x27;s lifetime.
+ *
+ * @property {Number} fixedTimeStep If no `dt` (or `deltaTime`) value is passed to this group&#x27;s
+ *                                  `tick()` function, this number will be used to move the particle
+ *                                  simulation forward. Value in SECONDS.
+ *
+ * @property {Boolean} hasPerspective Whether the distance a particle is from the camera should affect
+ *                                    the particle&#x27;s size.
+ *
+ * @property {Boolean} colorize Whether the particles in this group should be rendered with color, or
+ *                              whether the only color of particles will come from the provided texture.
+ *
+ * @property {Number} blending One of Three.js&#x27;s blending modes to apply to this group&#x27;s `ShaderMaterial`.
+ *
+ * @property {Boolean} transparent Whether these particle&#x27;s should be rendered with transparency.
+ *
+ * @property {Number} alphaTest Sets the alpha value to be used when running an alpha test on the `texture.value` property. Value between 0 and 1.
+ *
+ * @property {Boolean} depthWrite Whether rendering the group has any effect on the depth buffer.
+ *
+ * @property {Boolean} depthTest Whether to have depth test enabled when rendering this group.
+ *
+ * @property {Boolean} fog Whether this group&#x27;s particles should be affected by their scene&#x27;s fog.
+ *
+ * @property {Number} scale The scale factor to apply to this group&#x27;s particle sizes. Useful for
+ *                          setting particle sizes to be relative to renderer size.
+ */</span>
+
+
+<span class="hljs-comment">/**
+ * The SPE.Group class. Creates a new group, containing a material, geometry, and mesh.
+ *
+ * @constructor
+ * @param {GroupOptions} options A map of options to configure the group instance.
+ */</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Group</span> </span>{
+	<span class="hljs-keyword">constructor</span>( opts ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Ensure we have a map of options to play with</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">const</span> options = utils.ensureTypedArg( opts, valueTypes.OBJECT, {} );
+		options.texture = utils.ensureTypedArg( options.texture, valueTypes.OBJECT, {} );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Assign a UUID to this instance</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.uuid = THREE.Math.generateUUID();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>If no <code>deltaTime</code> value is passed to the <code>SPE.Group.tick</code> function,
+the value of this property will be used to advance the simulation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.fixedTimeStep = utils.ensureTypedArg( options.fixedTimeStep, valueTypes.NUMBER, <span class="hljs-number">0.016</span> );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Set properties used in the uniforms map, starting with the
+texture stuff.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.texture = utils.ensureInstanceOf( options.texture.value, THREE.Texture, <span class="hljs-literal">null</span> );
+		<span class="hljs-built_in">this</span>.textureFrames = utils.ensureInstanceOf( options.texture.frames, THREE.Vector2, <span class="hljs-keyword">new</span> THREE.Vector2( <span class="hljs-number">1</span>, <span class="hljs-number">1</span> ) );
+		<span class="hljs-built_in">this</span>.textureFrameCount = utils.ensureTypedArg( options.texture.frameCount, valueTypes.NUMBER, <span class="hljs-built_in">this</span>.textureFrames.x * <span class="hljs-built_in">this</span>.textureFrames.y );
+		<span class="hljs-built_in">this</span>.textureLoop = utils.ensureTypedArg( options.texture.loop, valueTypes.NUMBER, <span class="hljs-number">1</span> );
+		<span class="hljs-built_in">this</span>.textureFrames.max( <span class="hljs-keyword">new</span> THREE.Vector2( <span class="hljs-number">1</span>, <span class="hljs-number">1</span> ) );
+
+		<span class="hljs-built_in">this</span>.hasPerspective = utils.ensureTypedArg( options.hasPerspective, valueTypes.BOOLEAN, <span class="hljs-literal">true</span> );
+		<span class="hljs-built_in">this</span>.colorize = utils.ensureTypedArg( options.colorize, valueTypes.BOOLEAN, <span class="hljs-literal">true</span> );
+
+		<span class="hljs-built_in">this</span>.maxParticleCount = utils.ensureTypedArg( options.maxParticleCount, valueTypes.NUMBER, <span class="hljs-literal">null</span> );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Set properties used to define the ShaderMaterial’s appearance.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.blending = utils.ensureTypedArg( options.blending, valueTypes.NUMBER, THREE.AdditiveBlending );
+		<span class="hljs-built_in">this</span>.transparent = utils.ensureTypedArg( options.transparent, valueTypes.BOOLEAN, <span class="hljs-literal">true</span> );
+		<span class="hljs-built_in">this</span>.alphaTest = <span class="hljs-built_in">parseFloat</span>( utils.ensureTypedArg( options.alphaTest, valueTypes.NUMBER, <span class="hljs-number">0.0</span> ) );
+		<span class="hljs-built_in">this</span>.depthWrite = utils.ensureTypedArg( options.depthWrite, valueTypes.BOOLEAN, <span class="hljs-literal">false</span> );
+		<span class="hljs-built_in">this</span>.depthTest = utils.ensureTypedArg( options.depthTest, valueTypes.BOOLEAN, <span class="hljs-literal">true</span> );
+		<span class="hljs-built_in">this</span>.fog = utils.ensureTypedArg( options.fog, valueTypes.BOOLEAN, <span class="hljs-literal">true</span> );
+		<span class="hljs-built_in">this</span>.scale = utils.ensureTypedArg( options.scale, valueTypes.NUMBER, <span class="hljs-number">300</span> );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Where emitter’s go to curl up in a warm blanket and live
+out their days.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.emitters = [];
+		<span class="hljs-built_in">this</span>.emitterIDs = [];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Create properties for use by the emitter pooling functions.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._pool = [];
+		<span class="hljs-built_in">this</span>._poolCreationSettings = <span class="hljs-literal">null</span>;
+		<span class="hljs-built_in">this</span>._createNewWhenPoolEmpty = <span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Whether all attributes should be forced to updated
+their entire buffer contents on the next tick.</p>
+<p>Used when an emitter is removed.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._attributesNeedRefresh = <span class="hljs-literal">false</span>;
+		<span class="hljs-built_in">this</span>._attributesNeedDynamicReset = <span class="hljs-literal">false</span>;
+
+		<span class="hljs-built_in">this</span>.particleCount = <span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Map of uniforms to be applied to the ShaderMaterial instance.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.uniforms = {
+			<span class="hljs-attr">tex</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;t&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-built_in">this</span>.texture,
+			},
+			<span class="hljs-attr">textureAnimation</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;v4&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-keyword">new</span> THREE.Vector4(
+					<span class="hljs-built_in">this</span>.textureFrames.x,
+					<span class="hljs-built_in">this</span>.textureFrames.y,
+					<span class="hljs-built_in">this</span>.textureFrameCount,
+					<span class="hljs-built_in">Math</span>.max( <span class="hljs-built_in">Math</span>.abs( <span class="hljs-built_in">this</span>.textureLoop ), <span class="hljs-number">1.0</span> )
+				),
+			},
+			<span class="hljs-attr">fogColor</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;c&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-built_in">this</span>.fog ? <span class="hljs-keyword">new</span> THREE.Color() : <span class="hljs-literal">null</span>,
+			},
+			<span class="hljs-attr">fogNear</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;f&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-number">10</span>,
+			},
+			<span class="hljs-attr">fogFar</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;f&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-number">200</span>,
+			},
+			<span class="hljs-attr">fogDensity</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;f&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-number">0.5</span>,
+			},
+			<span class="hljs-attr">deltaTime</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;f&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-number">0</span>,
+			},
+			<span class="hljs-attr">runTime</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;f&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-number">0</span>,
+			},
+			<span class="hljs-attr">scale</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;f&#x27;</span>,
+				<span class="hljs-attr">value</span>: <span class="hljs-built_in">this</span>.scale,
+			},
+		};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Add some defines into the mix…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.defines = {
+			<span class="hljs-attr">HAS_PERSPECTIVE</span>: <span class="hljs-built_in">this</span>.hasPerspective,
+			<span class="hljs-attr">COLORIZE</span>: <span class="hljs-built_in">this</span>.colorize,
+			<span class="hljs-attr">VALUE_OVER_LIFETIME_LENGTH</span>: globals.valueOverLifetimeLength,
+
+			<span class="hljs-attr">SHOULD_ROTATE_TEXTURE</span>: <span class="hljs-literal">false</span>,
+			<span class="hljs-attr">SHOULD_ROTATE_PARTICLES</span>: <span class="hljs-literal">false</span>,
+			<span class="hljs-attr">SHOULD_WIGGLE_PARTICLES</span>: <span class="hljs-literal">false</span>,
+
+			<span class="hljs-attr">SHOULD_CALCULATE_SPRITE</span>: <span class="hljs-built_in">this</span>.textureFrames.x &gt; <span class="hljs-number">1</span> || <span class="hljs-built_in">this</span>.textureFrames.y &gt; <span class="hljs-number">1</span>,
+		};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Map of all attributes to be applied to the particles.</p>
+<p>See <code>ShaderAttribute</code> for a bit more info on this.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.attributes = {
+			<span class="hljs-attr">position</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v3&#x27;</span>, <span class="hljs-literal">true</span> ),
+			<span class="hljs-attr">acceleration</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v4&#x27;</span>, <span class="hljs-literal">true</span> ), <span class="hljs-comment">// w component is drag</span>
+			<span class="hljs-attr">velocity</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v3&#x27;</span>, <span class="hljs-literal">true</span> ),
+			<span class="hljs-attr">rotation</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v4&#x27;</span>, <span class="hljs-literal">true</span> ),
+			<span class="hljs-attr">rotationCenter</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v3&#x27;</span>, <span class="hljs-literal">true</span> ),
+			<span class="hljs-attr">params</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v4&#x27;</span>, <span class="hljs-literal">true</span> ), <span class="hljs-comment">// Holds (alive, age, delay, wiggle)</span>
+			<span class="hljs-attr">size</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v4&#x27;</span>, <span class="hljs-literal">true</span> ),
+			<span class="hljs-attr">angle</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v4&#x27;</span>, <span class="hljs-literal">true</span> ),
+			<span class="hljs-attr">color</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v4&#x27;</span>, <span class="hljs-literal">true</span> ),
+			<span class="hljs-attr">opacity</span>: <span class="hljs-keyword">new</span> ShaderAttribute( <span class="hljs-string">&#x27;v4&#x27;</span>, <span class="hljs-literal">true</span> ),
+		};
+
+		<span class="hljs-built_in">this</span>.attributeKeys = <span class="hljs-built_in">Object</span>.keys( <span class="hljs-built_in">this</span>.attributes );
+		<span class="hljs-built_in">this</span>.attributeCount = <span class="hljs-built_in">this</span>.attributeKeys.length;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Create the ShaderMaterial instance that’ll help render the
+particles.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.material = <span class="hljs-keyword">new</span> THREE.ShaderMaterial( {
+			<span class="hljs-attr">uniforms</span>: <span class="hljs-built_in">this</span>.uniforms,
+			<span class="hljs-attr">vertexShader</span>: shaders.vertex,
+			<span class="hljs-attr">fragmentShader</span>: shaders.fragment,
+			<span class="hljs-attr">blending</span>: <span class="hljs-built_in">this</span>.blending,
+			<span class="hljs-attr">transparent</span>: <span class="hljs-built_in">this</span>.transparent,
+			<span class="hljs-attr">alphaTest</span>: <span class="hljs-built_in">this</span>.alphaTest,
+			<span class="hljs-attr">depthWrite</span>: <span class="hljs-built_in">this</span>.depthWrite,
+			<span class="hljs-attr">depthTest</span>: <span class="hljs-built_in">this</span>.depthTest,
+			<span class="hljs-attr">defines</span>: <span class="hljs-built_in">this</span>.defines,
+			<span class="hljs-attr">fog</span>: <span class="hljs-built_in">this</span>.fog,
+		} );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Create the BufferGeometry and Points instances, ensuring
+the geometry and material are given to the latter.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.geometry = <span class="hljs-keyword">new</span> THREE.BufferGeometry();
+		<span class="hljs-built_in">this</span>.mesh = <span class="hljs-keyword">new</span> THREE.Points( <span class="hljs-built_in">this</span>.geometry, <span class="hljs-built_in">this</span>.material );
+
+		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.maxParticleCount === <span class="hljs-literal">null</span> ) {
+			<span class="hljs-built_in">console</span>.warn( <span class="hljs-string">&#x27;SPE.Group: No maxParticleCount specified. Adding emitters after rendering will probably cause errors.&#x27;</span> );
+		}
+	}
+
+	_updateDefines() {
+		<span class="hljs-keyword">const</span> emitters = <span class="hljs-built_in">this</span>.emitters,
+			defines = <span class="hljs-built_in">this</span>.defines;
+		<span class="hljs-keyword">let</span> emitter,
+			i = emitters.length - <span class="hljs-number">1</span>;
+
+		<span class="hljs-keyword">for</span> ( i; i &gt;= <span class="hljs-number">0</span>; --i ) {
+			emitter = emitters[ i ];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Only do angle calculation if there’s no spritesheet defined.</p>
+<p>Saves calculations being done and then overwritten in the shaders.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			<span class="hljs-keyword">if</span> ( !defines.SHOULD_CALCULATE_SPRITE ) {
+				defines.SHOULD_ROTATE_TEXTURE = defines.SHOULD_ROTATE_TEXTURE || !!<span class="hljs-built_in">Math</span>.max(
+					<span class="hljs-built_in">Math</span>.max.apply( <span class="hljs-literal">null</span>, emitter.angle.value ),
+					<span class="hljs-built_in">Math</span>.max.apply( <span class="hljs-literal">null</span>, emitter.angle.spread )
+				);
+			}
+
+			defines.SHOULD_ROTATE_PARTICLES = defines.SHOULD_ROTATE_PARTICLES || !!<span class="hljs-built_in">Math</span>.max(
+				emitter.rotation.angle,
+				emitter.rotation.angleSpread
+			);
+
+			defines.SHOULD_WIGGLE_PARTICLES = defines.SHOULD_WIGGLE_PARTICLES || !!<span class="hljs-built_in">Math</span>.max(
+				emitter.wiggle.value,
+				emitter.wiggle.spread
+			);
+		}
+
+		<span class="hljs-built_in">this</span>.material.needsUpdate = <span class="hljs-literal">true</span>;
+	}
+
+	_applyAttributesToGeometry() {
+		<span class="hljs-keyword">const</span> attributes = <span class="hljs-built_in">this</span>.attributes,
+			geometry = <span class="hljs-built_in">this</span>.geometry,
+			geometryAttributes = geometry.attributes;
+		<span class="hljs-keyword">let</span> attribute,
+			geometryAttribute;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Loop through all the shader attributes and assign (or re-assign)
+typed array buffers to each one.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">const</span> attr <span class="hljs-keyword">in</span> attributes ) {
+			<span class="hljs-keyword">if</span> ( HAS_OWN.call( attributes, attr ) ) {
+				attribute = attributes[ attr ];
+				geometryAttribute = geometryAttributes[ attr ];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Update the array if this attribute exists on the geometry.</p>
+<p>This needs to be done because the attribute’s typed array might have
+been resized and reinstantiated, and might now be looking at a
+different ArrayBuffer, so reference needs updating.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				<span class="hljs-keyword">if</span> ( geometryAttribute ) {
+					geometryAttribute.array = attribute.typedArray.array;
+				}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>// Add the attribute to the geometry if it doesn’t already exist.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				<span class="hljs-keyword">else</span> {
+					geometry.addAttribute( attr, attribute.bufferAttribute );
+				}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Mark the attribute as needing an update the next time a frame is rendered.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				attribute.bufferAttribute.needsUpdate = <span class="hljs-literal">true</span>;
+			}
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Mark the draw range on the geometry. This will ensure
+only the values in the attribute buffers that are
+associated with a particle will be used in THREE’s
+render cycle.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.geometry.setDrawRange( <span class="hljs-number">0</span>, <span class="hljs-built_in">this</span>.particleCount );
+	}
+
+	<span class="hljs-comment">/**
+     * Adds an SPE.Emitter instance to this group, creating particle values and
+     * assigning them to this group&#x27;s shader attributes.
+     *
+     * <span class="hljs-doctag">@param <span class="hljs-type">{Emitter}</span> </span>emitter The emitter to add to this group.
+     */</span>
+	addEmitter( emitter ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Ensure an actual emitter instance is passed here.</p>
+<p>Decided not to throw here, just in case a scene’s
+rendering would be paused. Logging an error instead
+of stopping execution if exceptions aren’t caught.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( emitter <span class="hljs-keyword">instanceof</span> Emitter === <span class="hljs-literal">false</span> ) {
+			<span class="hljs-built_in">console</span>.error( <span class="hljs-string">&#x27;`emitter` argument must be instance of Emitter. Was provided with:&#x27;</span>, emitter );
+			<span class="hljs-keyword">return</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>If the emitter already exists as a member of this group, then
+stop here, we don’t want to add it again.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.emitterIDs.indexOf( emitter.uuid ) &gt; <span class="hljs-number">-1</span> ) {
+			<span class="hljs-built_in">console</span>.error( <span class="hljs-string">&#x27;Emitter already exists in this group. Will not add again.&#x27;</span> );
+			<span class="hljs-keyword">return</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>And finally, if the emitter is a member of another group,
+don’t add it to this group.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( emitter.group !== <span class="hljs-literal">null</span> ) {
+			<span class="hljs-built_in">console</span>.error( <span class="hljs-string">&#x27;Emitter already belongs to another group. Will not add to requested group.&#x27;</span> );
+			<span class="hljs-keyword">return</span>;
+		}
+
+		<span class="hljs-keyword">const</span> attributes = <span class="hljs-built_in">this</span>.attributes,
+			start = <span class="hljs-built_in">this</span>.particleCount,
+			end = start + emitter.particleCount;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Update this group’s particle count.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.particleCount = end;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Emit a warning if the emitter being added will exceed the buffer sizes specified.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>.maxParticleCount !== <span class="hljs-literal">null</span> &amp;&amp; <span class="hljs-built_in">this</span>.particleCount &gt; <span class="hljs-built_in">this</span>.maxParticleCount ) {
+			<span class="hljs-built_in">console</span>.warn( <span class="hljs-string">&#x27;SPE.Group: maxParticleCount exceeded. Requesting&#x27;</span>, <span class="hljs-built_in">this</span>.particleCount, <span class="hljs-string">&#x27;particles, can support only&#x27;</span>, <span class="hljs-built_in">this</span>.maxParticleCount );
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Set the <code>particlesPerSecond</code> value (PPS) on the emitter.
+It’s used to determine how many particles to release
+on a per-frame basis.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		emitter._calculatePPSValue( emitter.maxAge._value + emitter.maxAge._spread );
+		emitter._setBufferUpdateRanges( <span class="hljs-built_in">this</span>.attributeKeys );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Store the offset value in the TypedArray attributes for this emitter.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		emitter._setAttributeOffset( start );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Save a reference to this group on the emitter so it knows
+where it belongs.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		emitter.group = <span class="hljs-built_in">this</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>Store reference to the attributes on the emitter for
+easier access during the emitter’s tick function.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		emitter.attributes = <span class="hljs-built_in">this</span>.attributes;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Ensure the attributes and their BufferAttributes exist, and their
+TypedArrays are of the correct size.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">const</span> attr <span class="hljs-keyword">in</span> attributes ) {
+			<span class="hljs-keyword">if</span> ( HAS_OWN.call( attributes, attr ) ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>When creating a buffer, pass through the maxParticle count
+if one is specified.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				attributes[ attr ]._createBufferAttribute(
+					<span class="hljs-built_in">this</span>.maxParticleCount !== <span class="hljs-literal">null</span> ?
+						<span class="hljs-built_in">this</span>.maxParticleCount :
+						<span class="hljs-built_in">this</span>.particleCount
+				);
+			}
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Loop through each particle this emitter wants to have, and create the attributes values,
+storing them in the TypedArrays that each attribute holds.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = start; i &lt; end; ++i ) {
+			emitter._assignPositionValue( i );
+			emitter._assignForceValue( i, <span class="hljs-string">&#x27;velocity&#x27;</span> );
+			emitter._assignForceValue( i, <span class="hljs-string">&#x27;acceleration&#x27;</span> );
+			emitter._assignAbsLifetimeValue( i, <span class="hljs-string">&#x27;opacity&#x27;</span> );
+			emitter._assignAbsLifetimeValue( i, <span class="hljs-string">&#x27;size&#x27;</span> );
+			emitter._assignAngleValue( i );
+			emitter._assignRotationValue( i );
+			emitter._assignParamsValue( i );
+			emitter._assignColorValue( i );
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Update the geometry and make sure the attributes are referencing
+the typed arrays properly.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._applyAttributesToGeometry();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Store this emitter in this group’s emitter’s store.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.emitters.push( emitter );
+		<span class="hljs-built_in">this</span>.emitterIDs.push( emitter.uuid );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>Update certain flags to enable shader calculations only if they’re necessary.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._updateDefines( emitter );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>Update the material since defines might have changed</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.material.needsUpdate = <span class="hljs-literal">true</span>;
+		<span class="hljs-built_in">this</span>.geometry.needsUpdate = <span class="hljs-literal">true</span>;
+		<span class="hljs-built_in">this</span>._attributesNeedRefresh = <span class="hljs-literal">true</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Return the group to enable chaining.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+	<span class="hljs-comment">/**
+     * Removes an Emitter instance from this group. When called,
+     * all particle&#x27;s belonging to the given emitter will be instantly
+     * removed from the scene.
+     *
+     * <span class="hljs-doctag">@param <span class="hljs-type">{Emitter}</span> </span>emitter The emitter to add to this group.
+     */</span>
+	removeEmitter( emitter ) {
+		<span class="hljs-keyword">const</span> emitterIndex = <span class="hljs-built_in">this</span>.emitterIDs.indexOf( emitter.uuid );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>Ensure an actual emitter instance is passed here.</p>
+<p>Decided not to throw here, just in case a scene’s
+rendering would be paused. Logging an error instead
+of stopping execution if exceptions aren’t caught.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( emitter <span class="hljs-keyword">instanceof</span> Emitter === <span class="hljs-literal">false</span> ) {
+			<span class="hljs-built_in">console</span>.error( <span class="hljs-string">&#x27;`emitter` argument must be instance of SPE.Emitter. Was provided with:&#x27;</span>, emitter );
+			<span class="hljs-keyword">return</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>Issue an error if the emitter isn’t a member of this group.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( emitterIndex === <span class="hljs-number">-1</span> ) {
+			<span class="hljs-built_in">console</span>.error( <span class="hljs-string">&#x27;Emitter does not exist in this group. Will not remove.&#x27;</span> );
+			<span class="hljs-keyword">return</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>Kill all particles by marking them as dead
+and their age as 0.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">const</span> start = emitter.attributeOffset,
+			end = start + emitter.particleCount,
+			params = <span class="hljs-built_in">this</span>.attributes.params.typedArray;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>Set alive and age to zero.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = start; i &lt; end; ++i ) {
+			params.array[ i * <span class="hljs-number">4</span> ] = <span class="hljs-number">0.0</span>;
+			params.array[ i * <span class="hljs-number">4</span> + <span class="hljs-number">1</span> ] = <span class="hljs-number">0.0</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p>Remove the emitter from this group’s “store”.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.emitters.splice( emitterIndex, <span class="hljs-number">1</span> );
+		<span class="hljs-built_in">this</span>.emitterIDs.splice( emitterIndex, <span class="hljs-number">1</span> );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>Remove this emitter’s attribute values from all shader attributes.
+The <code>.splice()</code> call here also marks each attribute’s buffer
+as needing to update it’s entire contents.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">const</span> attr <span class="hljs-keyword">in</span> <span class="hljs-built_in">this</span>.attributes ) {
+			<span class="hljs-keyword">if</span> ( HAS_OWN.call( <span class="hljs-built_in">this</span>.attributes, attr ) ) {
+				<span class="hljs-built_in">this</span>.attributes[ attr ].splice( start, end );
+			}
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p>Ensure this group’s particle count is correct.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>.particleCount -= emitter.particleCount;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>Call the emitter’s remove method.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		emitter._onRemove();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>Set a flag to indicate that the attribute buffers should
+be updated in their entirety on the next frame.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._attributesNeedRefresh = <span class="hljs-literal">true</span>;
+	}
+
+
+	<span class="hljs-comment">/**
+     * Fetch a single emitter instance from the pool.
+     * If there are no objects in the pool, a new emitter will be
+     * created if specified.
+     *
+     * <span class="hljs-doctag">@return <span class="hljs-type">{Emitter|null}</span></span>
+     */</span>
+	getFromPool() {
+		<span class="hljs-keyword">const</span> pool = <span class="hljs-built_in">this</span>._pool,
+			createNew = <span class="hljs-built_in">this</span>._createNewWhenPoolEmpty;
+
+		<span class="hljs-keyword">if</span> ( pool.length ) {
+			<span class="hljs-keyword">return</span> pool.pop();
+		}
+		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( createNew ) {
+			<span class="hljs-keyword">const</span> emitter = <span class="hljs-keyword">new</span> Emitter( <span class="hljs-built_in">this</span>._poolCreationSettings );
+
+			<span class="hljs-built_in">this</span>.addEmitter( emitter );
+
+			<span class="hljs-keyword">return</span> emitter;
+		}
+
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+	}
+
+
+	<span class="hljs-comment">/**
+     * Release an emitter into the pool.
+     *
+     * <span class="hljs-doctag">@param  <span class="hljs-type">{ShaderParticleEmitter}</span> <span class="hljs-variable">emitter</span></span>
+     * <span class="hljs-doctag">@return <span class="hljs-type">{Group}</span> </span>This group instance.
+     */</span>
+	releaseIntoPool( emitter ) {
+		<span class="hljs-keyword">if</span> ( emitter <span class="hljs-keyword">instanceof</span> Emitter === <span class="hljs-literal">false</span> ) {
+			<span class="hljs-built_in">console</span>.error( <span class="hljs-string">&#x27;Argument is not instanceof Emitter:&#x27;</span>, emitter );
+			<span class="hljs-keyword">return</span>;
+		}
+
+		emitter.reset();
+		<span class="hljs-built_in">this</span>._pool.unshift( emitter );
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+
+	<span class="hljs-comment">/**
+     * Get the pool array
+     *
+     * <span class="hljs-doctag">@return <span class="hljs-type">{Array}</span></span>
+     */</span>
+	getPool() {
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>._pool;
+	}
+
+
+	<span class="hljs-comment">/**
+     * Add a pool of emitters to this particle group
+     *
+     * <span class="hljs-doctag">@param <span class="hljs-type">{Number}</span> </span>numEmitters      The number of emitters to add to the pool.
+     * <span class="hljs-doctag">@param <span class="hljs-type">{EmitterOptions|Array}</span> </span>emitterOptions  An object, or array of objects, describing the options to pass to each emitter.
+     * <span class="hljs-doctag">@param <span class="hljs-type">{Boolean}</span> </span>createNew       Should a new emitter be created if the pool runs out?
+     * <span class="hljs-doctag">@return <span class="hljs-type">{Group}</span> </span>This group instance.
+     */</span>
+	addPool( numEmitters, emitterOptions, createNew ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>Save relevant settings and flags.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._poolCreationSettings = emitterOptions;
+		<span class="hljs-built_in">this</span>._createNewWhenPoolEmpty = !!createNew;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p>Create the emitters, add them to this group and the pool.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; numEmitters; ++i ) {
+			<span class="hljs-keyword">let</span> args;
+
+			<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">Array</span>.isArray( emitterOptions ) ) {
+				args = emitterOptions[ i ];
+			}
+			<span class="hljs-keyword">else</span> {
+				args = emitterOptions;
+			}
+
+			<span class="hljs-keyword">const</span> emitter = <span class="hljs-keyword">new</span> Emitter( args );
+
+			<span class="hljs-built_in">this</span>.addEmitter( emitter );
+			<span class="hljs-built_in">this</span>.releaseIntoPool( emitter );
+		}
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+
+
+	_triggerSingleEmitter( pos ) {
+		<span class="hljs-keyword">const</span> emitter = <span class="hljs-built_in">this</span>.getFromPool();
+
+		<span class="hljs-keyword">if</span> ( emitter === <span class="hljs-literal">null</span> ) {
+			<span class="hljs-built_in">console</span>.log( <span class="hljs-string">&#x27;Group pool ran out.&#x27;</span> );
+			<span class="hljs-keyword">return</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p>TODO:</p>
+<ul>
+<li>Make sure buffers are update with the new position.</li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( pos <span class="hljs-keyword">instanceof</span> THREE.Vector3 ) {
+			emitter.position.value.copy( pos );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <p>Trigger the setter for this property to force an
+update to the emitter’s position attribute.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			emitter.position.value = emitter.position.value; <span class="hljs-comment">// eslint-disable-line</span>
+		}
+
+		emitter.enable();
+
+		<span class="hljs-built_in">setTimeout</span>( <span class="hljs-function">() =&gt;</span> {
+			emitter.disable();
+			<span class="hljs-built_in">this</span>.releaseIntoPool( emitter );
+		}, ( <span class="hljs-built_in">Math</span>.max( emitter.duration, ( emitter.maxAge.value + emitter.maxAge.spread ) ) ) * <span class="hljs-number">1000</span> );
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+
+	<span class="hljs-comment">/**
+     * Set a given number of emitters as alive, with an optional position
+     * vector3 to move them to.
+     *
+     * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>numEmitters The number of emitters to activate
+     * <span class="hljs-doctag">@param  <span class="hljs-type">{Object}</span> </span>[position=undefined] A THREE.Vector3 instance describing the position to activate the emitter(s) at.
+     * <span class="hljs-doctag">@return <span class="hljs-type">{Group}</span> </span>This group instance.
+     */</span>
+	triggerPoolEmitter( numEmitters, position ) {
+		<span class="hljs-keyword">if</span> ( <span class="hljs-keyword">typeof</span> numEmitters === <span class="hljs-string">&#x27;number&#x27;</span> &amp;&amp; numEmitters &gt; <span class="hljs-number">1</span> ) {
+			<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; numEmitters; ++i ) {
+				<span class="hljs-built_in">this</span>._triggerSingleEmitter( position );
+			}
+		}
+		<span class="hljs-keyword">else</span> {
+			<span class="hljs-built_in">this</span>._triggerSingleEmitter( position );
+		}
+
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+
+
+
+	_updateUniforms( dt ) {
+		<span class="hljs-built_in">this</span>.uniforms.runTime.value += dt;
+		<span class="hljs-built_in">this</span>.uniforms.deltaTime.value = dt;
+	}
+
+	_resetBufferRanges() {
+		<span class="hljs-keyword">const</span> keys = <span class="hljs-built_in">this</span>.attributeKeys,
+			attrs = <span class="hljs-built_in">this</span>.attributes;
+		<span class="hljs-keyword">let</span> i = <span class="hljs-built_in">this</span>.attributeCount - <span class="hljs-number">1</span>;
+
+		<span class="hljs-keyword">for</span> ( i; i &gt;= <span class="hljs-number">0</span>; --i ) {
+			attrs[ keys[ i ] ].resetUpdateRange();
+		}
+	}
+
+
+	_updateBuffers( emitter ) {
+		<span class="hljs-keyword">const</span> keys = <span class="hljs-built_in">this</span>.attributeKeys,
+			attrs = <span class="hljs-built_in">this</span>.attributes,
+			emitterRanges = emitter.bufferUpdateRanges;
+		<span class="hljs-keyword">let</span> key,
+			emitterAttr,
+			attr;
+
+		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-built_in">this</span>.attributeCount - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; --i ) {
+			key = keys[ i ];
+			emitterAttr = emitterRanges[ key ];
+			attr = attrs[ key ];
+			attr.setUpdateRange( emitterAttr.min, emitterAttr.max );
+			attr.flagUpdate();
+		}
+	}
+
+
+	<span class="hljs-comment">/**
+     * Simulate all the emitter&#x27;s belonging to this group, updating
+     * attribute values along the way.
+     * <span class="hljs-doctag">@param  <span class="hljs-type">{Number}</span> </span>[dt=Group&#x27;s `fixedTimeStep` value] The number of seconds to simulate the group&#x27;s emitters for (deltaTime)
+     */</span>
+	tick( dt ) {
+		<span class="hljs-keyword">const</span> emitters = <span class="hljs-built_in">this</span>.emitters,
+			numEmitters = emitters.length,
+			deltaTime = dt || <span class="hljs-built_in">this</span>.fixedTimeStep,
+			keys = <span class="hljs-built_in">this</span>.attributeKeys,
+			attrs = <span class="hljs-built_in">this</span>.attributes;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p>Update uniform values.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._updateUniforms( deltaTime );</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>Reset buffer update ranges on the shader attributes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-built_in">this</span>._resetBufferRanges();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <p>If nothing needs updating, then stop here.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> (
+			numEmitters === <span class="hljs-number">0</span> &amp;&amp;
+            <span class="hljs-built_in">this</span>._attributesNeedRefresh === <span class="hljs-literal">false</span> &amp;&amp;
+            <span class="hljs-built_in">this</span>._attributesNeedDynamicReset === <span class="hljs-literal">false</span>
+		) {
+			<span class="hljs-keyword">return</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>
+              <p>Loop through each emitter in this group and
+simulate it, then update the shader attribute
+buffers.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>, emitter; i &lt; numEmitters; ++i ) {
+			emitter = emitters[ i ];
+			emitter.tick( deltaTime );
+			<span class="hljs-built_in">this</span>._updateBuffers( emitter );
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <p>If the shader attributes have been refreshed,
+then the dynamic properties of each buffer
+attribute will need to be reset back to
+what they should be.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>._attributesNeedDynamicReset === <span class="hljs-literal">true</span> ) {
+			<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-built_in">this</span>.attributeCount - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; --i ) {
+				attrs[ keys[ i ] ].resetDynamic();
+			}
+
+			<span class="hljs-built_in">this</span>._attributesNeedDynamicReset = <span class="hljs-literal">false</span>;
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+              </div>
+              <p>If this group’s shader attributes need a full refresh
+then mark each attribute’s buffer attribute as
+needing so.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">if</span> ( <span class="hljs-built_in">this</span>._attributesNeedRefresh === <span class="hljs-literal">true</span> ) {
+			<span class="hljs-keyword">for</span> ( <span class="hljs-keyword">let</span> i = <span class="hljs-built_in">this</span>.attributeCount - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; --i ) {
+				attrs[ keys[ i ] ].forceUpdateAll();
+			}
+
+			<span class="hljs-built_in">this</span>._attributesNeedRefresh = <span class="hljs-literal">false</span>;
+			<span class="hljs-built_in">this</span>._attributesNeedDynamicReset = <span class="hljs-literal">true</span>;
+		}
+	}
+
+
+	<span class="hljs-comment">/**
+     * Dipose the geometry and material for the group.
+     *
+     * <span class="hljs-doctag">@return <span class="hljs-type">{Group}</span> </span>Group instance.
+     */</span>
+	dispose() {
+		<span class="hljs-built_in">this</span>.geometry.dispose();
+		<span class="hljs-built_in">this</span>.material.dispose();
+		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;
+	}
+}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
