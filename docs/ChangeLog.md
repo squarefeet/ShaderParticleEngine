@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+v2.0.0
+------
+* Replaced Grunt with Webpack.
+* Moved to import/export.
+* Full module support.
+	* `Group`, `Emitter`, `distribution`, and `globals` are now the only exposed objects.
+* `SPE.valueOverLifetimeLength` is now `SPE.globals.valueOverLifetimeLength` (or accessed by importing `globals`)
+
+
+
 v1.0.6
 ------
 * #110: Added `three` as an NPM dependency.
