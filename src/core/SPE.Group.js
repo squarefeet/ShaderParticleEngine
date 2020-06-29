@@ -119,7 +119,7 @@ SPE.Group = function( options ) {
 
     // Map of uniforms to be applied to the ShaderMaterial instance.
     this.uniforms = {
-        texture: {
+        tex: {
             type: 't',
             value: this.texture
         },
@@ -495,9 +495,9 @@ SPE.Group.prototype.getFromPool = function() {
     }
     else if ( createNew ) {
         var emitter = new SPE.Emitter( this._poolCreationSettings );
-        
+
         this.addEmitter( emitter );
-        
+
         return emitter;
     }
 

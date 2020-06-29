@@ -99,8 +99,6 @@ SPE.ShaderAttribute.prototype.flagUpdate = function() {
 
 	range.offset = this.updateMin;
 	range.count = Math.min( ( this.updateMax - this.updateMin ) + this.componentSize, this.typedArray.array.length );
-	// console.log( range.offset, range.count, this.typedArray.array.length );
-	// console.log( 'flagUpdate:', range.offset, range.count );
 	attr.needsUpdate = true;
 };
 
@@ -118,7 +116,9 @@ SPE.ShaderAttribute.prototype.resetUpdateRange = function() {
 
 SPE.ShaderAttribute.prototype.resetDynamic = function() {
 	'use strict';
-	this.bufferAttribute.dynamic = this.dynamicBuffer;
+	this.bufferAttribute.usage = this.dynamicBuffer ?
+		THREE.DynamicDrawUsage :
+		THREE.StaticDrawUsage;
 };
 
 /**
@@ -142,7 +142,8 @@ SPE.ShaderAttribute.prototype.forceUpdateAll = function() {
 	this.bufferAttribute.array = this.typedArray.array;
 	this.bufferAttribute.updateRange.offset = 0;
 	this.bufferAttribute.updateRange.count = -1;
-	this.bufferAttribute.dynamic = false;
+
+	this.bufferAttribute.usage = THREE.StaticDrawUsage;
 	this.bufferAttribute.needsUpdate = true;
 };
 
@@ -211,7 +212,10 @@ SPE.ShaderAttribute.prototype._createBufferAttribute = function( size ) {
 	}
 
 	this.bufferAttribute = new THREE.BufferAttribute( this.typedArray.array, this.componentSize );
-	this.bufferAttribute.dynamic = this.dynamicBuffer;
+
+	this.bufferAttribute.usage = this.dynamicBuffer ?
+		THREE.DynamicDrawUsage :
+		THREE.StaticDrawUsage;
 };
 
 /**
