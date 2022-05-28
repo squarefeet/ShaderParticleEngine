@@ -176,7 +176,7 @@ SPE.Emitter = function( options ) {
         console.warn( 'onParticleSpawn has been removed. Please set properties directly to alter values at runtime.' );
     }
 
-    this.uuid = THREE.Math.generateUUID();
+    this.uuid = THREE.MathUtils.generateUUID();
 
     this.type = utils.ensureTypedArg( options.type, types.NUMBER, SPE.distributions.BOX );
 
